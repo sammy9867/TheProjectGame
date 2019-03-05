@@ -10,9 +10,9 @@ The goal of The Project Game is to simulate a competitive project development en
 * **Software Development Methodology** - Waterfall
 * **Technology** - Java
 * **Assignments of tasks** - Trello
-* **Project discussion** - Facebook Messenger
+* **Project discussion** - Slack
 
-The Waterfall approach will be used as our software development methodology. We will be using Trello to assign various tasks to team members. Project discussion will take place via Facebook Messenger to stay updated and discuss problems while project meetings will be held when required. The technology that will be used is Java.
+The Waterfall approach will be used as our software development methodology. We will be using Trello to assign various tasks to team members. Project discussion will take place via Slack to stay updated and discuss problems while project meetings will be held when required. The technology that will be used is Java.
 
 
 ## Authors
