@@ -8,7 +8,7 @@ The goal of The Project Game is to simulate a competitive project development en
 
 ## Methodology & Technology used
 * **Software Development Methodology** - Waterfall
-* **Technology** - Java
+* **Technology** - C#
 * **Assignments of tasks** - Trello
 * **Project discussion** - Slack
 
@@ -18,7 +18,6 @@ The Waterfall approach will be used as our software development methodology. We 
 ## Authors
 
 * **Samuel Menezes**
-* **Youssef Ibrahim**
 * **Mikhail Urmich**
 * **Yulia Ivashchenko**
 * **Mohamed Abouelsaadat**
