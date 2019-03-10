@@ -1,0 +1,44 @@
+﻿<Window x:Class="TheGame.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TheGame"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="500" 
+        MaxHeight="500" MaxWidth="500"
+        MinHeight="500" MinWidth="500">
+
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open"/>
+                <MenuItem Header="_Close"/>
+                <MenuItem Header="_Save"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid Background="Blue">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Margin="10" Name="playgroundDockPanel"
+                       >
+
+            </Grid>
+
+            <WrapPanel Grid.Column="1" Margin="10">
+                <TextBlock Name="red_score">Red Scores :</TextBlock>
+                <TextBlock Name="blue_score">Blue Scores :</TextBlock>
+                <TextBlock Name="pieces_left">Pieces Left :</TextBlock>
+                <TextBlock Name="winning_team">Winning Team :</TextBlock>
+
+            </WrapPanel>
+        </Grid>
+
+    </DockPanel>
+
+</Window>
