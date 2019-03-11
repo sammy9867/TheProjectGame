@@ -20,13 +20,12 @@ namespace TheGame
     /// </summary>
     public partial class MainWindow : Window
     {
-        public const int WIDTH_BOARD = 5;
-        public const int HEIGHT_BOARD = 5; 
+        private Board board;
 
         public MainWindow()
         {
             InitializeComponent();
-
+            board = new Board { Width = 5, Height = 5 };
             loadBoard();
 
         }
@@ -34,23 +33,29 @@ namespace TheGame
         private void loadBoard()
         {
             
-            for(int i=0; i<WIDTH_BOARD; i++)
-                for(int j=0; j<HEIGHT_BOARD; j++)
+            for(int i=0; i<board.Width; i++)
+                for(int j=0; j<board.Height; j++)
                 {
                     Image img = new Image
                     {
                         Width = 100,
                         Height = 100,
-                        Visibility = Visibility.Visible
+                        Visibility = Visibility.Visible,
+                        Source = ((i + j) % 2 == 0) ? new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative)) :
+                                                      new BitmapImage(new Uri("/TheGame;component/Image/brown_picture.png", UriKind.Relative)),
+                        Tag = ""+i+"x"+j
+                };
+                    
+                    ColumnDefinition column = new ColumnDefinition
+                    {
+                        Width = new GridLength(this.Width * 0.64 / board.Width)
                     };
-                    img.Source = ((i + j) % 2 == 0) ? new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative)) :
-                                                      new BitmapImage(new Uri("/TheGame;component/Image/brown_picture.png", UriKind.Relative));
-                    ColumnDefinition column = new ColumnDefinition();
-                    column.Width = new GridLength(this.Width*0.64 / WIDTH_BOARD);
                     playgroundDockPanel.ColumnDefinitions.Add(column);
 
-                    RowDefinition row = new RowDefinition();
-                    row.Height = new GridLength(this.Height*0.8 / HEIGHT_BOARD);
+                    RowDefinition row = new RowDefinition
+                    {
+                        Height = column.Width
+                    };
                     playgroundDockPanel.RowDefinitions.Add(row);
 
 
