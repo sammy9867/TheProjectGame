@@ -11,6 +11,6 @@ pipelines:
         caches:
           - dotnetcore
         script: # Modify the comma`nds below to build your repository.
-          - export PROJECT_NAME=TheGame
+          - cd /TheGame
           - dotnet restore
-          - dotnet build $PROJECT_NAME
+          - dotnet build TheGame.sln
