@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="500" Width="500" 
         MaxHeight="500" MaxWidth="500"
-        MinHeight="500" MinWidth="500">
+        MinHeight="500" MinWidth="500" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
 
     <DockPanel>
         <!-- Menu Bar -->
@@ -21,16 +21,17 @@
 
         <Grid Background="CornflowerBlue">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="4*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="308*"/>
+                <ColumnDefinition Width="87*"/>
+                <ColumnDefinition Width="98*"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0" Margin="10" Name="playgroundDockPanel"
+            <Grid Grid.Column="0" Margin="10,10,10.2,9.8" Name="playgroundDockPanel" Grid.ColumnSpan="2"
                        >
 
             </Grid>
 
-            <WrapPanel Grid.Column="1" Margin="10">
+            <WrapPanel Grid.Column="2" Margin="9.8,10,9.6,9.8">
                 <TextBlock Name="red_score">Red Scores :</TextBlock>
                 <TextBlock Name="blue_score">Blue Scores :</TextBlock>
                 <TextBlock Name="pieces_left">Pieces Left :</TextBlock>
