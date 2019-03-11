@@ -11,7 +11,7 @@ namespace TheGame.Model
         public enum Role { member, leader }
         public int playerID { get; set; }
         public int row { get; set; }
-        public int columns { get; set; }
+        public int column { get; set; }
         public Role role { get; set; }
     }
 }

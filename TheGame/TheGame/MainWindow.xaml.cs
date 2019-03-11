@@ -26,45 +26,134 @@ namespace TheGame
         public MainWindow()
         {
             InitializeComponent();
-            board = new Board { Width = 5, Height = 5 };
+            board = new Board();
             loadBoard();
+            updateBoard();
 
         }
 
         private void loadBoard()
         {
-            
-            for(int i=0; i<board.Width; i++)
-                for(int j=0; j<board.Height; j++)
+            board.Width = 5;
+            board.Height = 9;
+            board.GoalWidth = 2;
+            board.RedTeam = loadRedTeam();
+            board.BlueTeam = loadBlueTeam();
+
+        }
+
+        private Team loadBlueTeam()
+        {
+            Team team = new Team();
+            team.leader = new Player
+            {
+                role = Player.Role.leader,
+                playerID = 10,
+                row = 7,
+                column = 1
+            };
+
+            team.members = new List<Player>();
+            team.members.Add(new Player {
+                role = Player.Role.member,
+                playerID = 12,
+                row = 7,
+                column = 3
+            });
+
+            team.teamColor = Team.TeamColor.blue;
+
+            team.maxNumOfPlayers = 2;
+
+            return team;
+        }
+
+        private Team loadRedTeam()
+        {
+            Team team = new Team();
+            team.leader = new Player
+            {
+                role = Player.Role.leader,
+                playerID = 10,
+                row = 1,
+                column = 1
+            };
+
+            team.members = new List<Player>();
+            team.members.Add(new Player
+            {
+                role = Player.Role.member,
+                playerID = 12,
+                row = 1,
+                column = 3
+            });
+
+            team.teamColor = Team.TeamColor.red;
+
+            team.maxNumOfPlayers = 2;
+
+            return team;
+        }
+
+        private void updateBoard()
+        {
+            for (int row = 0; row < board.Height ; row++)
+            {
+                RowDefinition rowdef = new RowDefinition
+                {
+                    Height = new GridLength(50)
+                };
+                playgroundDockPanel.RowDefinitions.Add(rowdef);
+            }
+            for (int col = 0; col < board.Width ; col++)
+            {
+                ColumnDefinition coldef = new ColumnDefinition
+                {
+                    Width = new GridLength(50)
+                };
+                playgroundDockPanel.ColumnDefinitions.Add(coldef);
+            }
+
+            for (int row = 0; row < board.Height; row++)
+            {
+                for (int col = 0; col < board.Width; col++)
                 {
                     Image img = new Image
                     {
                         Width = 100,
                         Height = 100,
                         Visibility = Visibility.Visible,
-                        Source = ((i + j) % 2 == 0) ? new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative)) :
-                                                      new BitmapImage(new Uri("/TheGame;component/Image/brown_picture.png", UriKind.Relative)),
-                        Tag = ""+i+"x"+j
-                };
+                        Tag = "" + col + "x" + row,
+                        Margin = new Thickness(2)
+                    };
+                    switch (board.getCellStatus(col, row))
+                    {
+                        case (int)Board.Status.BLUE_GOAL:
+                        case (int)Board.Status.RED_GOAL:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/brown_picture.png", UriKind.Relative));
+                            break;
+
+                        case (int)Board.Status.RED_PLAYER:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/red_player.png", UriKind.Relative));
+                            break;
+
+                        case (int)Board.Status.BLUE_PLAYER:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player.png", UriKind.Relative));
+                            break;
+
+                        case (int)Board.Status.SIMPE_AREA:
+                        default:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative));
+                            break;
+                    }
+
                     
-                    ColumnDefinition column = new ColumnDefinition
-                    {
-                        Width = new GridLength(this.Width * 0.64 / board.Width)
-                    };
-                    playgroundDockPanel.ColumnDefinitions.Add(column);
-
-                    RowDefinition row = new RowDefinition
-                    {
-                        Height = column.Width
-                    };
-                    playgroundDockPanel.RowDefinitions.Add(row);
-
-
-                    Grid.SetColumn(img, j);
-                    Grid.SetRow(img, i);
+                    Grid.SetColumn(img, col);
+                    Grid.SetRow(img, row);
 
                     playgroundDockPanel.Children.Add(img);
                 }
+            }
         }
     }
 }

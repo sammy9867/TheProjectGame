@@ -107,5 +107,12 @@
   <ItemGroup>
     <Resource Include="configurations.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Image\blue_player.png" />
+    <Resource Include="Image\red_player.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Image\piece_picture.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
