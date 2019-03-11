@@ -11,6 +11,6 @@ pipelines:
         caches:
           - dotnetcore
         script: # Modify the comma`nds below to build your repository.
-          - cd /TheGame
+          - cd TheGame
           - dotnet restore
           - dotnet build TheGame.sln
