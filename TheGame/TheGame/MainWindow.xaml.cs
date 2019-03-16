@@ -101,7 +101,7 @@ namespace TheGame
             {
                 RowDefinition rowdef = new RowDefinition
                 {
-                    Height = new GridLength(50)
+                    Height = new GridLength(100)
                 };
                 playgroundDockPanel.RowDefinitions.Add(rowdef);
             }
@@ -109,7 +109,9 @@ namespace TheGame
             {
                 ColumnDefinition coldef = new ColumnDefinition
                 {
-                    Width = new GridLength(50)
+                    Width = new GridLength(100),
+                    
+                    
                 };
                 playgroundDockPanel.ColumnDefinitions.Add(coldef);
             }
@@ -124,7 +126,7 @@ namespace TheGame
                         Height = 100,
                         Visibility = Visibility.Visible,
                         Tag = "" + col + "x" + row,
-                        Margin = new Thickness(2)
+                        Margin = new Thickness(2)                        
                     };
                     switch (board.getCellStatus(col, row))
                     {
@@ -146,8 +148,9 @@ namespace TheGame
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative));
                             break;
                     }
+                    img.Stretch = Stretch.Uniform;
 
-                    
+
                     Grid.SetColumn(img, col);
                     Grid.SetRow(img, row);
 
