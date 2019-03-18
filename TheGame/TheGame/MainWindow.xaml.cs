@@ -45,26 +45,21 @@ namespace TheGame
         }
 
 
+        /**
+                //TO BE CHANGED WITH USER INPUT/JSON LATER ON.
+                private void loadInitSettings()
+                {
+                    probabilityOfBeingSham = 0.2;
+                    frequencyOfPlacingPieces = 1500; //what's this?
+                    initialNumberOfPieces = 5;
+                    tasksHeight = 5;
+                   // goalHeight = 2;
+                    numberOfPlayersPerTeam = 1;
+                    goalDefinition = 3;
+
+                } **/
 
 
-/**
-        //TO BE CHANGED WITH USER INPUT/JSON LATER ON.
-        private void loadInitSettings()
-        {
-            probabilityOfBeingSham = 0.2;
-            frequencyOfPlacingPieces = 1500; //what's this?
-            initialNumberOfPieces = 5;
-            tasksHeight = 5;
-           // goalHeight = 2;
-            numberOfPlayersPerTeam = 1;
-            goalDefinition = 3;
-
-        } **/
-
-
-
-
-        //FIX DIMENSIONS PROB.
         private void loadBoard()
         {
             board.Width = 6;   
@@ -73,9 +68,38 @@ namespace TheGame
             board.Height = 2* board.GoalHeight + board.TaskHeight;
             board.RedTeam = loadRedTeam();
             board.BlueTeam = loadBlueTeam();
-            board.pieces = loadPieces();
+            board.Pieces = loadPieces();
+
+            /* Set up grounds rows */
+            for (int row = 0; row < board.Height; row++)
+            {
+                RowDefinition rowdef = new RowDefinition
+                {
+                    Height = new GridLength(1, GridUnitType.Star)
+                };
+                playgroundDockPanel.RowDefinitions.Add(rowdef);
+            }
+
+            /* Set up grounds columns */
+            for (int col = 0; col < board.Width; col++)
+            {
+                ColumnDefinition coldef = new ColumnDefinition
+                {
+                    Width = new GridLength(1, GridUnitType.Star)
+                };
+
+                playgroundDockPanel.ColumnDefinitions.Add(coldef);
+            }
+
+            /* Column to place notes about the game */
+            ColumnDefinition notes = new ColumnDefinition
+            {
+                Width = new GridLength(2, GridUnitType.Star)
+            };
+            playgroundDockPanel.ColumnDefinitions.Add(notes);
         }
 
+        #region Pieces
         private List<Piece> loadPieces()
         {
             List<Piece> pieces = new List<Piece>();
@@ -95,7 +119,9 @@ namespace TheGame
             return pieces;
 
         }
+        #endregion
 
+        #region Teams
         private Team loadBlueTeam()
         {
             Team team = new Team();
@@ -148,36 +174,17 @@ namespace TheGame
 
             return team;
         }
+        #endregion
 
         private void updateBoard()
-        {
-            for (int row = 0; row < board.Height ; row++)
-            {
-                RowDefinition rowdef = new RowDefinition
-                {
-                    Height = new GridLength(100)
-                };
-                playgroundDockPanel.RowDefinitions.Add(rowdef);
-            }
-            for (int col = 0; col < board.Width ; col++)
-            {
-                ColumnDefinition coldef = new ColumnDefinition
-                {
-                    Width = new GridLength(100),
-   
-                };
-
-                playgroundDockPanel.ColumnDefinitions.Add(coldef);
-            }
-
+        {            
             for (int row = 0; row < board.Height; row++)
-            {
                 for (int col = 0; col < board.Width; col++)
                 {
                     Image img = new Image
                     {
-                        Width = 100,
-                        Height = 100,
+//                        Width = CELL_SIZE,
+//                        Height = CELL_SIZE,
                         Visibility = Visibility.Visible,
                         Tag = "" + col + "x" + row,
                         Margin = new Thickness(2)                        
@@ -222,15 +229,13 @@ namespace TheGame
                             break;
 
                     }
-                    img.Stretch = Stretch.Uniform;
-
+                    img.Stretch = Stretch.Fill;
 
                     Grid.SetColumn(img, col);
                     Grid.SetRow(img, row);
 
                     playgroundDockPanel.Children.Add(img);
                 }
-            }
         }
     }
 }

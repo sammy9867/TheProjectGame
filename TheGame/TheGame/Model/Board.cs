@@ -32,7 +32,11 @@ namespace TheGame.Model
         public int TaskHeight { get; set; }
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
-        public List<Piece> pieces { get; set; }
+        public List<Piece> Pieces { get; set; }
+        public double ProbabilityOfBeingSham { get; set; }
+        public int FrequencyOfPlacingPieces { get; set; }
+        public int InitialNumberOfPieces { get; set; }
+
 
         public int getCellStatus(int col, int row)
         {
@@ -45,7 +49,7 @@ namespace TheGame.Model
                 return (int)Board.Status.BLUE_PLAYER;
 
             /* Check if PIECE occupaes a cell */
-            foreach (var item in pieces)
+            foreach (var item in Pieces)
             {
                 if (item.isTaken(col, row))
                     return (int)Board.Status.PIECE_AREA;

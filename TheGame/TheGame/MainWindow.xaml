@@ -18,14 +18,12 @@
             </MenuItem>
         </Menu>
 
-        <Grid Background="CornflowerBlue">
-            <Grid.ColumnDefinitions>
+            <!--<Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
-            </Grid.ColumnDefinitions>
-            
-            <Grid  Name="playgroundDockPanel"></Grid>
+            </Grid.ColumnDefinitions>-->
+            <Grid Background="CornflowerBlue" Name="playgroundDockPanel"/>
 
-            <!-- <Grid Background="CornflowerBlue">
+        <!-- <Grid Background="CornflowerBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="*"/>
@@ -42,8 +40,7 @@
                 <TextBlock Name="winning_team">Winning Team :</TextBlock> 
 
             </WrapPanel>-->
-        </Grid>
-
+        
     </DockPanel>
 
 </Window>
