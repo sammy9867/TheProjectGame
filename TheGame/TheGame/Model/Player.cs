@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TheGame.Model
 {
-    class Player
+    public class Player
     {
         public enum Role { MEMBER, LEADER }
         public int playerID { get; set; }

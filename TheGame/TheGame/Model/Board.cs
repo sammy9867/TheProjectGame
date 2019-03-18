@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TheGame.Model
 {
-    class Board
+    public class Board
     {
 
         /**Changing "Status" during Communication phase **/

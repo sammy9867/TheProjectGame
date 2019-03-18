@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TheGame.Model
 {
-    class Team
+    public class Team
     {
         public enum TeamColor { BLUE, RED };
 
@@ -16,7 +16,8 @@ namespace TheGame.Model
 
         public int maxNumOfPlayers { get; set; }
 
-        internal bool isTaken(int col, int row)
+        //internal bool
+        public bool isTaken(int col, int row)
         {
             if (leader.column == col && leader.row == row)
                 return true;
