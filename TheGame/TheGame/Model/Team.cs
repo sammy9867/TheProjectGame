@@ -8,7 +8,7 @@ namespace TheGame.Model
 {
     class Team
     {
-        public enum TeamColor { blue, red };
+        public enum TeamColor { BLUE, RED };
 
         public Player leader;
         public List<Player> members;

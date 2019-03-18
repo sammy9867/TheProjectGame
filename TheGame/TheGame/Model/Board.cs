@@ -26,10 +26,11 @@ namespace TheGame.Model
 
         }
 
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public int GoalHeight { get; set; }
-        public int TaskHeight { get; set; }
+        public static int Width { get; set; }
+        public static int Height { get; set; }
+        public static int GoalHeight { get; set; }
+        public static int TaskHeight { get; set; }
+
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
         public List<Piece> Pieces { get; set; }

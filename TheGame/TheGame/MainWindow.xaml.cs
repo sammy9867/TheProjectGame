@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,56 +23,77 @@ namespace TheGame
     public partial class MainWindow : Window
     {
         private Board board;
-
-        /**Static Game Settings**/
-        double probabilityOfBeingSham { get; set; }
-        int frequencyOfPlacingPieces { get; set; }
-        int initialNumberOfPieces { get; set; }
-        int tasksHeight { get; set; } //length of task area
-        int goalHeight { get; set; } //length of single goal area
-        int numberOfPlayersPerTeam { get; set; }
-        int goalDefinition { get; set; }
-
+        private Team RedTeam;
+        private Team BlueTeam;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            RedTeam = BlueTeam = null;
+
             board = new Board();
             loadBoard();
-         //   loadInitSettings();
             loadPieces();
             updateBoard();
 
+            var dueTime = TimeSpan.FromSeconds(5);
+            var interval = TimeSpan.FromSeconds(1);
+
+            // Add a CancellationTokenSource and supply the token here instead of None.
+            RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
         }
 
+        #region Async Cyclic Method
+        // The `onTick` method will be called periodically unless cancelled.
+        private static async Task RunPeriodicAsync(Action onTick, TimeSpan dueTime, TimeSpan interval, CancellationToken token)
+        {
+            // Initial wait time before we begin the periodic loop.
+            if (dueTime > TimeSpan.Zero)
+                await Task.Delay(dueTime, token);
 
-        /**
-                //TO BE CHANGED WITH USER INPUT/JSON LATER ON.
-                private void loadInitSettings()
-                {
-                    probabilityOfBeingSham = 0.2;
-                    frequencyOfPlacingPieces = 1500; //what's this?
-                    initialNumberOfPieces = 5;
-                    tasksHeight = 5;
-                   // goalHeight = 2;
-                    numberOfPlayersPerTeam = 1;
-                    goalDefinition = 3;
+            // Repeat this loop until cancelled.
+            while (!token.IsCancellationRequested)
+            {
+                // Call our onTick function.
+                onTick?.Invoke();
 
-                } **/
+                // Wait to repeat again.
+                if (interval > TimeSpan.Zero)
+                    await Task.Delay(interval, token);
+            }
+        }
+        private void OnTick()
+        {
+            doWork();
+            updateBoard();
+        }
 
+        private void doWork()
+        {
+            /* Code */
+        }
+        #endregion
 
         private void loadBoard()
         {
-            board.Width = 6;   
-            board.GoalHeight = 2;
-            board.TaskHeight = 4;
-            board.Height = 2* board.GoalHeight + board.TaskHeight;
-            board.RedTeam = loadRedTeam();
-            board.BlueTeam = loadBlueTeam();
+            Board.Width = 6;   
+            Board.GoalHeight = 2;
+            Board.TaskHeight = 4;
+            Board.Height = 2* Board.GoalHeight + Board.TaskHeight;
+            board.InitialNumberOfPieces = 5;
+
+            RedTeam = loadRedTeam();
+            board.RedTeam = RedTeam;
+
+            BlueTeam = loadBlueTeam();
+            board.BlueTeam = BlueTeam;
+
             board.Pieces = loadPieces();
 
+            #region Grid rows and columns 
             /* Set up grounds rows */
-            for (int row = 0; row < board.Height; row++)
+            for (int row = 0; row < Board.Height; row++)
             {
                 RowDefinition rowdef = new RowDefinition
                 {
@@ -81,7 +103,7 @@ namespace TheGame
             }
 
             /* Set up grounds columns */
-            for (int col = 0; col < board.Width; col++)
+            for (int col = 0; col < Board.Width; col++)
             {
                 ColumnDefinition coldef = new ColumnDefinition
                 {
@@ -90,13 +112,15 @@ namespace TheGame
 
                 playgroundDockPanel.ColumnDefinitions.Add(coldef);
             }
-
+            
             /* Column to place notes about the game */
             ColumnDefinition notes = new ColumnDefinition
             {
                 Width = new GridLength(2, GridUnitType.Star)
             };
             playgroundDockPanel.ColumnDefinitions.Add(notes);
+            #endregion
+
         }
 
         #region Pieces
@@ -104,15 +128,13 @@ namespace TheGame
         {
             List<Piece> pieces = new List<Piece>();
 
-            initialNumberOfPieces = 5;
             Random rnd = new Random();
-            
 
-            for (int i = 0; i < initialNumberOfPieces; i++)
+            for (int i = 0; i < board.InitialNumberOfPieces; i++)
             {
                 Piece piece = new Piece();
-                piece.row = rnd.Next(2, 6);
-                piece.column = rnd.Next(0, 6);
+                piece.row = rnd.Next(Board.GoalHeight, Board.GoalHeight+Board.TaskHeight);
+                piece.column = rnd.Next(0, Board.Width);
                 pieces.Add(piece);
                
             }
@@ -127,21 +149,23 @@ namespace TheGame
             Team team = new Team();
             team.leader = new Player
             {
-                role = Player.Role.leader,
+                role = Player.Role.LEADER,
                 playerID = 10,
                 row = 6,
-                column = 1
+                column = 1,
+                Team = Team.TeamColor.BLUE
             };
 
             team.members = new List<Player>();
             team.members.Add(new Player {
-                role = Player.Role.member,
+                role = Player.Role.MEMBER,
                 playerID = 12,
                 row = 7,
-                column = 3
-            });
+                column = 3,
+                Team = Team.TeamColor.BLUE
+        });
 
-            team.teamColor = Team.TeamColor.blue;
+            team.teamColor = Team.TeamColor.BLUE;
 
             team.maxNumOfPlayers = 2;
 
@@ -153,22 +177,24 @@ namespace TheGame
             Team team = new Team();
             team.leader = new Player
             {
-                role = Player.Role.leader,
+                role = Player.Role.LEADER,
                 playerID = 10,
                 row = 1,
-                column = 1
+                column = 1,
+                Team = Team.TeamColor.RED
             };
 
             team.members = new List<Player>();
             team.members.Add(new Player
             {
-                role = Player.Role.member,
+                role = Player.Role.MEMBER,
                 playerID = 12,
                 row = 1,
-                column = 3
+                column = 3,
+                Team = Team.TeamColor.RED
             });
 
-            team.teamColor = Team.TeamColor.red;
+            team.teamColor = Team.TeamColor.RED;
 
             team.maxNumOfPlayers = 2;
 
@@ -178,13 +204,11 @@ namespace TheGame
 
         private void updateBoard()
         {            
-            for (int row = 0; row < board.Height; row++)
-                for (int col = 0; col < board.Width; col++)
+            for (int row = 0; row < Board.Height; row++)
+                for (int col = 0; col < Board.Width; col++)
                 {
                     Image img = new Image
                     {
-//                        Width = CELL_SIZE,
-//                        Height = CELL_SIZE,
                         Visibility = Visibility.Visible,
                         Tag = "" + col + "x" + row,
                         Margin = new Thickness(2)                        
