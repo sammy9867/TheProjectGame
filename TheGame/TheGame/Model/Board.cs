@@ -8,20 +8,31 @@ namespace TheGame.Model
 {
     class Board
     {
+
+        /**Changing "Status" during Communication phase **/
         public enum Status
         {
-            SIMPE_AREA,
-            RED_GOAL,
-            BLUE_GOAL,
+            TASK_AREA,
+            PIECE_AREA,
+            RED_GOAL_AREA,
+            BLUE_GOAL_AREA,
             RED_PLAYER,
-            BLUE_PLAYER
+            BLUE_PLAYER,
+            UNDISCOVERED_RED_GOALS,
+            UNDISCOVERED_BLUE_GOALS,
+            DISCOVERED_RED_GOALS,
+            DISCOVERED_BLUE_GOALS,
+            DISCOVERED_NON_GOAL,
+
         }
 
         public int Width { get; set; }
         public int Height { get; set; }
-        public int GoalWidth { get; set; }
+        public int GoalHeight { get; set; }
+        public int TaskHeight { get; set; }
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
+        public List<Piece> pieces { get; set; }
 
         public int getCellStatus(int col, int row)
         {
@@ -33,15 +44,23 @@ namespace TheGame.Model
             if (BlueTeam.isTaken(col, row))
                 return (int)Board.Status.BLUE_PLAYER;
 
-            /* Is goal BLUE area */
-            if (Height - row -1 < GoalWidth)
-                return (int) Board.Status.BLUE_GOAL;
-
+            /* Check if PIECE occupaes a cell */
+            foreach (var item in pieces)
+            {
+                if (item.isTaken(col, row))
+                    return (int)Board.Status.PIECE_AREA;
+            }
+  
             /* Is goal RED area */
-            if (row < GoalWidth)
-                return (int)Board.Status.RED_GOAL;
+            if (row < GoalHeight)
+                return (int)Board.Status.RED_GOAL_AREA;
 
-            return (int) Board.Status.SIMPE_AREA;
+            /* Is goal BLUE area */
+            if (Height - row - 1< GoalHeight)
+                return (int) Board.Status.BLUE_GOAL_AREA;
+
+
+            return (int)Board.Status.TASK_AREA;
         }
 
     }

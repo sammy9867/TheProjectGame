@@ -11,7 +11,15 @@ namespace TheGame.Model
         public int pieceID { get; set; }
         public bool isSham { get; set; }
         public int row { get; set; }
-        public int columns { get; set; }
+        public int column { get; set; }
+
+        internal bool isTaken(int col, int ro)
+        {
+            if (column == col && row == ro)
+                return true;
+
+            return false;
+        }
 
     }
 }

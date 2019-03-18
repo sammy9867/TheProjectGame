@@ -21,21 +21,27 @@
         <Grid Background="CornflowerBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Grid  Name="playgroundDockPanel"></Grid>
+
+            <!-- <Grid Background="CornflowerBlue">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0" Margin="10,10,10.2,9.8" Name="playgroundDockPanel" Grid.ColumnSpan="2"
-                       >
-
-            </Grid>
+            
+            
+           <Grid Grid.Column="0" Margin="10,10,10.2,9.8" Name="playgroundDockPanel" Grid.ColumnSpan="2"></Grid>
 
             <WrapPanel Grid.Column="1" Margin="9.8,10,9.6,9.8">
                 <TextBlock Name="red_score">Red Scores :</TextBlock>
                 <TextBlock Name="blue_score">Blue Scores :</TextBlock>
                 <TextBlock Name="pieces_left">Pieces Left :</TextBlock>
-                <TextBlock Name="winning_team">Winning Team :</TextBlock>
+                <TextBlock Name="winning_team">Winning Team :</TextBlock> 
 
-            </WrapPanel>
+            </WrapPanel>-->
         </Grid>
 
     </DockPanel>
