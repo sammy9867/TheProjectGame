@@ -71,7 +71,55 @@ namespace TheGame
 
         private void doWork()
         {
-            /* Code */
+            int rm = RedTeam.leader.goRnd();
+            int bm = BlueTeam.leader.goRnd();
+
+            if (rm == 7)
+            {
+                Goal goal = new Goal
+                {
+                    column = RedTeam.leader.column,
+                    row = RedTeam.leader.row
+                };
+                board.Goals.Add(goal);
+            }
+            if (bm == 7)
+            {
+                Goal goal = new Goal
+                {
+                    column = BlueTeam.leader.column,
+                    row = BlueTeam.leader.row
+                };
+                board.Goals.Add(goal);
+            }
+
+
+            int c = RedTeam.leader.column;
+            int r = RedTeam.leader.row;
+
+            if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
+            {
+                RedTeam.leader.hasPiece = true;
+                foreach (Piece p in board.Pieces)
+                    if (p.row == r && p.column == c)
+                    {
+                        board.Pieces.Remove(p);
+                        return;
+                    }
+            }
+
+            c = BlueTeam.leader.column;
+            r = BlueTeam.leader.row;
+            if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
+            {
+                BlueTeam.leader.hasPiece = true;
+                foreach (Piece p in board.Pieces)
+                    if (p.row == r && p.column == c)
+                    {
+                        board.Pieces.Remove(p);
+                        return;
+                    }
+            }
         }
         #endregion
 
@@ -81,7 +129,9 @@ namespace TheGame
             Board.GoalHeight = 2;
             Board.TaskHeight = 4;
             Board.Height = 2* Board.GoalHeight + Board.TaskHeight;
-            board.InitialNumberOfPieces = 5;
+            board.InitialNumberOfPieces = 10;
+
+            board.Goals = new List<Goal>();
 
             RedTeam = loadRedTeam();
             board.RedTeam = RedTeam;
@@ -157,13 +207,13 @@ namespace TheGame
             };
 
             team.members = new List<Player>();
-            team.members.Add(new Player {
-                role = Player.Role.MEMBER,
-                playerID = 12,
-                row = 7,
-                column = 3,
-                Team = Team.TeamColor.BLUE
-        });
+            //team.members.Add(new Player {
+            //    role = Player.Role.MEMBER,
+            //    playerID = 12,
+            //    row = 7,
+            //    column = 3,
+            //    Team = Team.TeamColor.BLUE
+            //});
 
             team.teamColor = Team.TeamColor.BLUE;
 
@@ -185,14 +235,14 @@ namespace TheGame
             };
 
             team.members = new List<Player>();
-            team.members.Add(new Player
-            {
-                role = Player.Role.MEMBER,
-                playerID = 12,
-                row = 1,
-                column = 3,
-                Team = Team.TeamColor.RED
-            });
+            //team.members.Add(new Player
+            //{
+            //    role = Player.Role.MEMBER,
+            //    playerID = 12,
+            //    row = 1,
+            //    column = 3,
+            //    Team = Team.TeamColor.RED
+            //});
 
             team.teamColor = Team.TeamColor.RED;
 
@@ -228,6 +278,16 @@ namespace TheGame
                         case (int)Board.Status.BLUE_PLAYER:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player.png", UriKind.Relative));
                             break;
+
+                        case (int)Board.Status.RED_PLAYER_PIECE:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/red_player_piece.png", UriKind.Relative));
+                            break;
+
+                        case (int)Board.Status.BLUE_PLAYER_PIECE:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player_piece.png", UriKind.Relative));
+                            break;
+
+
 
                         case (int)Board.Status.TASK_AREA:
                                 img.Source = new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative));

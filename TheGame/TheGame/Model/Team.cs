@@ -17,18 +17,25 @@ namespace TheGame.Model
         public int maxNumOfPlayers { get; set; }
 
         //internal bool
-        public bool isTaken(int col, int row)
+        public int isTaken(int col, int row)
         {
             if (leader.column == col && leader.row == row)
-                return true;
+            {
+                if (leader.hasPiece)
+                    return 2;
+                else return 1;
+            }
 
             foreach (var item in members)
             {
                 if (item.row == row && item.column == col)
-                    return true;
+                {
+                    if (item.hasPiece) return 2;
+                    else return 1;
+                }
             }
 
-            return false;
+            return 0;
         }
     }
 

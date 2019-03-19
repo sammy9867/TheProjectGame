@@ -23,6 +23,8 @@ namespace TheGame.Model
             DISCOVERED_RED_GOALS,
             DISCOVERED_BLUE_GOALS,
             DISCOVERED_NON_GOAL,
+            RED_PLAYER_PIECE,
+            BLUE_PLAYER_PIECE
 
         }
 
@@ -34,27 +36,41 @@ namespace TheGame.Model
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
         public List<Piece> Pieces { get; set; }
+        public List<Goal> Goals { get; set; }
         public double ProbabilityOfBeingSham { get; set; }
         public int FrequencyOfPlacingPieces { get; set; }
         public int InitialNumberOfPieces { get; set; }
-
+        public int NumberOfGoals { get; set; }
 
         public int getCellStatus(int col, int row)
         {
-            /* Check if RED player occupaes a cell */
-            if (RedTeam.isTaken(col, row))
-                return (int) Board.Status.RED_PLAYER;
-
-            /* Check if BLUE player occupaes a cell */
-            if (BlueTeam.isTaken(col, row))
-                return (int)Board.Status.BLUE_PLAYER;
-
             /* Check if PIECE occupaes a cell */
             foreach (var item in Pieces)
             {
                 if (item.isTaken(col, row))
                     return (int)Board.Status.PIECE_AREA;
             }
+
+            /* Check if goal */
+            foreach (var item in Goals)
+            {
+                if (item.isTaken(col, row))
+                    return (int)Board.Status.DISCOVERED_RED_GOALS;
+            }
+
+            /* Check if RED player occupaes a cell */
+            if (RedTeam.isTaken(col, row) == 1)
+                return (int)Board.Status.RED_PLAYER;
+            else if (RedTeam.isTaken(col, row) == 2)
+                return (int)Board.Status.RED_PLAYER_PIECE;
+
+            /* Check if BLUE player occupaes a cell */
+            if (BlueTeam.isTaken(col, row) == 1)
+                return (int)Board.Status.BLUE_PLAYER;
+            else if (BlueTeam.isTaken(col, row) == 2)
+                return (int)Board.Status.BLUE_PLAYER_PIECE;
+
+            
   
             /* Is goal RED area */
             if (row < GoalHeight)

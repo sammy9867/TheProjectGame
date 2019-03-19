@@ -13,7 +13,7 @@ namespace TheGame.Model
         public int row { get; set; }
         public int column { get; set; }
         public Role role { get; set; }
-
+        public bool hasPiece { get; set; }
         public Team.TeamColor Team { get; set; }
 
         /**
@@ -70,5 +70,45 @@ namespace TheGame.Model
             return 0;
         }
 
+
+        /**
+         *  Player moves Randomly
+         *  @return 0 on sucess, -1 otherwise
+         */
+        public int goRnd()
+        {
+            if (Team == Model.Team.TeamColor.RED && hasPiece)
+            {
+                int m = goUp();
+                if (m != 0)
+                {
+                    hasPiece = false;
+                    return 7;
+                }
+                return m;
+            }
+
+            if (Team == Model.Team.TeamColor.BLUE && hasPiece)
+            {
+                int m = goDown();
+                if (m == -1)
+                {
+                    hasPiece = false;
+                    return 7;
+                }
+                return m;
+            }
+
+
+            Random r = new Random(Guid.NewGuid().GetHashCode());
+            switch (r.Next() % 4)
+            {
+                case 0: return goUp();
+                case 1: return goDown();
+                case 2: return goLeft();
+                case 3: return goRight();
+            }
+            return -1;
+        }
     }
 }

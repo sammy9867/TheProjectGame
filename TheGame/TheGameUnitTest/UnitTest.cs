@@ -40,7 +40,7 @@ namespace TheGameUnitTest
             bool expected = false;
             //foreach (var item in t.members)
             //{
-                bool actual = t.isTaken(col, row);
+                int actual = t.isTaken(col, row);
                 Assert.AreEqual(expected, actual);
             //}
         }
@@ -58,8 +58,8 @@ namespace TheGameUnitTest
             Board.Height = 10;
 
             int col = 0, row = 0;
-            bool isTaken_blue = b.BlueTeam.isTaken(col, row); //true
-            bool isTaken_red = b.RedTeam.isTaken(col, row); //false
+            int isTaken_blue = b.BlueTeam.isTaken(col, row); //true
+            int isTaken_red = b.RedTeam.isTaken(col, row); //false
 
             int expected = (int)Board.Status.TASK_AREA;
             int actual = (int)Board.Status.BLUE_PLAYER;
