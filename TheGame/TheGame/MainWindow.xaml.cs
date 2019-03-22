@@ -34,6 +34,7 @@ namespace TheGame
 
             board = new Board();
             loadBoard();
+            initGoals();
             loadPieces();
             updateBoard();
 
@@ -74,7 +75,7 @@ namespace TheGame
             int rm = RedTeam.leader.goRnd();
             int bm = BlueTeam.leader.goRnd();
 
-            if (rm == 7)
+        /*    if (rm == 7)
             {
                 Goal goal = new Goal
                 {
@@ -91,7 +92,7 @@ namespace TheGame
                     row = BlueTeam.leader.row
                 };
                 board.Goals.Add(goal);
-            }
+            }*/
 
 
             int c = RedTeam.leader.column;
@@ -101,11 +102,25 @@ namespace TheGame
             {
                 RedTeam.leader.hasPiece = true;
                 foreach (Piece p in board.Pieces)
+                {
                     if (p.row == r && p.column == c)
                     {
                         board.Pieces.Remove(p);
                         return;
                     }
+                }
+            }else if(board.getCellStatus(c,r) == (int)Board.Status.UNDISCOVERED_RED_GOALS && RedTeam.leader.hasPiece)
+            {
+                foreach (Goal redGoalDiscoverdByPlayer in board.undiscoveredRedGoals)
+                {
+                    if (redGoalDiscoverdByPlayer.row == r && redGoalDiscoverdByPlayer.column == c)
+                    {
+                        board.undiscoveredRedGoals.Remove(redGoalDiscoverdByPlayer);
+                        board.discoveredRedGoals.Add(redGoalDiscoverdByPlayer);
+                        RedTeam.leader.hasPiece = false;
+                        return;
+                    }
+                }
             }
 
             c = BlueTeam.leader.column;
@@ -114,24 +129,67 @@ namespace TheGame
             {
                 BlueTeam.leader.hasPiece = true;
                 foreach (Piece p in board.Pieces)
+                {
                     if (p.row == r && p.column == c)
                     {
                         board.Pieces.Remove(p);
                         return;
                     }
+                }
+            }
+            else if (board.getCellStatus(c, r) == (int)Board.Status.UNDISCOVERED_BLUE_GOALS && BlueTeam.leader.hasPiece)
+            {
+                foreach (Goal blueGoalDiscoverdByPlayer in board.undiscoveredBlueGoals)
+                {
+                    if (blueGoalDiscoverdByPlayer.row == r && blueGoalDiscoverdByPlayer.column == c)
+                    {
+                        board.undiscoveredBlueGoals.Remove(blueGoalDiscoverdByPlayer);
+                        board.discoveredBlueGoals.Add(blueGoalDiscoverdByPlayer);
+                        BlueTeam.leader.hasPiece = false;
+                        return;
+                    }
+                }
             }
         }
         #endregion
 
+        /**Logic for Goals**/
+        private void initGoals() {
+
+
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+
+            for (int i = 0; i < board.NumberOfGoals; i++)
+            {
+                Goal goal = new Goal();
+                goal.row = rnd.Next(0, Board.GoalHeight);
+                goal.column = rnd.Next(0, Board.Width);
+                board.undiscoveredRedGoals.Add(goal);
+            }
+
+            for (int i = 0; i < board.NumberOfGoals; i++)
+            {
+                Goal goal = new Goal();
+                goal.row = rnd.Next(Board.Height - Board.GoalHeight, Board.Height);
+                goal.column = rnd.Next(0, Board.Width);
+                board.undiscoveredBlueGoals.Add(goal);
+            }
+        }
+
         private void loadBoard()
         {
             Board.Width = 6;   
-            Board.GoalHeight = 2;
+            Board.GoalHeight = 3;
             Board.TaskHeight = 4;
             Board.Height = 2* Board.GoalHeight + Board.TaskHeight;
             board.InitialNumberOfPieces = 10;
+            board.NumberOfGoals = 2;
 
-            board.Goals = new List<Goal>();
+            board.undiscoveredRedGoals = new List<Goal>();
+            board.undiscoveredBlueGoals = new List<Goal>();
+            board.discoveredRedGoals = new List<Goal>();
+            board.discoveredBlueGoals = new List<Goal>();
+            board.nonGoals = new List<Goal>();
 
             RedTeam = loadRedTeam();
             board.RedTeam = RedTeam;
@@ -178,7 +236,7 @@ namespace TheGame
         {
             List<Piece> pieces = new List<Piece>();
 
-            Random rnd = new Random();
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
 
             for (int i = 0; i < board.InitialNumberOfPieces; i++)
             {

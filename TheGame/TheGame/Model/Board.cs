@@ -36,7 +36,18 @@ namespace TheGame.Model
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
         public List<Piece> Pieces { get; set; }
-        public List<Goal> Goals { get; set; }
+
+        //Goals
+        public List<Goal> undiscoveredRedGoals { get; set; }
+        public List<Goal> undiscoveredBlueGoals { get; set; }
+        public List<Goal> discoveredRedGoals { get; set; }
+        public List<Goal> discoveredBlueGoals { get; set; }
+        public List<Goal> nonGoals { get; set; }
+
+
+
+
+
         public double ProbabilityOfBeingSham { get; set; }
         public int FrequencyOfPlacingPieces { get; set; }
         public int InitialNumberOfPieces { get; set; }
@@ -51,12 +62,56 @@ namespace TheGame.Model
                     return (int)Board.Status.PIECE_AREA;
             }
 
+
+            #region Goal
             /* Check if goal */
-            foreach (var item in Goals)
+            foreach (var item in undiscoveredRedGoals)
             {
-                if (item.isTaken(col, row))
-                    return (int)Board.Status.DISCOVERED_RED_GOALS;
+                
+                if(item.isTaken(col,row))
+                {
+                    return (int)Board.Status.UNDISCOVERED_RED_GOALS;
+                }
             }
+
+            foreach (var item in undiscoveredBlueGoals)
+            {
+
+                if (item.isTaken(col, row))
+                {
+                    return (int)Board.Status.UNDISCOVERED_BLUE_GOALS;
+                }
+            }
+
+            foreach (var item in discoveredRedGoals)
+            {
+
+                if (item.isTaken(col, row))
+                {
+                    return (int)Board.Status.DISCOVERED_RED_GOALS;
+                }
+            }
+
+            foreach (var item in discoveredBlueGoals)
+            {
+
+                if (item.isTaken(col, row))
+                {
+                    return (int)Board.Status.DISCOVERED_BLUE_GOALS;
+                }
+            }
+
+            foreach (var item in nonGoals)
+            {
+
+                if (item.isTaken(col, row))
+                {
+                    return (int)Board.Status.DISCOVERED_NON_GOAL;
+                }
+            }
+
+            #endregion
+
 
             /* Check if RED player occupaes a cell */
             if (RedTeam.isTaken(col, row) == 1)
