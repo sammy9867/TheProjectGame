@@ -98,6 +98,30 @@ namespace TheGame
             int c = RedTeam.leader.column;
             int r = RedTeam.leader.row;
 
+
+            /**Base cases, top, down, left, right FOR RED**/
+            if (board.getCellStatus(c, r - 1) == (int)Board.Status.PIECE_AREA) //top
+            {
+                RedTeam.leader.goUp();
+            }
+            else if (board.getCellStatus(c, r + 1) == (int)Board.Status.PIECE_AREA) //down
+            {
+
+                RedTeam.leader.goDown();
+            }
+            else if (board.getCellStatus(c - 1, r) == (int)Board.Status.PIECE_AREA) //left
+            {
+
+                RedTeam.leader.goLeft();
+            }
+            else if (board.getCellStatus(c + 1, r) == (int)Board.Status.PIECE_AREA) //right
+            {
+
+                RedTeam.leader.goRight();
+            }
+            
+
+            //Take Piece
             if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
             {
                 RedTeam.leader.hasPiece = true;
@@ -121,10 +145,39 @@ namespace TheGame
                         return;
                     }
                 }
-            }
+            } 
+            
+            
+
+
 
             c = BlueTeam.leader.column;
             r = BlueTeam.leader.row;
+
+
+            /**Base cases, top, down, left, right FOR BLUE**/
+      /*      if (board.getCellStatus(c, r - 1) == (int)Board.Status.PIECE_AREA) //top
+            {
+
+                BlueTeam.leader.goUp();
+            }
+            else if (board.getCellStatus(c, r + 1) == (int)Board.Status.PIECE_AREA) //down
+            {
+
+                BlueTeam.leader.goDown();
+            }
+            else if (board.getCellStatus(c - 1, r) == (int)Board.Status.PIECE_AREA) //left
+            {
+
+                BlueTeam.leader.goLeft();
+            }
+            else if (board.getCellStatus(c + 1, r) == (int)Board.Status.PIECE_AREA) //right
+            {
+
+                BlueTeam.leader.goRight();
+            }
+
+            //TAKE PIECE
             if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
             {
                 BlueTeam.leader.hasPiece = true;
@@ -149,7 +202,9 @@ namespace TheGame
                         return;
                     }
                 }
-            }
+            }*/
+
+           
         }
         #endregion
 
@@ -309,6 +364,8 @@ namespace TheGame
             return team;
         }
         #endregion
+
+
 
         private void updateBoard()
         {            
