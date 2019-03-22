@@ -36,6 +36,7 @@ namespace TheGame
             loadBoard();
             initGoals();
             loadPieces();
+           
             updateBoard();
 
             var dueTime = TimeSpan.FromSeconds(5);
@@ -66,23 +67,23 @@ namespace TheGame
         }
         private void OnTick()
         {
+                   
             doWork();
             updateBoard();
+
         }
+
+
+     
 
         private void doWork()
         {
             int rm = RedTeam.leader.goRnd();
             int bm = BlueTeam.leader.goRnd();
 
-        /*    if (rm == 7)
+        /*   if (rm == 3)
             {
-                Goal goal = new Goal
-                {
-                    column = RedTeam.leader.column,
-                    row = RedTeam.leader.row
-                };
-                board.Goals.Add(goal);
+                
             }
             if (bm == 7)
             {
@@ -97,31 +98,166 @@ namespace TheGame
 
             int c = RedTeam.leader.column;
             int r = RedTeam.leader.row;
+            takeRedPiece(c, r);
 
-
-            /**Base cases, top, down, left, right FOR RED**/
-            if (board.getCellStatus(c, r - 1) == (int)Board.Status.PIECE_AREA) //top
+            //If the red player steps in the undiscovered red goal cell and he has a piece
+            if (board.getCellStatus(c, r) == (int)Board.Status.UNDISCOVERED_RED_GOALS && RedTeam.leader.hasPiece)
             {
-                RedTeam.leader.goUp();
+         
+                foreach (Goal redGoalDiscoverdByPlayer in board.undiscoveredRedGoals)
+                {
+                    if (redGoalDiscoverdByPlayer.row == r && redGoalDiscoverdByPlayer.column == c)
+                    {
+                        board.undiscoveredRedGoals.Remove(redGoalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
+                        board.discoveredRedGoals.Add(redGoalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
+                        RedTeam.leader.hasPiece = false; //Player no longer has the piece.
+                        return;
+                    }
+                }
             }
-            else if (board.getCellStatus(c, r + 1) == (int)Board.Status.PIECE_AREA) //down
+
+            //FOR RED
+            //This is to detect 8 neighouring fields, use this code as reference, doesn't work properly, DONT DELETE IT.
+     /*           if (!RedTeam.leader.hasPiece && board.getCellStatus(c, r - 1) == (int)Board.Status.PIECE_AREA) //top
+                {
+                    RedTeam.leader.goUp();
+                    //updateBoard();
+                    takeRedPiece(c, r);
+
+
+                }
+                else if (!RedTeam.leader.hasPiece && board.getCellStatus(c, r + 1) == (int)Board.Status.PIECE_AREA) //bottom
+                {
+
+                    RedTeam.leader.goDown();
+                   //updateBoard();
+                    takeRedPiece(c,r);
+
+                }
+                else if (!RedTeam.leader.hasPiece && board.getCellStatus(c - 1, r) == (int)Board.Status.PIECE_AREA) //left
+                {
+
+                    RedTeam.leader.goLeft();
+           //         updateBoard();
+                    takeRedPiece(c,r);
+                }
+                else if (!RedTeam.leader.hasPiece && board.getCellStatus(c + 1, r) == (int)Board.Status.PIECE_AREA) //right
+                {
+
+                    RedTeam.leader.goRight();
+              //      updateBoard();
+                    takeRedPiece(c, r);
+                }
+               else if (!RedTeam.leader.hasPiece && board.getCellStatus(c - 1, r - 1) == (int)Board.Status.PIECE_AREA) //top-left
+                {
+                    RedTeam.leader.goLeft();
+                    RedTeam.leader.goUp();
+                    takeRedPiece(c, r);
+
+
+                }
+                else if (!RedTeam.leader.hasPiece && board.getCellStatus(c + 1, r - 1) == (int)Board.Status.PIECE_AREA) //top-right
+                {
+                    RedTeam.leader.goRight();
+                    RedTeam.leader.goUp();
+                    takeRedPiece(c, r);
+                }
+                else if (!RedTeam.leader.hasPiece && board.getCellStatus(c - 1, r + 1) == (int)Board.Status.PIECE_AREA) //bottom-left
+                {
+                    RedTeam.leader.goLeft();
+                    RedTeam.leader.goDown();
+                    takeRedPiece(c, r);
+                }
+                else if (!RedTeam.leader.hasPiece && board.getCellStatus(c + 1, r + 1) == (int)Board.Status.PIECE_AREA) //bottom-right
+                {
+                    RedTeam.leader.goRight();
+                    RedTeam.leader.goDown();
+                    takeRedPiece(c, r);
+
+                }
+                */
+
+              int c2 = BlueTeam.leader.column;
+              int r2 = BlueTeam.leader.row;
+              takeBluePiece(c2, r2);
+              if (board.getCellStatus(c2, r2) == (int)Board.Status.UNDISCOVERED_BLUE_GOALS && BlueTeam.leader.hasPiece)
+              {
+                foreach (Goal blueGoalDiscoverdByPlayer in board.undiscoveredBlueGoals)
+                {
+                    if (blueGoalDiscoverdByPlayer.row == r2 && blueGoalDiscoverdByPlayer.column == c2)
+                    {
+                        board.undiscoveredBlueGoals.Remove(blueGoalDiscoverdByPlayer);
+                        board.discoveredBlueGoals.Add(blueGoalDiscoverdByPlayer);
+                        BlueTeam.leader.hasPiece = false;
+                        return;
+                    }
+                }
+              }
+            /**FOR Blue 
+             * This is to detect 8 neighouring fields, use this code as reference, doesn't work properly, DONT DELETE IT.
+            if (!BlueTeam.leader.hasPiece && board.getCellStatus(c2, r2 - 1) == (int)Board.Status.PIECE_AREA) //top
+            {
+                BlueTeam.leader.goUp();
+                takeBluePiece(c2, r2);
+
+            }
+            else if (!BlueTeam.leader.hasPiece && board.getCellStatus(c2, r2 + 1) == (int)Board.Status.PIECE_AREA) //bottom
             {
 
-                RedTeam.leader.goDown();
+                BlueTeam.leader.goDown();
+                takeBluePiece(c2, r2);
             }
-            else if (board.getCellStatus(c - 1, r) == (int)Board.Status.PIECE_AREA) //left
+            else if (!BlueTeam.leader.hasPiece && board.getCellStatus(c - 1, r) == (int)Board.Status.PIECE_AREA) //left
             {
 
-                RedTeam.leader.goLeft();
+                BlueTeam.leader.goLeft();
+                takeBluePiece(c2, r2);
             }
-            else if (board.getCellStatus(c + 1, r) == (int)Board.Status.PIECE_AREA) //right
+            else if (!BlueTeam.leader.hasPiece && board.getCellStatus(c2 + 1, r2) == (int)Board.Status.PIECE_AREA) //right
             {
 
-                RedTeam.leader.goRight();
+                BlueTeam.leader.goRight();
+                takeBluePiece(c2, r2);
             }
-            
+            else if (!BlueTeam.leader.hasPiece && board.getCellStatus(c2 - 1, r2 - 1) == (int)Board.Status.PIECE_AREA) //top-left
+            {
+                BlueTeam.leader.goLeft();
+                BlueTeam.leader.goUp();
+                takeBluePiece(c2, r2);
 
-            //Take Piece
+
+            }
+            else if (!BlueTeam.leader.hasPiece && board.getCellStatus(c2 + 1, r2 - 1) == (int)Board.Status.PIECE_AREA) //top-right
+            {
+                BlueTeam.leader.goRight();
+                BlueTeam.leader.goUp();
+                takeBluePiece(c2, r2);
+            }
+            else if (!BlueTeam.leader.hasPiece && board.getCellStatus(c2 - 1, r2 + 1) == (int)Board.Status.PIECE_AREA) //bottom-left
+            {
+                BlueTeam.leader.goLeft();
+                BlueTeam.leader.goDown();
+                takeBluePiece(c2, r2);
+            }
+            else if (!RedTeam.leader.hasPiece && board.getCellStatus(c2 + 1, r2 + 1) == (int)Board.Status.PIECE_AREA) //bottom-right
+            {
+                BlueTeam.leader.goRight();
+                BlueTeam.leader.goDown();
+                takeBluePiece(c2, r2);
+
+            }
+            **/
+
+
+
+        }
+        #endregion
+
+
+
+        /**Take Red Piece**/
+        private void takeRedPiece(int c, int r)
+        {
             if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
             {
                 RedTeam.leader.hasPiece = true;
@@ -133,51 +269,13 @@ namespace TheGame
                         return;
                     }
                 }
-            }else if(board.getCellStatus(c,r) == (int)Board.Status.UNDISCOVERED_RED_GOALS && RedTeam.leader.hasPiece)
-            {
-                foreach (Goal redGoalDiscoverdByPlayer in board.undiscoveredRedGoals)
-                {
-                    if (redGoalDiscoverdByPlayer.row == r && redGoalDiscoverdByPlayer.column == c)
-                    {
-                        board.undiscoveredRedGoals.Remove(redGoalDiscoverdByPlayer);
-                        board.discoveredRedGoals.Add(redGoalDiscoverdByPlayer);
-                        RedTeam.leader.hasPiece = false;
-                        return;
-                    }
-                }
-            } 
-            
-            
-
-
-
-            c = BlueTeam.leader.column;
-            r = BlueTeam.leader.row;
-
-
-            /**Base cases, top, down, left, right FOR BLUE**/
-      /*      if (board.getCellStatus(c, r - 1) == (int)Board.Status.PIECE_AREA) //top
-            {
-
-                BlueTeam.leader.goUp();
-            }
-            else if (board.getCellStatus(c, r + 1) == (int)Board.Status.PIECE_AREA) //down
-            {
-
-                BlueTeam.leader.goDown();
-            }
-            else if (board.getCellStatus(c - 1, r) == (int)Board.Status.PIECE_AREA) //left
-            {
-
-                BlueTeam.leader.goLeft();
-            }
-            else if (board.getCellStatus(c + 1, r) == (int)Board.Status.PIECE_AREA) //right
-            {
-
-                BlueTeam.leader.goRight();
             }
 
-            //TAKE PIECE
+        }
+
+        /**Take Blue Piece**/
+        private void takeBluePiece(int c, int r)
+        {
             if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
             {
                 BlueTeam.leader.hasPiece = true;
@@ -190,30 +288,14 @@ namespace TheGame
                     }
                 }
             }
-            else if (board.getCellStatus(c, r) == (int)Board.Status.UNDISCOVERED_BLUE_GOALS && BlueTeam.leader.hasPiece)
-            {
-                foreach (Goal blueGoalDiscoverdByPlayer in board.undiscoveredBlueGoals)
-                {
-                    if (blueGoalDiscoverdByPlayer.row == r && blueGoalDiscoverdByPlayer.column == c)
-                    {
-                        board.undiscoveredBlueGoals.Remove(blueGoalDiscoverdByPlayer);
-                        board.discoveredBlueGoals.Add(blueGoalDiscoverdByPlayer);
-                        BlueTeam.leader.hasPiece = false;
-                        return;
-                    }
-                }
-            }*/
 
-           
         }
-        #endregion
 
-        /**Logic for Goals**/
+        /**Undiscovered Goals are initialised randomly**/
         private void initGoals() {
 
-
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
-
+      
             for (int i = 0; i < board.NumberOfGoals; i++)
             {
                 Goal goal = new Goal();
@@ -240,17 +322,18 @@ namespace TheGame
             board.InitialNumberOfPieces = 10;
             board.NumberOfGoals = 2;
 
-            board.undiscoveredRedGoals = new List<Goal>();
-            board.undiscoveredBlueGoals = new List<Goal>();
-            board.discoveredRedGoals = new List<Goal>();
-            board.discoveredBlueGoals = new List<Goal>();
-            board.nonGoals = new List<Goal>();
-
             RedTeam = loadRedTeam();
             board.RedTeam = RedTeam;
 
             BlueTeam = loadBlueTeam();
             board.BlueTeam = BlueTeam;
+
+            //Init list of goals
+            board.undiscoveredRedGoals = new List<Goal>();
+            board.undiscoveredBlueGoals = new List<Goal>();
+            board.discoveredRedGoals = new List<Goal>();
+            board.discoveredBlueGoals = new List<Goal>();
+            board.nonGoals = new List<Goal>();
 
             board.Pieces = loadPieces();
 
@@ -365,10 +448,10 @@ namespace TheGame
         }
         #endregion
 
-
-
+     
         private void updateBoard()
         {            
+
             for (int row = 0; row < Board.Height; row++)
                 for (int col = 0; col < Board.Width; col++)
                 {

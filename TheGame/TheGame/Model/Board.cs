@@ -63,8 +63,9 @@ namespace TheGame.Model
             }
 
 
+            /* Checks if GOAL belongs to a SPECIFIC type of goal */
             #region Goal
-            /* Check if goal */
+
             foreach (var item in undiscoveredRedGoals)
             {
                 

@@ -20,6 +20,9 @@ namespace TheGame.Model
          *  Player moves Up
          *  @return 0 on sucess, -1 otherwise
          */
+
+
+        /*Do Direction change when reached end of board**/
         public int goUp()
         {
             if (Team == Model.Team.TeamColor.RED && row == 0)
@@ -77,16 +80,21 @@ namespace TheGame.Model
          */
         public int goRnd()
         {
+
             if (Team == Model.Team.TeamColor.RED && hasPiece)
             {
                 int m = goUp();
+
                 if (m != 0)
                 {
                     hasPiece = false;
-                    return 7;
+                    return 3;
                 }
                 return m;
             }
+
+
+
 
             if (Team == Model.Team.TeamColor.BLUE && hasPiece)
             {
@@ -94,7 +102,7 @@ namespace TheGame.Model
                 if (m == -1)
                 {
                     hasPiece = false;
-                    return 7;
+                    return 3;
                 }
                 return m;
             }
