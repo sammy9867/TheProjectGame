@@ -9,6 +9,9 @@ namespace TheGame.Model
     public class Player
     {
         public enum Role { MEMBER, LEADER }
+        public enum NeighborStatus { PIECE, GOAL_AREA, FREE, BLOCKED }
+
+        public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
         public int playerID { get; set; }
         public int row { get; set; }
         public int column { get; set; }
@@ -20,9 +23,6 @@ namespace TheGame.Model
          *  Player moves Up
          *  @return 0 on sucess, -1 otherwise
          */
-
-
-        /*Do Direction change when reached end of board**/
         public int goUp()
         {
             if (Team == Model.Team.TeamColor.RED && row == 0)
@@ -80,43 +80,69 @@ namespace TheGame.Model
          */
         public int goRnd()
         {
-
-            if (Team == Model.Team.TeamColor.RED && hasPiece)
+            /* Has a piece ? */
+            if (hasPiece)
             {
-                int m = goUp();
-
-                if (m != 0)
+                if (Team == Model.Team.TeamColor.RED)
                 {
-                    hasPiece = false;
-                    return 3;
+                    int m = goUp();
+                    if (m != 0)
+                    {
+                        hasPiece = false;
+                        return 3;
+                    }
+                    return m;
                 }
-                return m;
+                else
+                {
+                    int m = goDown();
+                    if (m == -1)
+                    {
+                        hasPiece = false;
+                        return 3;
+                    }
+                    return m;
+                }
+            }
+            else if (Neighbors[1, 1] == NeighborStatus.GOAL_AREA)
+            {
+                if (Team == Model.Team.TeamColor.RED && Neighbors[1,2] != NeighborStatus.BLOCKED)
+                {
+                    return goDown();
+                }
+                else if (Neighbors[1,0] != NeighborStatus.BLOCKED)
+                {
+                    return goUp();
+                }
             }
 
+            // [column , row]
+            
+            #region To Neighbouring piece
+            if (Neighbors[0, 1] == NeighborStatus.PIECE) return goLeft();
+            if (Neighbors[1, 0] == NeighborStatus.PIECE) return goUp();
+            if (Neighbors[2, 1] == NeighborStatus.PIECE) return goRight();
+            if (Neighbors[1, 2] == NeighborStatus.PIECE) return goDown();
+            
+            if (Neighbors[0, 0] == NeighborStatus.PIECE) return goLeft();
+            if (Neighbors[2, 0] == NeighborStatus.PIECE) return goUp();
+            if (Neighbors[2, 2] == NeighborStatus.PIECE) return goRight();
+            if (Neighbors[0, 2] == NeighborStatus.PIECE) return goDown();
+            #endregion
 
-
-
-            if (Team == Model.Team.TeamColor.BLUE && hasPiece)
-            {
-                int m = goDown();
-                if (m == -1)
-                {
-                    hasPiece = false;
-                    return 3;
-                }
-                return m;
-            }
-
-
+            /* Go Random */
             Random r = new Random(Guid.NewGuid().GetHashCode());
-            switch (r.Next() % 4)
+            while (true)
             {
-                case 0: return goUp();
-                case 1: return goDown();
-                case 2: return goLeft();
-                case 3: return goRight();
+                switch (r.Next() % 4)
+                {
+                    case 0: if (Neighbors[1, 0] != NeighborStatus.BLOCKED) return goUp(); else break;
+                    case 1: if (Neighbors[1, 2] != NeighborStatus.BLOCKED) return goDown(); else break;
+                    case 2: if (Neighbors[0, 1] != NeighborStatus.BLOCKED) return goLeft(); else break;
+                    case 3: if (Neighbors[2, 1] != NeighborStatus.BLOCKED) return goRight(); else break;
+                }
             }
-            return -1;
+
         }
     }
 }
