@@ -19,18 +19,18 @@ namespace TheGame.Model
         //internal bool
         public int isTaken(int col, int row)
         {
-            if (leader.column == col && leader.row == row)
-            {
-                if (leader.hasPiece)
-                    return 2;
-                else return 1;
-            }
+            //if (leader.column == col && leader.row == row)
+            //{
+            //    if (leader.hasPiece)
+            //        return 2;
+            //    else return 1;
+            //}
 
             foreach (var item in members)
             {
                 if (item.row == row && item.column == col)
                 {
-                    if (item.hasPiece) return 2;
+                    if (item.Piece != null) return 2;
                     else return 1;
                 }
             }

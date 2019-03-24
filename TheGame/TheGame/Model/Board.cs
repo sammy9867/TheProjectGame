@@ -14,12 +14,12 @@ namespace TheGame.Model
         {
             TASK_AREA,
             PIECE_AREA,
+            SHAM_AREA,
             RED_GOAL_AREA,
             BLUE_GOAL_AREA,
             RED_PLAYER,
             BLUE_PLAYER,
-            UNDISCOVERED_RED_GOALS,
-            UNDISCOVERED_BLUE_GOALS,
+            UNDISCOVERED_GOALS,
             DISCOVERED_RED_GOALS,
             DISCOVERED_BLUE_GOALS,
             DISCOVERED_NON_GOAL,
@@ -28,6 +28,8 @@ namespace TheGame.Model
             END_OF_BOARD
         }
 
+        public static int RedScore { get; set; }
+        public static int BlueScore { get; set; }
         public static int Width { get; set; }
         public static int Height { get; set; }
         public static int GoalHeight { get; set; }
@@ -48,29 +50,46 @@ namespace TheGame.Model
         public int FrequencyOfPlacingPieces { get; set; }
         public int InitialNumberOfPieces { get; set; }
         public int NumberOfGoals { get; set; }
+        public int ShamProbability { get; set; }
 
         public int getCellStatus(int col, int row)
         {
             if ((col < 0) || (row < 0) || (row >= Height) || (col >= Width))
                 return (int)Status.END_OF_BOARD;
 
+            /* Check if RED player occupaes a cell */
+            if (RedTeam.isTaken(col, row) == 1)
+                return (int)Board.Status.RED_PLAYER;
+            else if (RedTeam.isTaken(col, row) == 2)
+                return (int)Board.Status.RED_PLAYER_PIECE;
+
+            /* Check if BLUE player occupaes a cell */
+            if (BlueTeam.isTaken(col, row) == 1)
+                return (int)Board.Status.BLUE_PLAYER;
+            else if (BlueTeam.isTaken(col, row) == 2)
+                return (int)Board.Status.BLUE_PLAYER_PIECE;
+
+
+            #region Check if PIECE occupaes a cell 
             /* Check if PIECE occupaes a cell */
             foreach (var item in Pieces)
             {
                 if (item.isTaken(col, row))
-                    return (int)Board.Status.PIECE_AREA;
+                {
+                    if (item.isSham) return (int)Board.Status.SHAM_AREA;
+                    else return (int)Board.Status.PIECE_AREA;
+                }
             }
+            #endregion
 
-
-            /* Checks if GOAL belongs to a SPECIFIC type of goal */
             #region Goal
-
+            /* Checks if GOAL belongs to a SPECIFIC type of goal */
             foreach (var item in UndiscoveredRedGoals)
             {
                 
                 if(item.isTaken(col,row))
                 {
-                    return (int)Board.Status.UNDISCOVERED_RED_GOALS;
+                    return (int)Board.Status.UNDISCOVERED_GOALS;
                 }
             }
 
@@ -79,7 +98,7 @@ namespace TheGame.Model
 
                 if (item.isTaken(col, row))
                 {
-                    return (int)Board.Status.UNDISCOVERED_BLUE_GOALS;
+                    return (int)Board.Status.UNDISCOVERED_GOALS;
                 }
             }
 
@@ -112,19 +131,6 @@ namespace TheGame.Model
 
             #endregion
 
-
-            /* Check if RED player occupaes a cell */
-            if (RedTeam.isTaken(col, row) == 1)
-                return (int)Board.Status.RED_PLAYER;
-            else if (RedTeam.isTaken(col, row) == 2)
-                return (int)Board.Status.RED_PLAYER_PIECE;
-
-            /* Check if BLUE player occupaes a cell */
-            if (BlueTeam.isTaken(col, row) == 1)
-                return (int)Board.Status.BLUE_PLAYER;
-            else if (BlueTeam.isTaken(col, row) == 2)
-                return (int)Board.Status.BLUE_PLAYER_PIECE;
-
             /* Is goal RED area */
             if (row < GoalHeight)
                 return (int)Board.Status.RED_GOAL_AREA;
@@ -135,6 +141,19 @@ namespace TheGame.Model
 
 
             return (int)Board.Status.TASK_AREA;
+        }
+
+        internal bool IsUndiscoveredGoal(int c, int r)
+        {
+            foreach (Goal goal in UndiscoveredRedGoals)
+                if (goal.column == c && goal.row == r)
+                    return true;
+
+            foreach (Goal goal in UndiscoveredBlueGoals)
+                if (goal.column == c && goal.row == r)
+                    return true;
+
+            return false;
         }
 
         internal Player.NeighborStatus GetPlayersNeighbor(int column, int row, Team.TeamColor team)

@@ -16,9 +16,12 @@ namespace TheGame.Model
         public int row { get; set; }
         public int column { get; set; }
         public Role role { get; set; }
-        public bool hasPiece { get; set; }
+        public Piece Piece { get; set; }
         public Team.TeamColor Team { get; set; }
 
+        private bool toCheck;
+
+        #region MOVES
         /**
          *  Player moves Up
          *  @return 0 on sucess, -1 otherwise
@@ -72,7 +75,7 @@ namespace TheGame.Model
             column++;
             return 0;
         }
-
+        #endregion
 
         /**
          *  Player moves Randomly
@@ -80,15 +83,23 @@ namespace TheGame.Model
          */
         public int goRnd()
         {
+            if (toCheck)
+            {
+                if (Piece.isSham)   // if a piece is a sham
+                    Piece = null;   // destroy it, by simply forgetting 
+                toCheck = false;
+                return 0;
+            }
+
             /* Has a piece ? */
-            if (hasPiece)
+            if (null != Piece)
             {
                 if (Team == Model.Team.TeamColor.RED)
                 {
                     int m = goUp();
                     if (m != 0)
                     {
-                        hasPiece = false;
+                        Piece = null;
                         return 3;
                     }
                     return m;
@@ -98,7 +109,7 @@ namespace TheGame.Model
                     int m = goDown();
                     if (m == -1)
                     {
-                        hasPiece = false;
+                        Piece = null;
                         return 3;
                     }
                     return m;
@@ -143,6 +154,12 @@ namespace TheGame.Model
                 }
             }
 
+        }
+
+        internal void checkPiece()
+        {
+            if (Piece == null) return;
+            toCheck = true;
         }
     }
 }
