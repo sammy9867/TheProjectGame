@@ -35,6 +35,8 @@ namespace TheGame
             RedTeam = BlueTeam = null;
             pause = false;
             board = new Board();
+
+
             loadBoard();
             initGoals();
             loadPieces();
@@ -75,7 +77,7 @@ namespace TheGame
             doWork();
             updateBoard();
             counter_tmp++;
-            if (counter_tmp % 2 == 0)
+            if (counter_tmp % 2 == 0 )
                 addPiece();
         }
 

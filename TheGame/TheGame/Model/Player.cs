@@ -113,14 +113,16 @@ namespace TheGame.Model
             {
                 if (Team == Model.Team.TeamColor.RED)
                 {
-                    if(Neighbors[1,0] != NeighborStatus.BLOCKED)
+                    if(Neighbors[1,0] != NeighborStatus.BLOCKED &&
+                        (Neighbors[1, 1] & NeighborStatus.GOAL_AREA) != NeighborStatus.GOAL_AREA)
                         return goUp();
                     return goForGoalAlternative(Model.Team.TeamColor.RED);
 
                 }
                 else
                 {
-                    if (Neighbors[1, 2] != NeighborStatus.BLOCKED)
+                    if (Neighbors[1, 2] != NeighborStatus.BLOCKED &&
+                        (Neighbors[1,1]&NeighborStatus.GOAL_AREA) != NeighborStatus.GOAL_AREA)
                         return goDown();
                     return goForGoalAlternative(Model.Team.TeamColor.BLUE);
                 }
@@ -187,6 +189,7 @@ namespace TheGame.Model
         private int goForGoalAlternative(Team.TeamColor color)
         {
 
+            while(true)
             switch (GoalStep)
             {
             case AlternativeStep.LEFT:
@@ -200,27 +203,21 @@ namespace TheGame.Model
                     return goRight();
 
                 if (color == Model.Team.TeamColor.RED)
-                    GoalStep = AlternativeStep.DOWN;
-                else
                     GoalStep = AlternativeStep.UP;
+                else
+                    GoalStep = AlternativeStep.DOWN;
                 break;
 
             case AlternativeStep.UP:
                 goUp();
                 GoalStep = AlternativeStep.LEFT;
-                break;
+                return 0;
 
             case AlternativeStep.DOWN:
                 goDown();
                 GoalStep = AlternativeStep.LEFT;
-                break;
+                return 0;
             }
-
-            if (Neighbors[1, 2] != NeighborStatus.BLOCKED)
-                return goDown();
-
-            
-            return 0;
         }
 
         internal void checkPiece()
