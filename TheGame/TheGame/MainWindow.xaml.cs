@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -36,7 +37,7 @@ namespace TheGame
             pause = false;
             board = new Board();
 
-
+            initFile();
             loadBoard();
             initGoals();
             loadPieces();
@@ -48,6 +49,13 @@ namespace TheGame
 
             // Add a CancellationTokenSource and supply the token here instead of None.
             RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+        }
+
+        private void initFile()
+        {
+            // create a file object
+            // create file itself if it does not exist
+                       
         }
 
         #region Async Cyclic Method
@@ -77,8 +85,24 @@ namespace TheGame
             doWork();
             updateBoard();
             counter_tmp++;
-            if (counter_tmp % 2 == 0 )
+            if (counter_tmp % 2 == 0 && board.Pieces.Count < board.InitialNumberOfPieces)
                 addPiece();
+            checkVictory();
+
+        }
+
+        private void checkVictory()
+        {
+            if (board.DiscoveredBlueGoals.Count >= board.NumberOfGoals)
+            {
+                // Blue WINS
+                // add simple message box 
+            }
+            if (board.DiscoveredRedGoals.Count >= board.NumberOfGoals)
+            {
+                // Red WINS
+                // add simple message box 
+            }
         }
 
         private void addPiece()
@@ -113,16 +137,20 @@ namespace TheGame
         {
             foreach (Player player in board.BlueTeam.members)
             {
+                // prev coor
                 playerRoutine(player);
+                // write to file
             }
 
             foreach (Player player in board.RedTeam.members)
             {
                 playerRoutine(player);
+                // write to file
             }
         }
         #endregion
 
+        #region Player Routine and stuff
         private void playerRoutine(Player player)
         {
             PlayerDiscoversNeighboringCells(player);
@@ -133,7 +161,8 @@ namespace TheGame
                 placesPiece(player);
                 return;
             }
-
+            // if player.tochec is true thatn goRnd will check piece for being sham
+            // if playwe.tochec is false thatn goRnd wil move a player
             player.goRnd();
 
             int c = player.column;
@@ -194,8 +223,7 @@ namespace TheGame
                     player.Neighbors[c, r] = board.GetPlayersNeighbor(player.column-1+c, player.row-1+r, player.Team);
 
         }
-        
-               
+           
         /** Player takes a  Piece **/
         private void takePiece(Player player)
         {
@@ -213,8 +241,12 @@ namespace TheGame
             }
 
             player.checkPiece();
-            
+            // write to file
+//            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+//            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+//            File.WriteAllBytes("TAKE PIECE; "+Date.now()+"; 1;"+player.playerID+";"+player.playerID";")
         }
+#endregion
 
         /**Undiscovered Goals are initialised randomly**/
         private void initGoals() {
