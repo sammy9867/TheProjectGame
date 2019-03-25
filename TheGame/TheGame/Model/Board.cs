@@ -20,8 +20,7 @@ namespace TheGame.Model
             RED_PLAYER,
             BLUE_PLAYER,
             UNDISCOVERED_GOALS,
-            DISCOVERED_RED_GOALS,
-            DISCOVERED_BLUE_GOALS,
+            DISCOVERED_GOAL,
             DISCOVERED_NON_GOAL,
             RED_PLAYER_PIECE,
             BLUE_PLAYER_PIECE,
@@ -57,18 +56,19 @@ namespace TheGame.Model
             if ((col < 0) || (row < 0) || (row >= Height) || (col >= Width))
                 return (int)Status.END_OF_BOARD;
 
+            #region Player Occupation
             /* Check if RED player occupaes a cell */
-            if (RedTeam.isTaken(col, row) == 1)
+            if (RedTeam.isTaken(col, row) == Team.TeamCell.PLAYER)
                 return (int)Board.Status.RED_PLAYER;
-            else if (RedTeam.isTaken(col, row) == 2)
+            else if (RedTeam.isTaken(col, row) == Team.TeamCell.PLAYER_PIECE)
                 return (int)Board.Status.RED_PLAYER_PIECE;
 
             /* Check if BLUE player occupaes a cell */
-            if (BlueTeam.isTaken(col, row) == 1)
+            if (BlueTeam.isTaken(col, row) == Team.TeamCell.PLAYER)
                 return (int)Board.Status.BLUE_PLAYER;
-            else if (BlueTeam.isTaken(col, row) == 2)
+            else if (BlueTeam.isTaken(col, row) == Team.TeamCell.PLAYER_PIECE)
                 return (int)Board.Status.BLUE_PLAYER_PIECE;
-
+            #endregion
 
             #region Check if PIECE occupaes a cell 
             /* Check if PIECE occupaes a cell */
@@ -107,7 +107,7 @@ namespace TheGame.Model
 
                 if (item.isTaken(col, row))
                 {
-                    return (int)Board.Status.DISCOVERED_RED_GOALS;
+                    return (int)Board.Status.DISCOVERED_GOAL;
                 }
             }
 
@@ -116,7 +116,7 @@ namespace TheGame.Model
 
                 if (item.isTaken(col, row))
                 {
-                    return (int)Board.Status.DISCOVERED_BLUE_GOALS;
+                    return (int)Board.Status.DISCOVERED_GOAL;
                 }
             }
 
@@ -133,13 +133,21 @@ namespace TheGame.Model
 
             /* Is goal RED area */
             if (row < GoalHeight)
-                return (int)Board.Status.RED_GOAL_AREA;
-
+            {
+                Team.TeamCell teamCell = RedTeam.isDiscovered(col, row);
+                if (teamCell == Team.TeamCell.FREE) return (int)Board.Status.RED_GOAL_AREA;
+                if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return (int)Board.Status.DISCOVERED_GOAL;
+                if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return (int)Board.Status.DISCOVERED_NON_GOAL;
+            }
             /* Is goal BLUE area */
-            if (Height - row - 1< GoalHeight)
-                return (int) Board.Status.BLUE_GOAL_AREA;
-
-
+            if (Height - row - 1 < GoalHeight)
+            {
+                Team.TeamCell teamCell = BlueTeam.isDiscovered(col, row);
+                if (teamCell == Team.TeamCell.FREE) return (int)Board.Status.BLUE_GOAL_AREA;
+                if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return (int)Board.Status.DISCOVERED_GOAL;
+                if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return (int)Board.Status.DISCOVERED_NON_GOAL;
+            }
+            
             return (int)Board.Status.TASK_AREA;
         }
 
@@ -166,13 +174,23 @@ namespace TheGame.Model
             if (row < GoalHeight)
             {
                 if (team == Team.TeamColor.RED)
-                    return Player.NeighborStatus.GOAL_AREA;
+                {
+                    Team.TeamCell teamCell = RedTeam.isDiscovered(column, row);
+                    if(teamCell == Team.TeamCell.FREE) return Player.NeighborStatus.GOAL_AREA;
+                    if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Player.NeighborStatus.DISCOVERED_GOAL;
+                    if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Player.NeighborStatus.DISCOVERED_NONGOAL;
+                }
                 else return Player.NeighborStatus.BLOCKED;
             }
             if (Height - row - 1 < GoalHeight)
             {
                 if (team == Team.TeamColor.BLUE)
-                    return Player.NeighborStatus.GOAL_AREA;
+                {
+                    Team.TeamCell teamCell = BlueTeam.isDiscovered(column, row);
+                    if (teamCell == Team.TeamCell.FREE) return Player.NeighborStatus.GOAL_AREA;
+                    if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Player.NeighborStatus.DISCOVERED_GOAL;
+                    if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Player.NeighborStatus.DISCOVERED_NONGOAL;
+                }
                 else return Player.NeighborStatus.BLOCKED;
             }
 

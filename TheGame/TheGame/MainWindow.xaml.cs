@@ -106,42 +106,7 @@ namespace TheGame
             }
 
         }
-
-
-        private void playerRoutine(Player player)
-        {
-            PlayerDiscoversNeighboringCells(player);
-            player.goRnd();
-
-            int c = player.column;
-            int r = player.row;
-
-            if(null == player.Piece)
-                takePiece(player);
-
-            //If the player steps in the undiscovered red goal cell and he has a piece
-            if (null != player.Piece && board.IsUndiscoveredGoal(c, r) )
-            {
-                List<Goal> UndiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.UndiscoveredRedGoals : board.UndiscoveredBlueGoals;
-                List<Goal> DiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.DiscoveredRedGoals : board.DiscoveredBlueGoals;
-                foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
-                {
-                    if (goalDiscoverdByPlayer.row == r && goalDiscoverdByPlayer.column == c)
-                    {
-                        UndiscoveredGoals.Remove(goalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
-                        DiscoveredGoals.Add(goalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
-                        player.Piece = null; //Player no longer has the piece.
-
-                        if (player.Team == Team.TeamColor.RED)
-                            Board.RedScore++;
-                        else
-                            Board.BlueScore++;
-
-                        return;
-                    }
-                }
-            }
-        }
+           
         private void doWork()
         {
             foreach (Player player in board.BlueTeam.members)
@@ -154,7 +119,71 @@ namespace TheGame
                 playerRoutine(player);
             }
         }
-    
+        #endregion
+
+        private void playerRoutine(Player player)
+        {
+            PlayerDiscoversNeighboringCells(player);
+
+            //If the player steps in the undiscovered red goal cell and he has a piece
+            if (player.hasPiece() && player.Neighbors[1, 1] == Player.NeighborStatus.GOAL_AREA)
+            {
+                placesPiece(player);
+                return;
+            }
+
+            player.goRnd();
+
+            int c = player.column;
+            int r = player.row;
+
+            if (!player.hasPiece())
+            {
+                takePiece(player);
+                return; 
+            }
+
+            
+        }
+
+        /* PLayer places a piece */
+        private void placesPiece(Player player)
+        {
+            List<Goal> UndiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.UndiscoveredRedGoals : board.UndiscoveredBlueGoals;
+            List<Goal> DiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.DiscoveredRedGoals : board.DiscoveredBlueGoals;
+
+            /* Discover a goal */
+            foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
+            {
+                if (goalDiscoverdByPlayer.row == player.row && goalDiscoverdByPlayer.column == player.column)
+                {
+                    UndiscoveredGoals.Remove(goalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
+                    DiscoveredGoals.Add(goalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
+                    player.Piece = null; //Player no longer has the piece.
+
+                    if (player.Team == Team.TeamColor.RED)
+                        Board.RedScore++;
+                    else
+                        Board.BlueScore++;
+
+                    if (player.Team == Team.TeamColor.BLUE)
+                        BlueTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column});
+                    else
+                        RedTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column });
+
+                    return;
+                }
+            }
+
+            /* Discover a non-goal */
+            if (player.Team == Team.TeamColor.BLUE)
+                BlueTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
+            else
+                RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
+
+            player.Piece = null; //Player no longer has the piece.
+        }
+
         /* Player discovers its 8 neighbors */
         private void PlayerDiscoversNeighboringCells(Player player)
         {
@@ -163,7 +192,7 @@ namespace TheGame
                     player.Neighbors[c, r] = board.GetPlayersNeighbor(player.column-1+c, player.row-1+r, player.Team);
 
         }
-        #endregion
+        
                
         /** Player takes a  Piece **/
         private void takePiece(Player player)
@@ -314,6 +343,9 @@ namespace TheGame
             };
 
             team.members = new List<Player>();
+            team.DiscoveredGoals = new List<Goal>();
+            team.DiscoveredNonGoals = new List<Goal>();
+
             team.members.Add(new Player
             {
                 role = Player.Role.MEMBER,
@@ -345,6 +377,9 @@ namespace TheGame
             };
 
             team.members = new List<Player>();
+            team.DiscoveredGoals = new List<Goal>();
+            team.DiscoveredNonGoals = new List<Goal>();
+
             team.members.Add(new Player
             {
                 role = Player.Role.MEMBER,
@@ -417,8 +452,7 @@ namespace TheGame
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/undiscovered_goal.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.DISCOVERED_BLUE_GOALS:
-                        case (int)Board.Status.DISCOVERED_RED_GOALS:
+                        case (int)Board.Status.DISCOVERED_GOAL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/discovered_goal.png", UriKind.Relative));
                             break;
 
