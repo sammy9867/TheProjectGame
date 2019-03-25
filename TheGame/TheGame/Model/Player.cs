@@ -19,6 +19,7 @@ namespace TheGame.Model
         public Piece Piece { get; set; }
         public Team.TeamColor Team { get; set; }
 
+
         private bool toCheck;
 
         #region MOVES
@@ -160,6 +161,13 @@ namespace TheGame.Model
         {
             if (Piece == null) return;
             toCheck = true;
+        }
+
+        public bool hasPiece()
+        {
+            if (null == Piece)
+                return false;
+            return true;
         }
     }
 }
