@@ -1,0 +1,10 @@
+{
+	"Width":"6",
+	"GoalHeight":"3",
+	"TaskHeight":"4",
+	"InitialNumberOfPieces":"10",
+	"NumberOfGoals":"2",
+	"ShamProbability":"50",
+	"MaxNumOfPlayers":"3"
+	
+}
