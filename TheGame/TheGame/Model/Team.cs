@@ -9,33 +9,59 @@ namespace TheGame.Model
     public class Team
     {
         public enum TeamColor { BLUE, RED };
+        public enum TeamCell { FREE, PLAYER, PLAYER_PIECE, DISCOVERED_GOAL, DISCOVERED_NONGOAL};
 
         public Player leader;
         public List<Player> members;
+
+        /* Temporary Lists, later every player will have its own lists */
+        public List<Goal> DiscoveredGoals;
+        public List<Goal> DiscoveredNonGoals;
+
         public TeamColor teamColor { get; set; }
 
         public int maxNumOfPlayers { get; set; }
 
-        //internal bool
-        public int isTaken(int col, int row)
+        public TeamCell isTaken(int col, int row)
         {
-            if (leader.column == col && leader.row == row)
-            {
-                if (leader.hasPiece)
-                    return 2;
-                else return 1;
-            }
+            //if (leader.column == col && leader.row == row)
+            //{
+            //    if (leader.hasPiece)
+            //        return 2;
+            //    else return 1;
+            //}
 
             foreach (var item in members)
             {
                 if (item.row == row && item.column == col)
                 {
-                    if (item.hasPiece) return 2;
-                    else return 1;
+                    if (item.hasPiece()) return TeamCell.PLAYER_PIECE;
+                    else return TeamCell.PLAYER;
                 }
             }
 
-            return 0;
+            foreach (var goal in DiscoveredGoals)
+                if (goal.isTaken(col, row))
+                    return TeamCell.DISCOVERED_GOAL;
+
+            foreach (var goal in DiscoveredNonGoals)
+                if (goal.isTaken(col, row))
+                    return TeamCell.DISCOVERED_NONGOAL;
+
+            return TeamCell.FREE;
+        }
+
+        public TeamCell isDiscovered(int col, int row)
+        {
+            foreach (var goal in DiscoveredGoals)
+                if (goal.isTaken(col, row))
+                    return TeamCell.DISCOVERED_GOAL;
+
+            foreach (var goal in DiscoveredNonGoals)
+                if (goal.isTaken(col, row))
+                    return TeamCell.DISCOVERED_NONGOAL;
+
+            return TeamCell.FREE;
         }
     }
 

@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,15 +28,19 @@ namespace TheGame
         private Team RedTeam;
         private Team BlueTeam;
 
+        private bool pause;
+
         public MainWindow()
         {
             InitializeComponent();
 
             RedTeam = BlueTeam = null;
-
+            pause = false;
             board = new Board();
+
+            initFile();
             loadBoard();
-            loadPieces();
+           
             updateBoard();
 
             var dueTime = TimeSpan.FromSeconds(5);
@@ -42,6 +48,40 @@ namespace TheGame
 
             // Add a CancellationTokenSource and supply the token here instead of None.
             RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+        }
+
+        private void initFile()
+        {
+            // create a file object
+            // create file itself if it does not exist
+            string newFileName = "Configfile/report.csv";
+
+            if (!File.Exists(newFileName))
+            {
+                string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }else if (File.Exists(newFileName))
+            {
+                File.Delete(newFileName);
+                  string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+
+        }
+
+        private bool insertIntoConfig(string type, string dateTime, int playerID, string colour, string role)
+        {
+            try
+            {
+                string line = $"\"{type}\",\"{dateTime}\",\"{playerID}\",\"{colour}\",\"{role}\"{Environment.NewLine}";
+                File.AppendAllText("Configfile/report.csv", line);
+                return true;
+            }
+            catch (Exception ee)
+            {
+                string temp = ee.Message;
+                return false;
+            }
         }
 
         #region Async Cyclic Method
@@ -63,81 +103,269 @@ namespace TheGame
                     await Task.Delay(interval, token);
             }
         }
+
+        private int counter_tmp = 0;
         private void OnTick()
         {
+            if (pause) return;
             doWork();
             updateBoard();
+            counter_tmp++;
+            if (counter_tmp % 2 == 0 && board.Pieces.Count < board.InitialNumberOfPieces)
+                addPiece();
+            
+
         }
 
+        private void checkVictory(Player player)
+        {
+            if (board.DiscoveredBlueGoals.Count >= board.NumberOfGoals)
+            {
+                // Blue WINS
+                pause = true;
+                string message = "Congratulations, Blue team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                //int pId = Player.playerID;
+
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+
+                MessageBox.Show(message);
+                this.Close();
+            }
+            if (board.DiscoveredRedGoals.Count >= board.NumberOfGoals)
+            {
+                // Red WINS
+                pause = true;
+                string message = "Congratulations, Red team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                MessageBox.Show(message);
+                this.Close();
+            }
+        }
+
+        private void addPiece()
+        {
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+            while (true)
+            {
+                int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
+                int column = rnd.Next(0, Board.Width);
+                bool exist = false;
+                if (RedTeam.isTaken(column, row) != 0) continue;
+                if (BlueTeam.isTaken(column, row) != 0) continue;
+                foreach (Piece p in board.Pieces)
+                    if (p.isTaken(column, row))
+                    {
+                        exist = true;
+                        break;
+                    }
+                if (exist) continue;
+                Piece piece = new Piece();
+                piece.row = row;
+                piece.column = column;
+
+                piece.isSham = (rnd.Next(0, 100) < board.ShamProbability) ? true : false;
+                board.Pieces.Add(piece);
+                break;
+            }
+
+        }
+           
         private void doWork()
         {
-            int rm = RedTeam.leader.goRnd();
-            int bm = BlueTeam.leader.goRnd();
-
-            if (rm == 7)
+            foreach (Player player in board.BlueTeam.members)
             {
-                Goal goal = new Goal
-                {
-                    column = RedTeam.leader.column,
-                    row = RedTeam.leader.row
-                };
-                board.Goals.Add(goal);
-            }
-            if (bm == 7)
-            {
-                Goal goal = new Goal
-                {
-                    column = BlueTeam.leader.column,
-                    row = BlueTeam.leader.row
-                };
-                board.Goals.Add(goal);
+                // prev coor
+                playerRoutine(player);
+                // write to file
+                
             }
 
-
-            int c = RedTeam.leader.column;
-            int r = RedTeam.leader.row;
-
-            if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
+            foreach (Player player in board.RedTeam.members)
             {
-                RedTeam.leader.hasPiece = true;
-                foreach (Piece p in board.Pieces)
-                    if (p.row == r && p.column == c)
-                    {
-                        board.Pieces.Remove(p);
-                        return;
-                    }
-            }
-
-            c = BlueTeam.leader.column;
-            r = BlueTeam.leader.row;
-            if (board.getCellStatus(c, r) == (int)Board.Status.PIECE_AREA)
-            {
-                BlueTeam.leader.hasPiece = true;
-                foreach (Piece p in board.Pieces)
-                    if (p.row == r && p.column == c)
-                    {
-                        board.Pieces.Remove(p);
-                        return;
-                    }
+                playerRoutine(player);
+                // write to file
             }
         }
         #endregion
 
+        #region Player Routine and stuff
+        private void playerRoutine(Player player)
+        {
+            PlayerDiscoversNeighboringCells(player);
+
+            //If the player steps in the undiscovered red goal cell and he has a piece
+            if (player.hasPiece() && player.Neighbors[1, 1] == Player.NeighborStatus.GOAL_AREA)
+            {
+                placesPiece(player);
+                string Pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string Pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, Pc, Pr);
+                return;
+            }
+            // if player.tochec is true thatn goRnd will check piece for being sham
+            // if playwe.tochec is false thatn goRnd wil move a player
+            player.goRnd();
+            string pcc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string prr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pcc, prr);
+
+
+
+            int c = player.column;
+            int r = player.row;
+
+            if (!player.hasPiece())
+            {
+                takePiece(player);
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("TakePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                return; 
+            }
+
+            
+        }
+
+        /* PLayer places a piece */
+        private void placesPiece(Player player)
+        {
+            List<Goal> UndiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.UndiscoveredRedGoals : board.UndiscoveredBlueGoals;
+            List<Goal> DiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.DiscoveredRedGoals : board.DiscoveredBlueGoals;
+
+            /* Discover a goal */
+            foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
+            {
+                if (goalDiscoverdByPlayer.row == player.row && goalDiscoverdByPlayer.column == player.column)
+                {
+                    UndiscoveredGoals.Remove(goalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
+                    DiscoveredGoals.Add(goalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
+                    player.Piece = null; //Player no longer has the piece.
+
+                    if (player.Team == Team.TeamColor.RED)
+                        Board.RedScore++;
+                    else
+                        Board.BlueScore++;
+
+                    if (player.Team == Team.TeamColor.BLUE)
+                        BlueTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column});
+                    else
+                        RedTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column });
+
+                    return;
+                }
+            }
+
+            /* Discover a non-goal */
+            if (player.Team == Team.TeamColor.BLUE)
+                BlueTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
+            else
+                RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
+
+            player.Piece = null; //Player no longer has the piece.
+            checkVictory(player);
+        }
+
+        /* Player discovers its 8 neighbors */
+        private void PlayerDiscoversNeighboringCells(Player player)
+        {
+            for (int c = 0; c < 3; c++)
+                for (int r = 0; r < 3; r++)
+                    player.Neighbors[c, r] = board.GetPlayersNeighbor(player.column-1+c, player.row-1+r, player.Team);
+
+        }
+           
+        /** Player takes a  Piece **/
+        private void takePiece(Player player)
+        {
+            int c = player.column;
+            int r = player.row;
+
+            foreach (Piece p in board.Pieces)
+            {
+                if (p.row == r && p.column == c)
+                {
+                    player.Piece = p;
+                    board.Pieces.Remove(p);
+                    break;
+                }
+            }
+
+            player.checkPiece();
+            // write to file
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+        }
+#endregion
+
+        /**Undiscovered Goals are initialised randomly**/
+        private void initGoals() {
+
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+      
+            for (int i = 0; i < board.NumberOfGoals; i++)
+            {
+                Goal goal = new Goal();
+                goal.row = rnd.Next(0, Board.GoalHeight);
+                goal.column = rnd.Next(0, Board.Width);
+                board.UndiscoveredRedGoals.Add(goal);
+            }
+
+            for (int i = 0; i < board.NumberOfGoals; i++)
+            {
+                Goal goal = new Goal();
+                goal.row = rnd.Next(Board.Height - Board.GoalHeight, Board.Height);
+                goal.column = rnd.Next(0, Board.Width);
+                board.UndiscoveredBlueGoals.Add(goal);
+            }
+        }
+
         private void loadBoard()
         {
-            Board.Width = 6;   
-            Board.GoalHeight = 2;
-            Board.TaskHeight = 4;
+
+            string config = "Configfile/config";
+            string json = "";
+            if (!File.Exists(config))
+            {
+                MessageBox.Show("Config File does not exisrt");
+                this.Close();
+            }
+            else
+            {
+                json = File.ReadAllText(config,Encoding.ASCII);
+            }
+
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+
+            Board.RedScore = 0;
+            Board.BlueScore = 0;
+            Board.Width = magic.Width;   
+            Board.GoalHeight = magic.GoalHeight;
+            Board.TaskHeight = magic.TaskHeight;
             Board.Height = 2* Board.GoalHeight + Board.TaskHeight;
-            board.InitialNumberOfPieces = 10;
+            board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
+            board.NumberOfGoals = magic.NumberOfGoals;
+            board.ShamProbability = magic.ShamProbability; // 50%
+            board.MaxNumOfPlayers = magic.MaxNumOfPlayers;
 
-            board.Goals = new List<Goal>();
-
-            RedTeam = loadRedTeam();
+            RedTeam = loadTeam(Team.TeamColor.RED);
             board.RedTeam = RedTeam;
 
-            BlueTeam = loadBlueTeam();
+            BlueTeam = loadTeam(Team.TeamColor.BLUE);
             board.BlueTeam = BlueTeam;
+
+            //Init list of goals
+            board.UndiscoveredRedGoals = new List<Goal>();
+            board.UndiscoveredBlueGoals = new List<Goal>();
+            board.DiscoveredRedGoals = new List<Goal>();
+            board.DiscoveredBlueGoals = new List<Goal>();
+            board.NonGoals = new List<Goal>();
 
             board.Pieces = loadPieces();
 
@@ -171,6 +399,14 @@ namespace TheGame
             playgroundDockPanel.ColumnDefinitions.Add(notes);
             #endregion
 
+            initGoals();
+            loadPieces();
+
+        }
+
+        private void JsonConvert(string json)
+        {
+            throw new NotImplementedException();
         }
 
         #region Pieces
@@ -178,15 +414,28 @@ namespace TheGame
         {
             List<Piece> pieces = new List<Piece>();
 
-            Random rnd = new Random();
-
-            for (int i = 0; i < board.InitialNumberOfPieces; i++)
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+            
+            while (pieces.Count < board.InitialNumberOfPieces)
             {
+                int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
+                int column = rnd.Next(0, Board.Width);
+                bool exist = false;
+                if (RedTeam.isTaken(column, row) != 0) continue;
+                if (BlueTeam.isTaken(column, row) != 0) continue;
+                foreach (Piece p in pieces)
+                    if (p.isTaken(column, row))
+                    {
+                        exist = true;
+                        break;
+                    }
+                if (exist) continue;
                 Piece piece = new Piece();
-                piece.row = rnd.Next(Board.GoalHeight, Board.GoalHeight+Board.TaskHeight);
-                piece.column = rnd.Next(0, Board.Width);
+                piece.row = row;
+                piece.column = column;
+
+                piece.isSham = (rnd.Next(0, 100) < board.ShamProbability) ? true : false;
                 pieces.Add(piece);
-               
             }
             return pieces;
 
@@ -194,66 +443,43 @@ namespace TheGame
         #endregion
 
         #region Teams
-        private Team loadBlueTeam()
+        private Team loadTeam(Team.TeamColor teamColor)
         {
             Team team = new Team();
-            team.leader = new Player
-            {
-                role = Player.Role.LEADER,
-                playerID = 10,
-                row = 6,
-                column = 1,
-                Team = Team.TeamColor.BLUE
-            };
+
+            team.maxNumOfPlayers = board.MaxNumOfPlayers;
 
             team.members = new List<Player>();
-            //team.members.Add(new Player {
-            //    role = Player.Role.MEMBER,
-            //    playerID = 12,
-            //    row = 7,
-            //    column = 3,
-            //    Team = Team.TeamColor.BLUE
-            //});
+            team.DiscoveredGoals = new List<Goal>();
+            team.DiscoveredNonGoals = new List<Goal>();
 
-            team.teamColor = Team.TeamColor.BLUE;
-
-            team.maxNumOfPlayers = 2;
-
-            return team;
-        }
-
-        private Team loadRedTeam()
-        {
-            Team team = new Team();
-            team.leader = new Player
+            for (int pn = 0; pn < team.maxNumOfPlayers; pn++)
             {
-                role = Player.Role.LEADER,
-                playerID = 10,
-                row = 1,
-                column = 1,
-                Team = Team.TeamColor.RED
-            };
+                Player player = new Player
+                {
+                    role = (pn==0)? Player.Role.LEADER : Player.Role.MEMBER,
+                    playerID = (teamColor == Team.TeamColor.RED) ?  100 +pn : 200+pn,
+                    row = (teamColor == Team.TeamColor.RED) ? 1 : 6,
+                    column = 1+pn,
+                    Team = teamColor,
+                    Neighbors = new Player.NeighborStatus[3, 3]
+                };
+                if (0 == pn)
+                    team.leader = player;
+                team.members.Add(player);
+            }
 
-            team.members = new List<Player>();
-            //team.members.Add(new Player
-            //{
-            //    role = Player.Role.MEMBER,
-            //    playerID = 12,
-            //    row = 1,
-            //    column = 3,
-            //    Team = Team.TeamColor.RED
-            //});
+            team.teamColor = teamColor;
 
-            team.teamColor = Team.TeamColor.RED;
-
-            team.maxNumOfPlayers = 2;
 
             return team;
         }
         #endregion
 
+     
         private void updateBoard()
         {            
+
             for (int row = 0; row < Board.Height; row++)
                 for (int col = 0; col < Board.Width; col++)
                 {
@@ -296,15 +522,15 @@ namespace TheGame
                         case (int)Board.Status.PIECE_AREA:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/piece_picture.png", UriKind.Relative));
                             break;
+                        case (int)Board.Status.SHAM_AREA:
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/sham_picture.png", UriKind.Relative));
+                            break;
 
-
-                        case (int)Board.Status.UNDISCOVERED_BLUE_GOALS:
-                        case (int)Board.Status.UNDISCOVERED_RED_GOALS:
+                        case (int)Board.Status.UNDISCOVERED_GOALS:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/undiscovered_goal.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.DISCOVERED_BLUE_GOALS:
-                        case (int)Board.Status.DISCOVERED_RED_GOALS:
+                        case (int)Board.Status.DISCOVERED_GOAL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/discovered_goal.png", UriKind.Relative));
                             break;
 
@@ -321,5 +547,12 @@ namespace TheGame
                     playgroundDockPanel.Children.Add(img);
                 }
         }
+
+
+        private void pauseMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            pause = !pause;
+        }
+
     }
 }
