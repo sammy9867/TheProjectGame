@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,8 +40,6 @@ namespace TheGame
 
             initFile();
             loadBoard();
-            initGoals();
-            loadPieces();
            
             updateBoard();
 
@@ -55,7 +54,34 @@ namespace TheGame
         {
             // create a file object
             // create file itself if it does not exist
-                       
+            string newFileName = "Configfile/report.csv";
+
+            if (!File.Exists(newFileName))
+            {
+                string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }else if (File.Exists(newFileName))
+            {
+                File.Delete(newFileName);
+                  string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+
+        }
+
+        private bool insertIntoConfig(string type, string dateTime, int playerID, string colour, string role)
+        {
+            try
+            {
+                string line = $"\"{type}\",\"{dateTime}\",\"{playerID}\",\"{colour}\",\"{role}\"{Environment.NewLine}";
+                File.AppendAllText("Configfile/report.csv", line);
+                return true;
+            }
+            catch (Exception ee)
+            {
+                string temp = ee.Message;
+                return false;
+            }
         }
 
         #region Async Cyclic Method
@@ -87,21 +113,38 @@ namespace TheGame
             counter_tmp++;
             if (counter_tmp % 2 == 0 && board.Pieces.Count < board.InitialNumberOfPieces)
                 addPiece();
-            checkVictory();
+            
 
         }
 
-        private void checkVictory()
+        private void checkVictory(Player player)
         {
             if (board.DiscoveredBlueGoals.Count >= board.NumberOfGoals)
             {
                 // Blue WINS
-                // add simple message box 
+                pause = true;
+                string message = "Congratulations, Blue team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                //int pId = Player.playerID;
+
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+
+                MessageBox.Show(message);
+                this.Close();
             }
             if (board.DiscoveredRedGoals.Count >= board.NumberOfGoals)
             {
                 // Red WINS
-                // add simple message box 
+                pause = true;
+                string message = "Congratulations, Red team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                MessageBox.Show(message);
+                this.Close();
             }
         }
 
@@ -140,6 +183,7 @@ namespace TheGame
                 // prev coor
                 playerRoutine(player);
                 // write to file
+                
             }
 
             foreach (Player player in board.RedTeam.members)
@@ -159,11 +203,19 @@ namespace TheGame
             if (player.hasPiece() && player.Neighbors[1, 1] == Player.NeighborStatus.GOAL_AREA)
             {
                 placesPiece(player);
+                string Pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string Pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, Pc, Pr);
                 return;
             }
             // if player.tochec is true thatn goRnd will check piece for being sham
             // if playwe.tochec is false thatn goRnd wil move a player
             player.goRnd();
+            string pcc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string prr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pcc, prr);
+
+
 
             int c = player.column;
             int r = player.row;
@@ -171,6 +223,9 @@ namespace TheGame
             if (!player.hasPiece())
             {
                 takePiece(player);
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("TakePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                 return; 
             }
 
@@ -213,6 +268,7 @@ namespace TheGame
                 RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
 
             player.Piece = null; //Player no longer has the piece.
+            checkVictory(player);
         }
 
         /* Player discovers its 8 neighbors */
@@ -242,9 +298,9 @@ namespace TheGame
 
             player.checkPiece();
             // write to file
-//            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-//            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-//            File.WriteAllBytes("TAKE PIECE; "+Date.now()+"; 1;"+player.playerID+";"+player.playerID";")
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 #endregion
 
@@ -272,20 +328,36 @@ namespace TheGame
 
         private void loadBoard()
         {
+
+            string config = "Configfile/config";
+            string json = "";
+            if (!File.Exists(config))
+            {
+                MessageBox.Show("Config File does not exisrt");
+                this.Close();
+            }
+            else
+            {
+                json = File.ReadAllText(config,Encoding.ASCII);
+            }
+
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+
             Board.RedScore = 0;
             Board.BlueScore = 0;
-            Board.Width = 6;   
-            Board.GoalHeight = 3;
-            Board.TaskHeight = 4;
+            Board.Width = magic.Width;   
+            Board.GoalHeight = magic.GoalHeight;
+            Board.TaskHeight = magic.TaskHeight;
             Board.Height = 2* Board.GoalHeight + Board.TaskHeight;
-            board.InitialNumberOfPieces = 10;
-            board.NumberOfGoals = 2;
-            board.ShamProbability = 50; // 50%
+            board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
+            board.NumberOfGoals = magic.NumberOfGoals;
+            board.ShamProbability = magic.ShamProbability; // 50%
+            board.MaxNumOfPlayers = magic.MaxNumOfPlayers;
 
-            RedTeam = loadRedTeam();
+            RedTeam = loadTeam(Team.TeamColor.RED);
             board.RedTeam = RedTeam;
 
-            BlueTeam = loadBlueTeam();
+            BlueTeam = loadTeam(Team.TeamColor.BLUE);
             board.BlueTeam = BlueTeam;
 
             //Init list of goals
@@ -327,6 +399,14 @@ namespace TheGame
             playgroundDockPanel.ColumnDefinitions.Add(notes);
             #endregion
 
+            initGoals();
+            loadPieces();
+
+        }
+
+        private void JsonConvert(string json)
+        {
+            throw new NotImplementedException();
         }
 
         #region Pieces
@@ -363,70 +443,34 @@ namespace TheGame
         #endregion
 
         #region Teams
-        private Team loadBlueTeam()
+        private Team loadTeam(Team.TeamColor teamColor)
         {
             Team team = new Team();
-            team.leader = new Player
-            {
-                role = Player.Role.LEADER,
-                playerID = 10,
-                row = 6,
-                column = 1,
-                Team = Team.TeamColor.BLUE,
-                Neighbors = new Player.NeighborStatus[3, 3]
-            };
+
+            team.maxNumOfPlayers = board.MaxNumOfPlayers;
 
             team.members = new List<Player>();
             team.DiscoveredGoals = new List<Goal>();
             team.DiscoveredNonGoals = new List<Goal>();
 
-            team.members.Add(new Player
+            for (int pn = 0; pn < team.maxNumOfPlayers; pn++)
             {
-                role = Player.Role.MEMBER,
-                playerID = 12,
-                row = 7,
-                column = 3,
-                Team = Team.TeamColor.BLUE,
-                Neighbors = new Player.NeighborStatus[3, 3]
-            });
-            team.members.Add(team.leader);
-            team.teamColor = Team.TeamColor.BLUE;
+                Player player = new Player
+                {
+                    role = (pn==0)? Player.Role.LEADER : Player.Role.MEMBER,
+                    playerID = (teamColor == Team.TeamColor.RED) ?  100 +pn : 200+pn,
+                    row = (teamColor == Team.TeamColor.RED) ? 1 : 6,
+                    column = 1+pn,
+                    Team = teamColor,
+                    Neighbors = new Player.NeighborStatus[3, 3]
+                };
+                if (0 == pn)
+                    team.leader = player;
+                team.members.Add(player);
+            }
 
-            team.maxNumOfPlayers = 2;
+            team.teamColor = teamColor;
 
-            return team;
-        }
-
-        private Team loadRedTeam()
-        {
-            Team team = new Team();
-            team.leader = new Player
-            {
-                role = Player.Role.LEADER,
-                playerID = 10,
-                row = 1,
-                column = 1,
-                Team = Team.TeamColor.RED,
-                Neighbors = new Player.NeighborStatus[3,3]
-            };
-
-            team.members = new List<Player>();
-            team.DiscoveredGoals = new List<Goal>();
-            team.DiscoveredNonGoals = new List<Goal>();
-
-            team.members.Add(new Player
-            {
-                role = Player.Role.MEMBER,
-                playerID = 12,
-                row = 1,
-                column = 3,
-                Team = Team.TeamColor.RED,
-                Neighbors = new Player.NeighborStatus[3, 3]
-            });
-            team.members.Add(team.leader);
-            team.teamColor = Team.TeamColor.RED;
-
-            team.maxNumOfPlayers = 2;
 
             return team;
         }

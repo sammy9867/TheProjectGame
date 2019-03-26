@@ -50,6 +50,7 @@ namespace TheGame.Model
         public int InitialNumberOfPieces { get; set; }
         public int NumberOfGoals { get; set; }
         public int ShamProbability { get; set; }
+        public int MaxNumOfPlayers { get; set; }
 
         public int getCellStatus(int col, int row)
         {
