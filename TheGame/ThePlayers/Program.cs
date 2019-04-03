@@ -6,13 +6,27 @@ using System.Threading.Tasks;
 
 namespace ThePlayers
 {
+    public class StateObject
+    {
+        // Size of receive buffer.
+        public const int BufferSize = 256;
+        // Receive buffer.
+        public byte[] buffer = new byte[BufferSize];
+        // Received data string.
+        public StringBuilder sb = new StringBuilder();
+        public Action<string> cb = null;
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("ThePlayers has started");
-            start();
+            PlayerSocket.StartClient();
+        //    start();
         }
+
+      
 
         private static void start()
         {
