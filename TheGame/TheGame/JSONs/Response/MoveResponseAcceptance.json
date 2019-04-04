@@ -1,0 +1,7 @@
+{
+    "action": "move",
+    "userGuid": "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
+    "result": "OK",
+    "timestamp": 69,
+    "manhattanDistance": "<null|0|1|2|...|Nearest"
+}
