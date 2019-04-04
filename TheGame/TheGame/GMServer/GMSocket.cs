@@ -6,12 +6,26 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace ThePlayers
+namespace TheGame.GMServer
 {
-
-    class PlayerSocket
+    public class StateObject
     {
+        // Client socket.
+        public Socket workSocket = null;
+        // Size of receive buffer.
+        public const int BufferSize = 256;
+        // Receive buffer.
+        public byte[] buffer = new byte[BufferSize];
+        // Received data string.
+        public StringBuilder sb = new StringBuilder();
+        public Action<string> cb = null;
+    }
+
+    class GMSocket
+    {
+
         private const int port = 11000;
 
         // ManualResetEvent instances signal completion.
@@ -67,17 +81,17 @@ namespace ThePlayers
             }
         }
 
-        public static void Receive(Action<string> cb = null)
+        private static void Receive(Action<string> cb = null)
         {
             try
             {
                 StateObject state = new StateObject();
-                state.cb = cb;
+                state.workSocket = server;
+                if (cb != null)
+                    state.cb = cb;
 
                 server.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
-
-
             }
             catch (Exception e)
             {
@@ -90,33 +104,36 @@ namespace ThePlayers
             try
             {
                 StateObject state = (StateObject)ar.AsyncState;
+                Socket client = state.workSocket;
 
-                int bytesRead = server.EndReceive(ar);
+                int bytesRead = client.EndReceive(ar);
+                state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                 if (bytesRead > 0)
                 {
-                    state.sb = state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-                    if (state.sb.ToString().IndexOf((char)23) < 0)
+                    var content = state.sb.ToString();
+                    if (content.IndexOf((char)23) > -1)
                     {
-                        server.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                            new AsyncCallback(ReceiveCallback), state);
-                        return;
+                        content = content.Remove(content.IndexOf((char)23));
+                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}",
+                            content.Length, content);
+                     //   RequestHandler.handleRequest(content, client);
+                        state.sb.Clear();
+                        receiveDone.Set();
+
+                        if (state.cb != null)
+                        {
+                            state.cb(content);
+                            state.cb = null;
+                        }
+                        Receive();
+                    }
+                    else
+                    {
+                        client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                        new AsyncCallback(ReceiveCallback), state);
                     }
                 }
-                var content = state.sb.ToString();
-                content = content.Remove(content.IndexOf((char)23), 1);
-                Console.WriteLine("Read {0} bytes from socket. \nData : {1}",
-                    content.Length, content);
 
-                if (state.cb != null)
-                {
-                    state.cb(content);
-                    state.cb = null;
-                    receiveDone.Set();
-                }
-                else
-                {
-//                    RequestHandler.handleRequest(content, server);
-                }
             }
             catch (Exception e)
             {
@@ -126,11 +143,13 @@ namespace ThePlayers
 
         public static void Send(Socket handler, String data, Action<string> cb = null)
         {
+            //cb = _cb;
             byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
 
             Receive(cb);
+            receiveDone.WaitOne();
         }
 
         private static void SendCallback(IAsyncResult ar)
@@ -149,6 +168,5 @@ namespace ThePlayers
                 Console.WriteLine(e.ToString());
             }
         }
-
     }
 }

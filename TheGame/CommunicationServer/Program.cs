@@ -103,6 +103,7 @@ namespace CommunicationServer
                         Console.WriteLine("Read {0} bytes from socket. \n Data : {1}",
                             content.Length, content);
 
+                          Console.WriteLine("Player has connected");
 //                        RequestHandler.handleRequest(content, handler);
                         state.sb.Clear();
                         handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
@@ -147,11 +148,13 @@ namespace CommunicationServer
             }
         }
 
-        static void Main(string[] args)
+        public static int Main(string[] args)
         {
+
             Console.WriteLine("Communication Server has started");
             StartListening();
-            Console.ReadKey();
+          
+            return 0;
         }
 
     }

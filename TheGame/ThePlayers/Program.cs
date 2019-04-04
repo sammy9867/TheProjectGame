@@ -19,10 +19,13 @@ namespace ThePlayers
 
     class Program
     {
-        static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            Console.WriteLine("ThePlayers has started");
+            Console.WriteLine("ThePlayer has started");
             PlayerSocket.StartClient();
+
+            Console.ReadLine();
+            return 0;
         //    start();
         }
 

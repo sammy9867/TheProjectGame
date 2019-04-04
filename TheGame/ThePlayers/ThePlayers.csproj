@@ -49,6 +49,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="JSONs\AcceptKnowledgeExchange.json" />
+    <None Include="JSONs\AuthorizeKnowledgeExchange.json" />
+    <None Include="JSONs\DestroyPiece.json" />
+    <None Include="JSONs\Discover.json" />
+    <None Include="JSONs\JoinGame.json" />
+    <None Include="JSONs\Move.json" />
+    <None Include="JSONs\PickUp.json" />
+    <None Include="JSONs\PlacePiece.json" />
+    <None Include="JSONs\RejectKnowledgeExchange.json" />
+    <None Include="JSONs\TestPiece.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties JSONs_4AcceptKnowledgeExchange_1json__JSONSchema="http://json.schemastore.org/2.0.0-csd.2.beta.2018-10-10.json" JSONs_4JoinGame_1json__JSONSchema="http://json.schemastore.org/2.0.0-csd.2.beta.2018-10-10.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>
