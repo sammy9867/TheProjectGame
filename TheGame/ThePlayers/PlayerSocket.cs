@@ -13,6 +13,7 @@ namespace ThePlayers
     class PlayerSocket
     {
         private const int port = 11000;
+        private const char ETB = (char)23;
 
         // ManualResetEvent instances signal completion.
         private static ManualResetEvent connectDone =
@@ -24,6 +25,7 @@ namespace ThePlayers
 
         private static String response = String.Empty;
 
+        public static Player Player;
         public static Socket server;
 
         public static void StartClient()
@@ -60,7 +62,8 @@ namespace ThePlayers
                     client.RemoteEndPoint.ToString());
    
                 connectDone.Set();
-              // Receive();
+              
+                // Receive();
                 PlayerRequestHandler.sendJoinGame(server);
             }
             catch (Exception e)
@@ -86,7 +89,6 @@ namespace ThePlayers
                 Console.WriteLine(e.ToString());
             }
         }
-
         private static void ReceiveCallback(IAsyncResult ar)
         {
             try
@@ -97,7 +99,7 @@ namespace ThePlayers
                 if (bytesRead > 0)
                 {
                     state.sb = state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-                    if (state.sb.ToString().IndexOf((char)23) < 0)
+                    if (state.sb.ToString().IndexOf(ETB) < 0)
                     {
                         server.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                             new AsyncCallback(ReceiveCallback), state);
@@ -105,7 +107,7 @@ namespace ThePlayers
                     }
                 }
                 var content = state.sb.ToString();
-                content = content.Remove(content.IndexOf((char)23), 1);
+                content = content.Remove(content.IndexOf(ETB), 1);
                 Console.WriteLine("Read {0} bytes from socket. \nData : {1}",
                     content.Length, content);
 
@@ -129,13 +131,12 @@ namespace ThePlayers
 
         public static void Send(Socket handler, String data, Action<string> cb = null)
         {
-            byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
+            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
 
             Receive(cb);
         }
-
         private static void SendCallback(IAsyncResult ar)
         {
             try

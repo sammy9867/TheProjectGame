@@ -22,37 +22,21 @@ namespace ThePlayers
         public static int Main(string[] args)
         {
             Console.WriteLine("Player has started");
+
+            // Create Player object
+            Player player = new Player();
+
+            // Initialize player 
+            PlayerSocket.Player = player;
+
+            // Start Communication with CS
             PlayerSocket.StartClient();
 
-            Console.ReadLine();
+            Console.WriteLine("Player "+player.playerID+" terminated");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
             return 0;
-        //    start();
         }
 
-      
-
-        private static void start()
-        {
-            bool flag = true;
-
-            while (flag)
-            {
-                string command = Console.ReadLine();
-                switch (command)
-                {
-                    case "add":
-                        Console.WriteLine("new player shall be added");
-                        break;
-                    case "exit":
-                        Console.WriteLine("Thank you for using our app !");
-                        flag = false;
-                        break;
-                    default:
-                        Console.WriteLine("<"+command + "> command does not exist");
-                        break;
-                }
-
-            }
-        }
     }
 }

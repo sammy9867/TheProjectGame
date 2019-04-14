@@ -19,6 +19,8 @@ namespace ThePlayers
             string json = "";
             if (!File.Exists(file))
             {
+                Console.WriteLine("File does not exist: ");
+                Console.WriteLine(">"+file);
                 Console.WriteLine("DNE\n");
             }
             else
@@ -33,7 +35,8 @@ namespace ThePlayers
             string type = magic.type;
 
             Console.WriteLine("Sending JoinGame.json to ComServer.....\n");
-            PlayerSocket.Send(handler, action + " " +userGuid + " " + preferredTeam + " "+type);
+            PlayerSocket.Send(handler,
+                action + " " +userGuid + " " + preferredTeam + " "+type);
 
         }
 
