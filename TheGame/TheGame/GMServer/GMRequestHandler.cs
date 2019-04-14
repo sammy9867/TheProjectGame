@@ -11,24 +11,32 @@ namespace TheGame.GMServer
 {
     public static class GMRequestHandler
     {
+        public static string Response;
+        public static ManualResetEvent allDone
+            = new ManualResetEvent(false);
+
         //Sending ConfirmSetUpGame JSON to to client on connection
-        public static void sendSetUpGame(Socket handler)
+        public static void SendSetUpGame(GMSocket gmSocket)
         {
+            Socket handler = gmSocket.socket;
             string file = @"..\..\JSONs\SetUpGame.json";
             string json = "";
             if (!File.Exists(file))
             {
-                Console.WriteLine("DNE\n");
+                Console.WriteLine("DONE\n");
             }
             else
             {
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            string action = magic.action;
-            Console.WriteLine("Sending SetUpGame.json.....\n");
-            GMSocket.Send(handler, action);
+            gmSocket.Send(handler, json);
+            gmSocket.sendDone.WaitOne();
 
+            gmSocket.Receive();
+            
+            Response = gmSocket.Response.ToString();
+            allDone.Set();
         }
     }
 }

@@ -23,37 +23,37 @@ namespace TheGame.GMServer
         public Action<string> cb = null;
     }
 
-    class GMSocket
+    public class GMSocket
     {
 
         private const int port = 11000;
+        private const char ETB = (char)23;
 
         // ManualResetEvent instances signal completion.
-        private static ManualResetEvent connectDone =
+        public ManualResetEvent connectDone =
             new ManualResetEvent(false);
-        private static ManualResetEvent sendDone =
+        public ManualResetEvent sendDone =
             new ManualResetEvent(false);
-        private static ManualResetEvent receiveDone =
+        public ManualResetEvent receiveDone =
             new ManualResetEvent(false);
 
-        private static String response = String.Empty;
+        public string Response = "";
+        public Socket socket;
 
-        public static Socket server;
-
-        public static void StartClient()
+        public void StartClient()
         {
             try
             {
                 IPAddress ipAddress = IPAddress.Loopback;
                 IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
 
-                server = new Socket(AddressFamily.InterNetwork,
+                socket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Stream, ProtocolType.Tcp);
-                server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, 1000);
-                server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, 1000);
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
 
-                server.BeginConnect(remoteEP,
-                    new AsyncCallback(ConnectCallback), server);
+                socket.BeginConnect(remoteEP,
+                    new AsyncCallback(ConnectCallback), socket);
                 connectDone.WaitOne();
 
             }
@@ -63,7 +63,7 @@ namespace TheGame.GMServer
             }
         }
 
-        private static void ConnectCallback(IAsyncResult ar)
+        private void ConnectCallback(IAsyncResult ar)
         {
             try
             {
@@ -75,8 +75,6 @@ namespace TheGame.GMServer
 
                 connectDone.Set();
 
-                //Sending setupgame to CS
-                GMRequestHandler.sendSetUpGame(server);
             }
             catch (Exception e)
             {
@@ -84,25 +82,30 @@ namespace TheGame.GMServer
             }
         }
 
-        private static void Receive(Action<string> cb = null)
+        public void Receive(Action<string> cb = null)
         {
             try
             {
                 StateObject state = new StateObject();
-                state.workSocket = server;
+                state.workSocket = socket;
                 if (cb != null)
                     state.cb = cb;
 
-                server.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
+                receiveDone.WaitOne();
+                var content = state.sb.ToString();
+                content = content.Remove(content.IndexOf(ETB));
+                state.sb.Clear();
+                Response =  content;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+                Response = null;
             }
         }
-
-        private static void ReceiveCallback(IAsyncResult ar)
+        private void ReceiveCallback(IAsyncResult ar)
         {
             try
             {
@@ -114,21 +117,21 @@ namespace TheGame.GMServer
                 if (bytesRead > 0)
                 {
                     var content = state.sb.ToString();
-                    if (content.IndexOf((char)23) > -1)
+                    if (content.IndexOf(ETB) > -1)
                     {
-                        content = content.Remove(content.IndexOf((char)23));
+                        content = content.Remove(content.IndexOf(ETB));
                         Console.WriteLine("Read {0} bytes from socket. \n Data : {1}\n",
                             content.Length, content);
                      //   RequestHandler.handleRequest(content, client);
-                        state.sb.Clear();
+                     //   state.sb.Clear();
                         receiveDone.Set();
-
-                        if (state.cb != null)
-                        {
-                            state.cb(content);
-                            state.cb = null;
-                        }
-                        Receive();
+                        
+                        //if (state.cb != null)
+                        //{
+                        //    state.cb(content);
+                        //    state.cb = null;
+                        //}
+                        //Receive();
                     }
                     else
                     {
@@ -144,18 +147,17 @@ namespace TheGame.GMServer
             }
         }
 
-        public static void Send(Socket handler, String data, Action<string> cb = null)
+        public void Send(Socket handler, String data, Action<string> cb = null)
         {
             //cb = _cb;
-            byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
+            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
 
             Receive(cb);
-            receiveDone.WaitOne();
+//            receiveDone.WaitOne();
         }
-
-        private static void SendCallback(IAsyncResult ar)
+        private void SendCallback(IAsyncResult ar)
         {
             try
             {

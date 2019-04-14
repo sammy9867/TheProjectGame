@@ -19,29 +19,24 @@
             </MenuItem>
         </Menu>
 
-            <!--<Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-            </Grid.ColumnDefinitions>-->
-            <Grid Background="CornflowerBlue" Name="playgroundDockPanel"/>
-
-        <!-- <Grid Background="CornflowerBlue">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="4*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             
-            
-           <Grid Grid.Column="0" Margin="10,10,10.2,9.8" Name="playgroundDockPanel" Grid.ColumnSpan="2"></Grid>
+            <Grid  Background="CornflowerBlue" Name="playgroundDockPanel"/>
 
-            <WrapPanel Grid.Column="1" Margin="9.8,10,9.6,9.8">
-                <TextBlock Name="red_score">Red Scores :</TextBlock>
-                <TextBlock Name="blue_score">Blue Scores :</TextBlock>
-                <TextBlock Name="pieces_left">Pieces Left :</TextBlock>
-                <TextBlock Name="winning_team">Winning Team :</TextBlock> 
+            <DockPanel Grid.Row="2" Background="Black">
+                <ScrollViewer>
+                    <TextBlock Name="ConsoleTextBlock"  TextWrapping="Wrap"
+                               FontWeight="Bold" FontSize="14"
+                               Foreground="Green"/>
+                </ScrollViewer>
+            </DockPanel>
+        </Grid>
 
-            </WrapPanel>-->
-        
+
     </DockPanel>
 
 </Window>

@@ -18,7 +18,7 @@ namespace CommunicationServer
         public StringBuilder sb = new StringBuilder();
     }
 
-    class Server
+    public class Server
     {
         // Thread signal.
         public static ManualResetEvent allDone 
@@ -128,10 +128,11 @@ namespace CommunicationServer
                     {
                         /* Actual Work on Received message */
                         content = content.Remove(content.IndexOf(ETB));
-                        Console.WriteLine("Read {0} bytes from socket. \nData : {1}",
+                        Console.WriteLine("Read {0} bytes from socket. \nData:\n{1}",
                             content.Length, content);
 
-                    //      Console.WriteLine("Player has connected");
+                        AnalizeTheMessage(content, state);
+
                       
                         // Clear the state object and receive a new message   
                         state.sb.Clear();
@@ -150,6 +151,8 @@ namespace CommunicationServer
                 Console.WriteLine(e.ToString());
             }
         }
+
+       
 
         public static void Send(Socket handler, String data)
         {
@@ -188,6 +191,23 @@ namespace CommunicationServer
             Console.WriteLine("Press any key to continue");
             Console.ReadKey();
             return 0;
+        }
+
+
+        private static void AnalizeTheMessage(string json, StateObject state)
+        {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            string action = magic.action;
+            switch (action)
+            {
+                case "start":
+                    CSRequestHandler.SendConfirmGame(state.workSocket);
+                    break;
+                default:
+                    Console.WriteLine("Error");
+                    Console.WriteLine("Unexpected action in the message");
+                    break;
+            }
         }
 
     }

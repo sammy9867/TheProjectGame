@@ -10,11 +10,11 @@ using System.Threading;
 
 namespace CommunicationServer
 {
-    static class CSRequestHandler
+    public static class CSRequestHandler
     {
 
         //Sending ConfirmSetUpGame JSON to to client on connection
-        public static void sendConfirmGame(Socket handler)
+        public static void SendConfirmGame(Socket handler)
         {
             string file = @"..\..\JSONs\ConfirmSetUpGame.json";
             string json = "";
@@ -28,12 +28,9 @@ namespace CommunicationServer
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             string action = magic.action;
-            string result = magic.result;
+            magic.result = "ok";        // TODO: Remove always OK assumption
 
-            string dataToBeSent = "Action: " + action + "\nResult: " + result;
-
-            Console.WriteLine("Sending ConfirmGame.json.....\n");
-            Server.Send(handler, dataToBeSent.ToString());
+            Server.Send(handler, json);
 
         }
 

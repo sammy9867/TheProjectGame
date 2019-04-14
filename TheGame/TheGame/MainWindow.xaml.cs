@@ -20,8 +20,6 @@ using TheGame.GMServer;
 
 namespace TheGame
 {
-
-   
     public partial class MainWindow : Window
     {
         private Board board;
@@ -35,13 +33,15 @@ namespace TheGame
         {
 
             InitializeComponent();
-
+            ConsoleWriteLine("Game master has started.");
             RedTeam = BlueTeam = null;
             pause = false;
             board = new Board();
 
             initFile();
             loadBoard();
+
+            StartSocket();
 
             updateBoard();
 
@@ -52,6 +52,30 @@ namespace TheGame
 
             // Add a CancellationTokenSource and supply the token here instead of None.
             RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+        }
+
+        private void StartSocket()
+        {
+            ConsoleWriteLine("GM Socket started.");
+
+            GMSocket gmSocket = new GMSocket();
+            gmSocket.StartClient();
+            GMRequestHandler.SendSetUpGame(gmSocket);
+            GMRequestHandler.allDone.WaitOne();
+
+            dynamic magic = 
+                JsonConvert.DeserializeObject(GMRequestHandler.Response);
+            string action = magic.action;
+            string result = magic.result;
+            ConsoleWriteLine("action: "+action);
+            ConsoleWriteLine("result: "+result);
+            if (result.ToLower().Equals("denied"))
+            {
+                ConsoleWriteLine("Game has been denied");
+                MessageBox.Show("Game has been denied",
+                    "Error");
+                this.Close();
+            }
         }
 
         private void initFile()
@@ -410,10 +434,6 @@ namespace TheGame
 
         }
 
-        private void JsonConvert(string json)
-        {
-            throw new NotImplementedException();
-        }
 
         #region Pieces
         private List<Piece> loadPieces()
@@ -560,5 +580,31 @@ namespace TheGame
             pause = !pause;
         }
 
+        #region WPF Console writting
+        public void ConsoleWrite(string line)
+        {
+            string curr = this.ConsoleTextBlock.Text;
+            curr += "> " + line;
+            this.ConsoleTextBlock.Text = curr;
+        }
+        public void ConsoleWriteLine(string line)
+        {
+            ConsoleWrite(line+"\n");
+        }
+        #endregion
+
+        #region Command Line Parameters
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            var args = e.Args;
+            if (args != null && args.Count() > 0)
+            {
+                foreach (var arg in args)
+                {
+                    // write code to use the command line arg value 
+                }
+            }
+        }
+        #endregion
     }
 }
