@@ -24,35 +24,45 @@ namespace CommunicationServer
         public static ManualResetEvent allDone 
             = new ManualResetEvent(false);
 
+        private const char ETB = (char)23;
         public const int PORT = 11000;
+
 
         public static void StartListening()
         {
-            byte[] bytes = new Byte[1024];
-
+            // Establish the local endpoint for the socket
             IPAddress ipAddress = IPAddress.Loopback;
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PORT);
-            Console.WriteLine("ip : " + ipAddress.ToString());
+            Console.WriteLine("> IP: " + ipAddress.ToString());
 
+            // Create TCP/IP socket.
             Socket listener = new Socket(ipAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
-            listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, 1000);
-            listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
 
+            // Setting socket options (WHY??)
+            listener.SetSocketOption(SocketOptionLevel.Socket, 
+                SocketOptionName.SendTimeout, 1000);
+            listener.SetSocketOption(SocketOptionLevel.Socket, 
+                SocketOptionName.Linger, new LingerOption(true, 10));
+
+            // Bind the socket to the local endpoint and listen for incoming
             try
             {
                 listener.Bind(localEndPoint);
-                listener.Listen(100);
+                listener.Listen(100); // Maximum length of pending connections qeueu
 
                 while (true)
                 {
+                    // Set event to nonsignaled state 
                     allDone.Reset();
 
+                    // Start an asynch socket to listen for connections
                     Console.WriteLine("Waiting for a connection...");
                     listener.BeginAccept(
                         new AsyncCallback(AcceptCallback),
                         listener);
 
+                    // Wait until a connection is made before continuing.
                     allDone.WaitOne();
                 }
 
@@ -67,13 +77,19 @@ namespace CommunicationServer
 
         }
 
+        /***
+         * AccepCallback function accepts a client and notifies the main thread 
+         */
         public static void AcceptCallback(IAsyncResult ar)
         {
+            // Signal the main thread to continue. 
             allDone.Set();
 
+            // Get the socket that handles the client request.
             Socket listener = (Socket)ar.AsyncState;
             Socket handler = listener.EndAccept(ar);
 
+            // Create the state object.  
             StateObject state = new StateObject();
             state.workSocket = handler;
             handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
@@ -81,7 +97,7 @@ namespace CommunicationServer
 
             //First Start CS => start GM 
             //After Accepting Connection from GM, 
-           // RequestHandler.sendConfirmGame(handler);
+            //RequestHandler.sendConfirmGame(handler);
         }
 
         public static void ReadCallback(IAsyncResult ar)
@@ -90,6 +106,8 @@ namespace CommunicationServer
             {
                 String content = String.Empty;
 
+                // Retrive the state object and the handler socket
+                // from the asynchronous state object
                 StateObject state = (StateObject)ar.AsyncState;
                 Socket handler = state.workSocket;
 
@@ -98,19 +116,24 @@ namespace CommunicationServer
 
                 if (bytesRead > 0)
                 {
-                  
+                    // There  might be more data, 
+                    // so store the data received so far. 
                     state.sb.Append(Encoding.ASCII.GetString(
                         state.buffer, 0, bytesRead));
 
+                    // Check for End-Transmission-Block
+                    // If it is not there, read more data
                     content = state.sb.ToString();
-                    if (content.IndexOf((char)23) > -1)
+                    if (content.IndexOf(ETB) > -1)
                     {
-                        content = content.Remove(content.IndexOf((char)23));
-                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}",
+                        /* Actual Work on Received message */
+                        content = content.Remove(content.IndexOf(ETB));
+                        Console.WriteLine("Read {0} bytes from socket. \nData : {1}",
                             content.Length, content);
 
                     //      Console.WriteLine("Player has connected");
-                      //   
+                      
+                        // Clear the state object and receive a new message   
                         state.sb.Clear();
                         handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                             new AsyncCallback(ReadCallback), state);
@@ -156,10 +179,14 @@ namespace CommunicationServer
 
         public static int Main(string[] args)
         {
-
             Console.WriteLine("Communication Server has started");
+            Console.WriteLine("Start Listening...");
+
             StartListening();
-          
+
+            Console.WriteLine("Communication Server has done its job.");
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
             return 0;
         }
 

@@ -45,6 +45,8 @@ namespace TheGame
 
             updateBoard();
 
+
+
             var dueTime = TimeSpan.FromSeconds(5);
             var interval = TimeSpan.FromSeconds(1);
 
