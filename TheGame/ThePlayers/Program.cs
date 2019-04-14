@@ -21,7 +21,7 @@ namespace ThePlayers
     {
         public static int Main(string[] args)
         {
-            Console.WriteLine("ThePlayer has started");
+            Console.WriteLine("Player has started");
             PlayerSocket.StartClient();
 
             Console.ReadLine();

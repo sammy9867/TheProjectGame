@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{736F35B7-1E77-4CE7-963F-82CBF9D771BE}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>TheGame</RootNamespace>
     <AssemblyName>TheGame</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
@@ -34,9 +34,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>TheGame.GMServer.StartGM</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -67,6 +70,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="GMServer\GMSocket.cs" />
+    <Compile Include="GMServer\GMRequestHandler.cs" />
+    <Compile Include="GMServer\StartGM.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -98,7 +103,15 @@
     <None Include="JSONs\BeginGame.json" />
     <None Include="JSONs\ConfirmJoiningGame.json" />
     <None Include="JSONs\GameOver.json" />
+    <None Include="JSONs\Response\DestroyPieceResponse.json" />
+    <None Include="JSONs\Response\DiscoverResponse.json" />
+    <None Include="JSONs\Response\KnowledgeExchangeResponse.json" />
+    <None Include="JSONs\Response\MoveResponseAcceptance.json" />
     <None Include="JSONs\RejectJoiningGame.json" />
+    <None Include="JSONs\Response\MoveResponseRejection.json" />
+    <None Include="JSONs\Response\PickUpResponse.json" />
+    <None Include="JSONs\Response\PlacePieceResponse.json" />
+    <None Include="JSONs\Response\TestPieceResponse.json" />
     <None Include="JSONs\SetUpGame.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -114,9 +127,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Image\white_picture.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="configurations.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Image\blue_player.png" />

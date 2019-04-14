@@ -58,8 +58,10 @@ namespace ThePlayers
 
                 Console.WriteLine("Socket connected to {0}",
                     client.RemoteEndPoint.ToString());
-
+   
                 connectDone.Set();
+              // Receive();
+                PlayerRequestHandler.sendJoinGame(server);
             }
             catch (Exception e)
             {
@@ -115,6 +117,7 @@ namespace ThePlayers
                 }
                 else
                 {
+                    Console.WriteLine("Dint get shit");
 //                    RequestHandler.handleRequest(content, server);
                 }
             }

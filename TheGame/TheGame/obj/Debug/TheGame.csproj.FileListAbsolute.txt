@@ -31,3 +31,4 @@ C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\obj\Debu
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.dll
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
+C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.pdb

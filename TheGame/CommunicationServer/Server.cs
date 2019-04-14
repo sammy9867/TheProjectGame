@@ -18,7 +18,7 @@ namespace CommunicationServer
         public StringBuilder sb = new StringBuilder();
     }
 
-    class Program
+    class Server
     {
         // Thread signal.
         public static ManualResetEvent allDone 
@@ -78,6 +78,10 @@ namespace CommunicationServer
             state.workSocket = handler;
             handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                 new AsyncCallback(ReadCallback), state);
+
+            //First Start CS => start GM 
+            //After Accepting Connection from GM, 
+           // RequestHandler.sendConfirmGame(handler);
         }
 
         public static void ReadCallback(IAsyncResult ar)
@@ -90,9 +94,11 @@ namespace CommunicationServer
                 Socket handler = state.workSocket;
 
                 int bytesRead = handler.EndReceive(ar);
+                
 
                 if (bytesRead > 0)
                 {
+                  
                     state.sb.Append(Encoding.ASCII.GetString(
                         state.buffer, 0, bytesRead));
 
@@ -103,8 +109,8 @@ namespace CommunicationServer
                         Console.WriteLine("Read {0} bytes from socket. \n Data : {1}",
                             content.Length, content);
 
-                          Console.WriteLine("Player has connected");
-//                        RequestHandler.handleRequest(content, handler);
+                    //      Console.WriteLine("Player has connected");
+                      //   
                         state.sb.Clear();
                         handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                             new AsyncCallback(ReadCallback), state);

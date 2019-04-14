@@ -16,12 +16,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TheGame.Model;
+using TheGame.GMServer;
 
 namespace TheGame
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+
+   
     public partial class MainWindow : Window
     {
         private Board board;
@@ -30,8 +30,10 @@ namespace TheGame
 
         private bool pause;
 
+        
         public MainWindow()
         {
+
             InitializeComponent();
 
             RedTeam = BlueTeam = null;
@@ -40,7 +42,7 @@ namespace TheGame
 
             initFile();
             loadBoard();
-           
+
             updateBoard();
 
             var dueTime = TimeSpan.FromSeconds(5);
@@ -60,10 +62,11 @@ namespace TheGame
             {
                 string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
                 File.WriteAllText(newFileName, clientHeader);
-            }else if (File.Exists(newFileName))
+            }
+            else if (File.Exists(newFileName))
             {
                 File.Delete(newFileName);
-                  string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
+                string clientHeader = $"\"Type\",\"Timestamp\",\"Player ID\",\"Colour\",\"Role\"{Environment.NewLine}";
                 File.WriteAllText(newFileName, clientHeader);
             }
 
@@ -113,7 +116,7 @@ namespace TheGame
             counter_tmp++;
             if (counter_tmp % 2 == 0 && board.Pieces.Count < board.InitialNumberOfPieces)
                 addPiece();
-            
+
 
         }
 
@@ -175,7 +178,7 @@ namespace TheGame
             }
 
         }
-           
+
         private void doWork()
         {
             foreach (Player player in board.BlueTeam.members)
@@ -183,7 +186,7 @@ namespace TheGame
                 // prev coor
                 playerRoutine(player);
                 // write to file
-                
+
             }
 
             foreach (Player player in board.RedTeam.members)
@@ -226,10 +229,10 @@ namespace TheGame
                 string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
                 string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
                 insertIntoConfig("TakePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                return; 
+                return;
             }
 
-            
+
         }
 
         /* PLayer places a piece */
@@ -253,7 +256,7 @@ namespace TheGame
                         Board.BlueScore++;
 
                     if (player.Team == Team.TeamColor.BLUE)
-                        BlueTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column});
+                        BlueTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column });
                     else
                         RedTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column });
 
@@ -276,10 +279,10 @@ namespace TheGame
         {
             for (int c = 0; c < 3; c++)
                 for (int r = 0; r < 3; r++)
-                    player.Neighbors[c, r] = board.GetPlayersNeighbor(player.column-1+c, player.row-1+r, player.Team);
+                    player.Neighbors[c, r] = board.GetPlayersNeighbor(player.column - 1 + c, player.row - 1 + r, player.Team);
 
         }
-           
+
         /** Player takes a  Piece **/
         private void takePiece(Player player)
         {
@@ -302,13 +305,14 @@ namespace TheGame
             string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
             insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
-#endregion
+        #endregion
 
         /**Undiscovered Goals are initialised randomly**/
-        private void initGoals() {
+        private void initGoals()
+        {
 
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
-      
+
             for (int i = 0; i < board.NumberOfGoals; i++)
             {
                 Goal goal = new Goal();
@@ -338,17 +342,17 @@ namespace TheGame
             }
             else
             {
-                json = File.ReadAllText(config,Encoding.ASCII);
+                json = File.ReadAllText(config, Encoding.ASCII);
             }
 
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
 
             Board.RedScore = 0;
             Board.BlueScore = 0;
-            Board.Width = magic.Width;   
+            Board.Width = magic.Width;
             Board.GoalHeight = magic.GoalHeight;
             Board.TaskHeight = magic.TaskHeight;
-            Board.Height = 2* Board.GoalHeight + Board.TaskHeight;
+            Board.Height = 2 * Board.GoalHeight + Board.TaskHeight;
             board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
             board.NumberOfGoals = magic.NumberOfGoals;
             board.ShamProbability = magic.ShamProbability; // 50%
@@ -390,7 +394,7 @@ namespace TheGame
 
                 playgroundDockPanel.ColumnDefinitions.Add(coldef);
             }
-            
+
             /* Column to place notes about the game */
             ColumnDefinition notes = new ColumnDefinition
             {
@@ -415,7 +419,7 @@ namespace TheGame
             List<Piece> pieces = new List<Piece>();
 
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
-            
+
             while (pieces.Count < board.InitialNumberOfPieces)
             {
                 int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
@@ -457,10 +461,10 @@ namespace TheGame
             {
                 Player player = new Player
                 {
-                    role = (pn==0)? Player.Role.LEADER : Player.Role.MEMBER,
-                    playerID = (teamColor == Team.TeamColor.RED) ?  100 +pn : 200+pn,
+                    role = (pn == 0) ? Player.Role.LEADER : Player.Role.MEMBER,
+                    playerID = (teamColor == Team.TeamColor.RED) ? 100 + pn : 200 + pn,
                     row = (teamColor == Team.TeamColor.RED) ? 1 : 6,
-                    column = 1+pn,
+                    column = 1 + pn,
                     Team = teamColor,
                     Neighbors = new Player.NeighborStatus[3, 3]
                 };
@@ -476,9 +480,9 @@ namespace TheGame
         }
         #endregion
 
-     
+
         private void updateBoard()
-        {            
+        {
 
             for (int row = 0; row < Board.Height; row++)
                 for (int col = 0; col < Board.Width; col++)
@@ -487,7 +491,7 @@ namespace TheGame
                     {
                         Visibility = Visibility.Visible,
                         Tag = "" + col + "x" + row,
-                        Margin = new Thickness(2)                        
+                        Margin = new Thickness(2)
                     };
 
                     switch (board.getCellStatus(col, row))
@@ -516,8 +520,8 @@ namespace TheGame
 
 
                         case (int)Board.Status.TASK_AREA:
-                                img.Source = new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative));
-                                break;
+                            img.Source = new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative));
+                            break;
 
                         case (int)Board.Status.PIECE_AREA:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/piece_picture.png", UriKind.Relative));

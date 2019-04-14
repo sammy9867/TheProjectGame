@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("image/sham_picture.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("app.xaml.cs")]
 
 

@@ -70,10 +70,13 @@ namespace TheGame.GMServer
                 Socket client = (Socket)ar.AsyncState;
                 client.EndConnect(ar);
 
-                Console.WriteLine("Socket connected to {0}",
+                Console.WriteLine("Socket connected to {0}\n",
                     client.RemoteEndPoint.ToString());
 
                 connectDone.Set();
+
+                //Sending setupgame to CS
+                GMRequestHandler.sendSetUpGame(server);
             }
             catch (Exception e)
             {
@@ -114,7 +117,7 @@ namespace TheGame.GMServer
                     if (content.IndexOf((char)23) > -1)
                     {
                         content = content.Remove(content.IndexOf((char)23));
-                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}",
+                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}\n",
                             content.Length, content);
                      //   RequestHandler.handleRequest(content, client);
                         state.sb.Clear();
@@ -159,7 +162,7 @@ namespace TheGame.GMServer
                 Socket client = (Socket)ar.AsyncState;
 
                 int bytesSent = client.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to server.", bytesSent);
+                Console.WriteLine("Sent {0} bytes to server.\n", bytesSent);
 
                 sendDone.Set();
             }
