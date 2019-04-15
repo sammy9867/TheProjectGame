@@ -35,7 +35,7 @@ namespace TheGame.GMServer
 
             gmSocket.Receive();
             
-            Response = gmSocket.Response.ToString();
+            Response = gmSocket.Response;
             allDone.Set();
         }
     }

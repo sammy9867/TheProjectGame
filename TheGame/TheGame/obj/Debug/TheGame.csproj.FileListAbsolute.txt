@@ -27,7 +27,6 @@ C:\Users\julia\Source\Repos\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csp
 C:\Users\julia\Source\Repos\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CoreCompileInputs.cache
 C:\Users\julia\Source\Repos\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.exe
 C:\Users\julia\Source\Repos\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.pdb
-C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csprojAssemblyReference.cache
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.dll
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete

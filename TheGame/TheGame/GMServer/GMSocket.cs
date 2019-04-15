@@ -97,7 +97,8 @@ namespace TheGame.GMServer
                 var content = state.sb.ToString();
                 content = content.Remove(content.IndexOf(ETB));
                 state.sb.Clear();
-                Response =  content;
+                if(content != null)
+                    Response =  content;
             }
             catch (Exception e)
             {
@@ -154,7 +155,7 @@ namespace TheGame.GMServer
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
 
-            Receive(cb);
+//            Receive(cb);
 //            receiveDone.WaitOne();
         }
         private void SendCallback(IAsyncResult ar)

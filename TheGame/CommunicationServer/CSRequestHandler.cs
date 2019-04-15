@@ -28,9 +28,9 @@ namespace CommunicationServer
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             string action = magic.action;
-            magic.result = "ok";        // TODO: Remove always OK assumption
+            magic.result = "ok";        // TODO:
 
-            Server.Send(handler, json);
+            Server.Send(handler, JsonConvert.SerializeObject(magic));
 
         }
 
