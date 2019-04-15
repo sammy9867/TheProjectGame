@@ -21,12 +21,25 @@ namespace ThePlayers
     {
         public static int Main(string[] args)
         {
-            Console.WriteLine("Player has started");
+            foreach(Object ibj in args)
+                Console.WriteLine(ibj);
+            if(args.Length != 1)
+            {
+                Usage();
+                return -1;
+            }
+            if (!args[0].ToLower().Equals("red") && !args[0].ToLower().Equals("blue"))
+            {
+                Usage();
+                return -1;
+            }
+            Console.WriteLine("Player ["+args[0]+"] has started");
 
             // Create Player object
             Player player = new Player
             {
-                playerID = "number_one"
+                playerID = "number_one",
+                Team = args[0].ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE
             };
 
             // Initialize player 
@@ -41,5 +54,11 @@ namespace ThePlayers
             return 0;
         }
 
+        private static void Usage()
+        {
+            Console.WriteLine("Invalid arguments");
+            Console.WriteLine("Only one arg to indicate the Team");
+            Console.ReadKey();
+        }
     }
 }

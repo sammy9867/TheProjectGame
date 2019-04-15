@@ -30,7 +30,7 @@ namespace ThePlayers
 
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = PlayerSocket.Player.playerID;
-            magic.preferredTeam = "red";
+            magic.preferredTeam = PlayerSocket.Player.Team == Player.TeamColor.RED ? "red" : "blue";
 
             Console.WriteLine("Sending JoinGame.json to ComServer.....\n");
             PlayerSocket.Send(handler,
