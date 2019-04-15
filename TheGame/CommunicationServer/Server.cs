@@ -25,8 +25,10 @@ namespace CommunicationServer
             = new ManualResetEvent(false);
 
         private const char ETB = (char)23;
-        public const int PORT = 11000;
+        private const int PORT = 11000;
 
+        private static Socket GMSocket;
+        private static Dictionary<String, Socket> TempClients;
 
         public static void StartListening()
         {
@@ -152,8 +154,6 @@ namespace CommunicationServer
             }
         }
 
-       
-
         public static void Send(Socket handler, String data)
         {
             byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
@@ -184,7 +184,7 @@ namespace CommunicationServer
         {
             Console.WriteLine("Communication Server has started");
             Console.WriteLine("Start Listening...");
-
+            TempClients = new Dictionary<string, Socket>();
             StartListening();
 
             Console.WriteLine("Communication Server has done its job.");
@@ -198,10 +198,30 @@ namespace CommunicationServer
         {
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             string action = magic.action;
+            string result = magic.result;
             switch (action)
             {
                 case "start":
+                    GMSocket = state.workSocket;
                     CSRequestHandler.SendConfirmGame(state.workSocket);
+                    break;
+                case "connect":
+                    if (result == null)
+                    {
+                        // Player to GM
+                        string userGuid = magic.userGuid;
+                        TempClients.Add(userGuid, state.workSocket);
+                        CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
+                    }else{
+                        // GM to Player
+                        Socket destPlayer = null ;
+                        string userGuid = magic.userGuid;
+                        if (TempClients.TryGetValue(userGuid, out destPlayer))
+                        {
+                            CSRequestHandler.ConnectPlayerConfirmation(state.sb.ToString(), destPlayer);
+                            TempClients.Remove(userGuid);
+                        }
+                    }
                     break;
                 default:
                     Console.WriteLine("Error");

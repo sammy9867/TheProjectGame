@@ -20,7 +20,12 @@ namespace TheGame.Model
 
         public TeamColor teamColor { get; set; }
 
-        public int maxNumOfPlayers { get; set; }
+        public int NumOfPlayers
+        { get
+            {
+                return members == null ? -1 : members.Count();
+            }
+        }
 
         public TeamCell isTaken(int col, int row)
         {

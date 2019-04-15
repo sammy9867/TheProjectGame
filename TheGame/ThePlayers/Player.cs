@@ -26,7 +26,7 @@ namespace ThePlayers
         }
 
         public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
-        public int playerID { get; set; }
+        public string playerID { get; set; }
         public int row { get; set; }
         public int column { get; set; }
         public Role role { get; set; }

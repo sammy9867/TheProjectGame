@@ -24,7 +24,10 @@ namespace ThePlayers
             Console.WriteLine("Player has started");
 
             // Create Player object
-            Player player = new Player();
+            Player player = new Player
+            {
+                playerID = "number_one"
+            };
 
             // Initialize player 
             PlayerSocket.Player = player;

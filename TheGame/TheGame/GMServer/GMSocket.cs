@@ -94,6 +94,7 @@ namespace TheGame.GMServer
                 socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
                 receiveDone.WaitOne();
+                receiveDone.Reset();
                 var content = state.sb.ToString();
                 content = content.Remove(content.IndexOf(ETB));
                 state.sb.Clear();
@@ -126,7 +127,8 @@ namespace TheGame.GMServer
                      //   RequestHandler.handleRequest(content, client);
                      //   state.sb.Clear();
                         receiveDone.Set();
-                        
+
+
                         //if (state.cb != null)
                         //{
                         //    state.cb(content);

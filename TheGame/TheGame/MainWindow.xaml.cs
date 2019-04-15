@@ -25,7 +25,7 @@ namespace TheGame
         private Board board;
         private Team RedTeam;
         private Team BlueTeam;
-
+        private GMSocket GMSocket;
         private bool pause;
 
         
@@ -41,26 +41,28 @@ namespace TheGame
             initFile();
             loadBoard();
 
-            StartSocket();
-
             updateBoard();
-
-
 
             var dueTime = TimeSpan.FromSeconds(5);
             var interval = TimeSpan.FromSeconds(1);
 
             // Add a CancellationTokenSource and supply the token here instead of None.
-            RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+ //           RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            StartSocket();
+            
+            ConnectPlayers();
         }
 
         private void StartSocket()
         {
             ConsoleWriteLine("GM Socket started.");
 
-            GMSocket gmSocket = new GMSocket();
-            gmSocket.StartClient();
-            GMRequestHandler.SendSetUpGame(gmSocket);
+            GMSocket = new GMSocket();
+            GMSocket.StartClient();
+            GMRequestHandler.SendSetUpGame(GMSocket);
             GMRequestHandler.allDone.WaitOne();
 
             dynamic magic = 
@@ -77,6 +79,45 @@ namespace TheGame
                 this.Close();
             }
         }
+        private void ConnectPlayers()
+        {
+            if (null == GMSocket)
+            {
+                ConsoleWriteLine("Socket is null");
+                MessageBox.Show("Socket is null", "Error");
+                this.Close();
+            }
+
+            ConsoleWriteLine("Expect players");
+            while(board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers || 
+                  board.BlueTeam.NumOfPlayers < Board.MaxNumOfPlayers)
+            {
+                Player player;
+                GMRequestHandler.ConnectPlayer(GMSocket, out player);
+                if (player.Team == Team.TeamColor.RED)
+                {
+                    if (board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers)
+                        GMRequestHandler.ConnectPlayerDeny(GMSocket, player);
+                    if (board.RedTeam.leader == null)
+                        board.RedTeam.leader = player;
+                    board.RedTeam.members.Add(player);
+                }
+                else
+                {
+                    if (board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers)
+                        GMRequestHandler.ConnectPlayerDeny(GMSocket, player);
+                    if (board.BlueTeam.leader == null)
+                        board.BlueTeam.leader = player;
+                    board.BlueTeam.members.Add(player);
+                }
+                GMRequestHandler.ConnectPlayerOK(GMSocket, player);
+                ConsoleWriteLine("Players connected "+RedTeam.NumOfPlayers+"|"+
+                    BlueTeam.NumOfPlayers+"|"+Board.MaxNumOfPlayers);
+            }
+            ConsoleWriteLine("All Players Connected");
+
+        }
+
 
         private void initFile()
         {
@@ -98,7 +139,7 @@ namespace TheGame
 
         }
 
-        private bool insertIntoConfig(string type, string dateTime, int playerID, string colour, string role)
+        private bool insertIntoConfig(string type, string dateTime, string playerID, string colour, string role)
         {
             try
             {
@@ -379,10 +420,10 @@ namespace TheGame
             Board.GoalHeight = magic.GoalHeight;
             Board.TaskHeight = magic.TaskHeight;
             Board.Height = 2 * Board.GoalHeight + Board.TaskHeight;
+            Board.MaxNumOfPlayers = magic.MaxNumOfPlayers;
             board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
             board.NumberOfGoals = magic.NumberOfGoals;
             board.ShamProbability = magic.ShamProbability; // 50%
-            board.MaxNumOfPlayers = magic.MaxNumOfPlayers;
 
             RedTeam = loadTeam(Team.TeamColor.RED);
             board.RedTeam = RedTeam;
@@ -433,75 +474,6 @@ namespace TheGame
             loadPieces();
 
         }
-
-
-        #region Pieces
-        private List<Piece> loadPieces()
-        {
-            List<Piece> pieces = new List<Piece>();
-
-            Random rnd = new Random(Guid.NewGuid().GetHashCode());
-
-            while (pieces.Count < board.InitialNumberOfPieces)
-            {
-                int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
-                int column = rnd.Next(0, Board.Width);
-                bool exist = false;
-                if (RedTeam.isTaken(column, row) != 0) continue;
-                if (BlueTeam.isTaken(column, row) != 0) continue;
-                foreach (Piece p in pieces)
-                    if (p.isTaken(column, row))
-                    {
-                        exist = true;
-                        break;
-                    }
-                if (exist) continue;
-                Piece piece = new Piece();
-                piece.row = row;
-                piece.column = column;
-
-                piece.isSham = (rnd.Next(0, 100) < board.ShamProbability) ? true : false;
-                pieces.Add(piece);
-            }
-            return pieces;
-
-        }
-        #endregion
-
-        #region Teams
-        private Team loadTeam(Team.TeamColor teamColor)
-        {
-            Team team = new Team();
-
-            team.maxNumOfPlayers = board.MaxNumOfPlayers;
-
-            team.members = new List<Player>();
-            team.DiscoveredGoals = new List<Goal>();
-            team.DiscoveredNonGoals = new List<Goal>();
-
-            for (int pn = 0; pn < team.maxNumOfPlayers; pn++)
-            {
-                Player player = new Player
-                {
-                    role = (pn == 0) ? Player.Role.LEADER : Player.Role.MEMBER,
-                    playerID = (teamColor == Team.TeamColor.RED) ? 100 + pn : 200 + pn,
-                    row = (teamColor == Team.TeamColor.RED) ? 1 : 6,
-                    column = 1 + pn,
-                    Team = teamColor,
-                    Neighbors = new Player.NeighborStatus[3, 3]
-                };
-                if (0 == pn)
-                    team.leader = player;
-                team.members.Add(player);
-            }
-
-            team.teamColor = teamColor;
-
-
-            return team;
-        }
-        #endregion
-
 
         private void updateBoard()
         {
@@ -574,11 +546,58 @@ namespace TheGame
                 }
         }
 
-
         private void pauseMenuItem_Click(object sender, RoutedEventArgs e)
         {
             pause = !pause;
         }
+
+
+        #region Load Pieces
+        private List<Piece> loadPieces()
+        {
+            List<Piece> pieces = new List<Piece>();
+
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+
+            while (pieces.Count < board.InitialNumberOfPieces)
+            {
+                int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
+                int column = rnd.Next(0, Board.Width);
+                bool exist = false;
+                if (RedTeam.isTaken(column, row) != 0) continue;
+                if (BlueTeam.isTaken(column, row) != 0) continue;
+                foreach (Piece p in pieces)
+                    if (p.isTaken(column, row))
+                    {
+                        exist = true;
+                        break;
+                    }
+                if (exist) continue;
+                Piece piece = new Piece();
+                piece.row = row;
+                piece.column = column;
+
+                piece.isSham = (rnd.Next(0, 100) < board.ShamProbability) ? true : false;
+                pieces.Add(piece);
+            }
+            return pieces;
+
+        }
+        #endregion
+
+        #region Load Team 
+        private Team loadTeam(Team.TeamColor teamColor)
+        {
+            Team team = new Team();
+
+            team.members = new List<Player>();
+            team.DiscoveredGoals = new List<Goal>();
+            team.DiscoveredNonGoals = new List<Goal>();
+            team.teamColor = teamColor;
+
+            return team;
+        }
+        #endregion
 
         #region WPF Console writting
         public void ConsoleWrite(string line)
@@ -589,7 +608,7 @@ namespace TheGame
         }
         public void ConsoleWriteLine(string line)
         {
-            ConsoleWrite(line+"\n");
+            ConsoleWrite(line + "\n");
         }
         #endregion
 
@@ -606,5 +625,7 @@ namespace TheGame
             }
         }
         #endregion
+
+        
     }
 }

@@ -63,8 +63,8 @@ namespace ThePlayers
    
                 connectDone.Set();
               
-                // Receive();
                 PlayerRequestHandler.sendJoinGame(server);
+                Receive();
             }
             catch (Exception e)
             {
@@ -101,7 +101,7 @@ namespace ThePlayers
                     state.sb = state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                     if (state.sb.ToString().IndexOf(ETB) < 0)
                     {
-                        server.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                        server.BeginReceive(state.buffer, /* bytesRead ? */0, StateObject.BufferSize, 0,
                             new AsyncCallback(ReceiveCallback), state);
                         return;
                     }

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:TheGame"
         mc:Ignorable="d"
         Title="MainWindow" Height="500" Width="500" 
-        WindowStartupLocation="CenterScreen" >
+        WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
 
     <DockPanel>
         <!-- Menu Bar -->

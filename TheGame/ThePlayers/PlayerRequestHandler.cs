@@ -28,15 +28,13 @@ namespace ThePlayers
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
 
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            string action = magic.action;
-            string userGuid = magic.userGuid;
-            string preferredTeam = magic.preferredTeam;
-            string type = magic.type;
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.preferredTeam = "red";
 
             Console.WriteLine("Sending JoinGame.json to ComServer.....\n");
             PlayerSocket.Send(handler,
-                action + " " +userGuid + " " + preferredTeam + " "+type);
+                JsonConvert.SerializeObject(magic));
 
         }
 

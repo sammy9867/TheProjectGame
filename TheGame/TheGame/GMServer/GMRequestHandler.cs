@@ -7,14 +7,16 @@ using Newtonsoft.Json;
 using System.Net.Sockets;
 using System.IO;
 using System.Threading;
+using TheGame.Model;
+
 namespace TheGame.GMServer
 {
     public static class GMRequestHandler
     {
-        public static string Response;
+        public static string Response { get; set; }
         public static ManualResetEvent allDone
             = new ManualResetEvent(false);
-
+                
         //Sending ConfirmSetUpGame JSON to to client on connection
         public static void SendSetUpGame(GMSocket gmSocket)
         {
@@ -36,7 +38,69 @@ namespace TheGame.GMServer
             gmSocket.Receive();
             
             Response = gmSocket.Response;
+            gmSocket.Response = "";
             allDone.Set();
+        }
+
+        internal static void ConnectPlayer(GMSocket GMSocket, out Player player)
+        {
+            GMSocket.Receive();
+            player = null;
+
+            dynamic magic = JsonConvert.DeserializeObject(GMSocket.Response);
+            string action = magic.action;
+            string team = magic.preferredTeam;
+
+            if (!action.ToLower().Equals("connect"))
+                return;
+            if (!team.ToLower().Equals("red") && !team.ToLower().Equals("blue"))
+                return;
+
+            player = new Player();
+            player.playerID = magic.userGuid;
+            player.Team = team.ToLower().Equals("red") ? 
+                Team.TeamColor.RED : Team.TeamColor.BLUE ;
+            
+        }
+
+        internal static void ConnectPlayerOK(GMSocket gmSocket, Player player)
+        {
+            Socket handler = gmSocket.socket;
+            string file = @"..\..\JSONs\ConfirmJoiningGame.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
+//            gmSocket.sendDone.WaitOne();
+        }
+        
+        internal static void ConnectPlayerDeny(GMSocket gmSocket, Player player)
+        {
+            Socket handler = gmSocket.socket;
+            string file = @"..\..\JSONs\RejectJoiningGame.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
+//            gmSocket.sendDone.WaitOne();
         }
     }
 }

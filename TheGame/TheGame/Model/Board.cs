@@ -33,6 +33,7 @@ namespace TheGame.Model
         public static int Height { get; set; }
         public static int GoalHeight { get; set; }
         public static int TaskHeight { get; set; }
+        public static int MaxNumOfPlayers { get; set; }
 
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
@@ -50,7 +51,7 @@ namespace TheGame.Model
         public int InitialNumberOfPieces { get; set; }
         public int NumberOfGoals { get; set; }
         public int ShamProbability { get; set; }
-        public int MaxNumOfPlayers { get; set; }
+        
 
         public int getCellStatus(int col, int row)
         {
