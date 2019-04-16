@@ -123,22 +123,24 @@ namespace TheGame.GMServer
             magic.role = player.role == Player.Role.LEADER ? "leader" : "member";
             magic.teamSize = "" + members.Count;
 
-            string teamGuids = "["+leader.playerID;
+            string[] ids = new string[members.Count];
+            ids[0] = leader.playerID;
+            int i = 1;
             foreach (var p in members)
-                teamGuids += "," + p.playerID;
-            teamGuids += "]";
-            magic.teamGuids = teamGuids;
+            {
+                if (p.playerID != leader.playerID)
+                    ids[i++] = p.playerID;
+            }
 
-            dynamic location = JsonConvert.DeserializeObject(magic.location);
-            location.x = "" + player.column;
-            location.y = "" + player.row;
-            magic.location = JsonConvert.SerializeObject(location);
+            magic.teamGuids = JsonConvert.SerializeObject(ids) ;
 
-            dynamic board = JsonConvert.DeserializeObject(magic.board);
-            board.width = "" + Board.Width;
-            board.tasksHeight = "" + Board.TaskHeight;
-            board.goalsHeight = "" + Board.GoalHeight;
-            magic.board = JsonConvert.SerializeObject(board);
+            
+            magic.location.x = "" + player.column;
+            magic.location.y = "" + player.row;
+
+            magic.board.width = "" + Board.Width;
+            magic.board.tasksHeight = "" + Board.TaskHeight;
+            magic.board.goalsHeight = "" + Board.GoalHeight;
 
             gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
         }
