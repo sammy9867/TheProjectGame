@@ -54,6 +54,8 @@ namespace TheGame
             StartSocket();
             ConnectPlayers();
             BeginGame();
+
+            updateBoard();
         }
 
         private void StartSocket()
@@ -100,6 +102,9 @@ namespace TheGame
                         GMRequestHandler.ConnectPlayerDeny(GMSocket, player);
                     if (board.RedTeam.leader == null)
                         board.RedTeam.leader = player;
+                    player.Neighbors = new Player.NeighborStatus[3, 3];
+                    player.row = 1; // TODO: Update the row
+                    player.column = RedTeam.members.Count;
                     board.RedTeam.members.Add(player);
                 }
                 else
@@ -108,6 +113,9 @@ namespace TheGame
                         GMRequestHandler.ConnectPlayerDeny(GMSocket, player);
                     if (board.BlueTeam.leader == null)
                         board.BlueTeam.leader = player;
+                    player.Neighbors = new Player.NeighborStatus[3, 3];
+                    player.row = Board.Height - 1;  // TODO: Update the row
+                    player.column = BlueTeam.members.Count;
                     board.BlueTeam.members.Add(player);
                 }
                 GMRequestHandler.ConnectPlayerOK(GMSocket, player);
@@ -132,7 +140,6 @@ namespace TheGame
             }
             ConsoleWriteLine("Started");
         }
-
 
         private void initFile()
         {

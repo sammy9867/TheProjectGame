@@ -169,9 +169,8 @@ namespace ThePlayers
             switch (action)
             {
                 case "begin":
-                    dynamic location = Newtonsoft.Json.JsonConvert.DeserializeObject(magic.location);
-                    string x = location.x;
-                    string y = location.y;
+                    string x = magic.location.x;
+                    string y = magic.location.y;
                     Player.row = Int32.Parse(y);
                     Player.column = Int32.Parse(x);
                     Console.WriteLine("Player " + Player.playerID + "  [row,col]");
