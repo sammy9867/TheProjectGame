@@ -38,7 +38,7 @@ namespace ThePlayers
             // Create Player object
             Player player = new Player
             {
-                playerID = "number_one",
+                playerID = ""+(new Random()).Next(),
                 Team = args[0].ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE
             };
 

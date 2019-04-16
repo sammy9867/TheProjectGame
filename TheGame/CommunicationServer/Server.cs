@@ -21,14 +21,14 @@ namespace CommunicationServer
     public class Server
     {
         // Thread signal.
-        public static ManualResetEvent allDone 
+        public static ManualResetEvent allDone
             = new ManualResetEvent(false);
 
         private const char ETB = (char)23;
         private const int PORT = 11000;
 
         private static Socket GMSocket;
-        private static Dictionary<String, Socket> TempClients;
+        private static Dictionary<String, Socket> Clients;
 
         public static void StartListening()
         {
@@ -42,9 +42,9 @@ namespace CommunicationServer
                 SocketType.Stream, ProtocolType.Tcp);
 
             // Setting socket options (WHY??)
-            listener.SetSocketOption(SocketOptionLevel.Socket, 
+            listener.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.SendTimeout, 1000);
-            listener.SetSocketOption(SocketOptionLevel.Socket, 
+            listener.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.Linger, new LingerOption(true, 10));
 
             // Bind the socket to the local endpoint and listen for incoming
@@ -79,9 +79,6 @@ namespace CommunicationServer
 
         }
 
-        /***
-         * AccepCallback function accepts a client and notifies the main thread 
-         */
         public static void AcceptCallback(IAsyncResult ar)
         {
             // Signal the main thread to continue. 
@@ -114,7 +111,7 @@ namespace CommunicationServer
                 Socket handler = state.workSocket;
 
                 int bytesRead = handler.EndReceive(ar);
-                
+
 
                 if (bytesRead > 0)
                 {
@@ -135,7 +132,7 @@ namespace CommunicationServer
 
                         AnalizeTheMessage(content, state);
 
-                      
+
                         // Clear the state object and receive a new message   
                         state.sb.Clear();
                         handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
@@ -184,7 +181,7 @@ namespace CommunicationServer
         {
             Console.WriteLine("Communication Server has started");
             Console.WriteLine("Start Listening...");
-            TempClients = new Dictionary<string, Socket>();
+            Clients = new Dictionary<string, Socket>();
             StartListening();
 
             Console.WriteLine("Communication Server has done its job.");
@@ -199,6 +196,8 @@ namespace CommunicationServer
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             string action = magic.action;
             string result = magic.result;
+            string userGuid = magic.userGuid;
+
             switch (action)
             {
                 case "start":
@@ -209,20 +208,29 @@ namespace CommunicationServer
                     if (result == null)
                     {
                         // Player to GM
-                        string userGuid = magic.userGuid;
-                        TempClients.Add(userGuid, state.workSocket);
+                        Clients.Add(userGuid, state.workSocket);
                         CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
-                    }else{
+                    }
+                    else
+                    {
                         // GM to Player
-                        Socket destPlayer = null ;
-                        string userGuid = magic.userGuid;
-                        if (TempClients.TryGetValue(userGuid, out destPlayer))
+                        Socket destPlayer = null;
+                        if (Clients.TryGetValue(userGuid, out destPlayer))
                         {
                             CSRequestHandler.ConnectPlayerConfirmation(state.sb.ToString(), destPlayer);
-                            TempClients.Remove(userGuid);
                         }
                     }
                     break;
+                case "begin":
+                    {
+                        Socket destPlayer = null;
+                        if (Clients.TryGetValue(userGuid, out destPlayer))
+                        {
+                            CSRequestHandler.BeginPlayer(json, destPlayer);
+                            Clients.Remove(userGuid);
+                        }
+                        break;
+                    }
                 default:
                     Console.WriteLine("Error");
                     Console.WriteLine("Unexpected action in the message");

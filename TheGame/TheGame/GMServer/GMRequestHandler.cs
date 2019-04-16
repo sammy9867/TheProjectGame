@@ -102,5 +102,45 @@ namespace TheGame.GMServer
             gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
 //            gmSocket.sendDone.WaitOne();
         }
+
+        internal static void BeginGame(GMSocket gmSocket, 
+            Player player, List<Player> members, Player leader)
+        {
+            Socket handler = gmSocket.socket;
+            string file = @"..\..\JSONs\BeginGame.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+            magic.team = player.Team == Team.TeamColor.RED ? "red" : "blue";
+            magic.role = player.role == Player.Role.LEADER ? "leader" : "member";
+            magic.teamSize = "" + members.Count;
+
+            string teamGuids = "["+leader.playerID;
+            foreach (var p in members)
+                teamGuids += "," + p.playerID;
+            teamGuids += "]";
+            magic.teamGuids = teamGuids;
+
+            dynamic location = JsonConvert.DeserializeObject(magic.location);
+            location.x = "" + player.column;
+            location.y = "" + player.row;
+            magic.location = JsonConvert.SerializeObject(location);
+
+            dynamic board = JsonConvert.DeserializeObject(magic.board);
+            board.width = "" + Board.Width;
+            board.tasksHeight = "" + Board.TaskHeight;
+            board.goalsHeight = "" + Board.GoalHeight;
+            magic.board = JsonConvert.SerializeObject(board);
+
+            gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
+        }
     }
 }

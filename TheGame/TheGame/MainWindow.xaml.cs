@@ -52,8 +52,8 @@ namespace TheGame
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             StartSocket();
-            
             ConnectPlayers();
+            BeginGame();
         }
 
         private void StartSocket()
@@ -116,6 +116,21 @@ namespace TheGame
             }
             ConsoleWriteLine("All Players Connected");
 
+        }
+        private void BeginGame()
+        {
+            ConsoleWriteLine("");
+            ConsoleWriteLine("Begin the game for BLue Team");
+            foreach (var p in BlueTeam.members)
+            {
+                GMRequestHandler.BeginGame(GMSocket, p, BlueTeam.members, BlueTeam.leader);
+            }
+            ConsoleWriteLine("Begin the game for BLue Team");
+            foreach (var p in RedTeam.members)
+            {
+                GMRequestHandler.BeginGame(GMSocket, p, RedTeam.members, RedTeam.leader);
+            }
+            ConsoleWriteLine("Started");
         }
 
 

@@ -37,16 +37,18 @@ namespace CommunicationServer
         public static void ConnectPlayer(String data, Socket gMSocket)
         {
             Console.WriteLine("ConnectPlayer");
-            Console.WriteLine(data);
-
             Server.Send(gMSocket, data);
         }
 
         internal static void ConnectPlayerConfirmation(String data, Socket destPlayer)
         {
             Console.WriteLine("ConnectPlayer");
-            Console.WriteLine(data);
+            Server.Send(destPlayer, data);
+        }
 
+        internal static void BeginPlayer(string data, Socket destPlayer)
+        {
+            Console.WriteLine("BeginPlayer");
             Server.Send(destPlayer, data);
         }
     }
