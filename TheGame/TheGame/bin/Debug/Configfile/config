@@ -5,5 +5,5 @@
 	"InitialNumberOfPieces":"10",
 	"NumberOfGoals":"2",
 	"ShamProbability":"50",
-	"MaxNumOfPlayers":"2"
+	"MaxNumOfPlayers":"1"
 }
