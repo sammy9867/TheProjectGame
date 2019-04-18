@@ -49,3 +49,7 @@ C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame
 C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
 C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.exe
 C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.pdb
+C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.dll
+C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.pdb
+C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
+C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
