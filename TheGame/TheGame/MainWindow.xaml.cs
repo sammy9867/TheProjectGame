@@ -128,12 +128,12 @@ namespace TheGame
         private void BeginGame()
         {
             ConsoleWriteLine("");
-            ConsoleWriteLine("Begin the game for BLue Team");
+            ConsoleWriteLine("Begin the game for Blue Team");
             foreach (var p in BlueTeam.members)
             {
                 GMRequestHandler.BeginGame(GMSocket, p, BlueTeam.members, BlueTeam.leader);
             }
-            ConsoleWriteLine("Begin the game for BLue Team");
+            ConsoleWriteLine("Begin the game for Red Team");
             foreach (var p in RedTeam.members)
             {
                 GMRequestHandler.BeginGame(GMSocket, p, RedTeam.members, RedTeam.leader);

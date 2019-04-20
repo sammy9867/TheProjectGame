@@ -53,3 +53,4 @@ C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.
 C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.pdb
 C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
 C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
+C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csprojAssemblyReference.cache

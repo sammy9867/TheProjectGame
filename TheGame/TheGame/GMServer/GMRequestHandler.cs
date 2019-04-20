@@ -144,5 +144,42 @@ namespace TheGame.GMServer
 
             gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
         }
+
+        //TODO: 2nd Communication phase
+        internal static void ResponseForDiscover()
+        {
+
+        }
+        internal static void ResponseForMove()
+        {
+
+        }
+        internal static void ResponseForPickUp()
+        {
+
+        }
+        internal static void ResponseForTestPiece()
+        {
+
+        }
+        internal static void ResponseForDestroyPiece()
+        {
+
+        }
+        internal static void ResponseForPlacePiece()
+        {
+
+        }
+        internal static void sendGameOver()
+        {
+
+        }   
+
+
+        //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
+
+            
+
+
     }
 }
