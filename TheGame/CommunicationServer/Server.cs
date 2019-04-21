@@ -158,7 +158,6 @@ namespace CommunicationServer
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
         }
-
         private static void SendCallback(IAsyncResult ar)
         {
             try
@@ -203,26 +202,30 @@ namespace CommunicationServer
             switch (action)
             {
                 case "start":
-                    GMSocket = state.workSocket;
-                    CSRequestHandler.SendConfirmGame(state.workSocket);
-                    break;
+                    {
+                        GMSocket = state.workSocket;
+                        CSRequestHandler.SendConfirmGame(state.workSocket);
+                        break;
+                    }
                 case "connect":
-                    if (result == null)
                     {
-                        // Player to GM
-                        Clients.Add(userGuid, state.workSocket);
-                        CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
-                    }
-                    else
-                    {
-                        // GM to Player
-                        Socket destPlayer = null;
-                        if (Clients.TryGetValue(userGuid, out destPlayer))
+                        if (result == null)
                         {
-                            CSRequestHandler.ConnectPlayerConfirmation(state.sb.ToString(), destPlayer);
+                            // Player to GM
+                            Clients.Add(userGuid, state.workSocket); // add player's socket
+                            CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
                         }
+                        else
+                        {
+                            // GM to Player
+                            Socket destPlayer = null;
+                            if (Clients.TryGetValue(userGuid, out destPlayer))
+                            {
+                                CSRequestHandler.ConnectPlayerConfirmation(state.sb.ToString(), destPlayer);
+                            }
+                        }
+                        break;
                     }
-                    break;
                 case "begin":
                     {
                         Socket destPlayer = null;
@@ -233,7 +236,6 @@ namespace CommunicationServer
                         }
                         break;
                     }
-             
                 case "move":
                     {
                         if (result == null && CSRequestHandler.beginGame == true)
@@ -249,6 +251,27 @@ namespace CommunicationServer
                             {
                                 CSRequestHandler.ResponseForValidMove(state.sb.ToString(), destPlayer);
                             }
+                        }
+                        break;
+                    }
+
+                case "state":
+                    {
+                        if (GMSocket == state.workSocket)
+                        {
+                            // Forward Message from GM to player
+                            Console.WriteLine("Forward "+action+" Message GM -> Player");
+                            Socket destPlayer = null;
+                            if (Clients.TryGetValue(userGuid, out destPlayer))
+                                Send(destPlayer, state.sb.ToString());
+                            else
+                                Console.WriteLine("404 Player not found\n"+userGuid);
+                        }
+                        else
+                        {
+                            // Forward Message from player to GM
+                            Console.WriteLine("Forward " + action + " Message Player -> GM");
+                            Send(GMSocket, state.sb.ToString());
                         }
                         break;
                     }
