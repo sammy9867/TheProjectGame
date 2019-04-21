@@ -146,11 +146,27 @@ namespace TheGame.GMServer
         }
 
         //TODO: 2nd Communication phase
-        internal static void ResponseForDiscover()
+        internal static void ResponseForMove(GMSocket gmSocket, Player player)
         {
+            Socket handler = gmSocket.socket;
+            string file = @"..\..\JSONs\Response\MoveResponseAcceptance.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+            magic.manhattanDistance = player.Team == Team.TeamColor.RED ? player.goDown() : player.goUp();
 
         }
-        internal static void ResponseForMove()
+
+
+        internal static void ResponseForDiscover()
         {
 
         }

@@ -54,6 +54,7 @@ namespace TheGame
             StartSocket();
             ConnectPlayers();
             BeginGame();
+            LetsMove();
 
             updateBoard();
         }
@@ -141,6 +142,23 @@ namespace TheGame
             ConsoleWriteLine("Started");
         }
 
+        private void LetsMove()
+        {
+            ConsoleWriteLine("");
+            ConsoleWriteLine("Move player from Blue Team");
+            foreach (var p in BlueTeam.members)
+            {
+                GMRequestHandler.ResponseForMove(GMSocket, p);
+            }
+            ConsoleWriteLine("Move player from Red Team");
+            foreach (var p in RedTeam.members)
+            {
+                GMRequestHandler.ResponseForMove(GMSocket, p);
+            }
+
+        }
+
+        
         private void initFile()
         {
             // create a file object

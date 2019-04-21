@@ -69,6 +69,12 @@ namespace ThePlayers
                 Receive();
                 // Receive BeginGame message
                 Receive();
+                // Send Move action
+                PlayerRequestHandler.sendMove(socket);
+                // Receive Move Reponse
+                Receive();
+
+           
 
                 Console.WriteLine("Player begins the game");
             }
@@ -169,15 +175,23 @@ namespace ThePlayers
             switch (action)
             {
                 case "begin":
-                    string x = magic.location.x;
-                    string y = magic.location.y;
-                    Player.row = Int32.Parse(y);
-                    Player.column = Int32.Parse(x);
-                    Console.WriteLine("Player " + Player.playerID + "  [row,col]");
-                    Console.WriteLine(""+Player.row +" "+Player.column);
-                    break;
-                default:
-                    break;
+                    {
+                        string x = magic.location.x;
+                        string y = magic.location.y;
+                        Player.row = Int32.Parse(y);
+                        Player.column = Int32.Parse(x);
+                        Console.WriteLine("Player " + Player.playerID + "  [row,col]");
+                        Console.WriteLine("" + Player.row + " " + Player.column);
+                        break;
+                    }
+                case "move":
+                    {
+                        string direction = magic.direction;
+                        Console.WriteLine("Direction: " + direction);
+                        break;
+                    }
+                default: break;
+                
             }
 
         }

@@ -56,7 +56,7 @@ namespace ThePlayers
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = PlayerSocket.Player.playerID;
             //CHANGE follow:
-            magic.direction = PlayerSocket.Player.Team == Player.TeamColor.RED ? "red" : "blue";
+            magic.direction = PlayerSocket.Player.Team == Player.TeamColor.RED ? "S" : "N";
 
             Console.WriteLine("Sending Move.json....\n");
             PlayerSocket.Send(handler,

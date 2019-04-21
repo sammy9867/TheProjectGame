@@ -198,6 +198,8 @@ namespace CommunicationServer
             string result = magic.result;
             string userGuid = magic.userGuid;
 
+            string direction = magic.direction;
+
             switch (action)
             {
                 case "start":
@@ -228,6 +230,25 @@ namespace CommunicationServer
                         {
                             CSRequestHandler.BeginPlayer(json, destPlayer);
                             Clients.Remove(userGuid);
+                        }
+                        break;
+                    }
+             
+                case "move":
+                    {
+                        if (result == null && CSRequestHandler.beginGame == true)
+                        {
+                            //Player to GM
+                            CSRequestHandler.Move(state.sb.ToString(), GMSocket);
+                        }
+                        else if(result != null && CSRequestHandler.beginGame == true)
+                        {
+                            //GM to Player
+                            Socket destPlayer = null;
+                            if (Clients.TryGetValue(userGuid, out destPlayer))
+                            {
+                                CSRequestHandler.ResponseForValidMove(state.sb.ToString(), destPlayer);
+                            }
                         }
                         break;
                     }
