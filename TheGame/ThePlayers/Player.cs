@@ -27,10 +27,14 @@ namespace ThePlayers
 
         public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
         public string playerID { get; set; }
-        public int row { get; set; }
-        public int column { get; set; }
         public Role role { get; set; }
         public bool hasPiece { get; set; }
+        public int Row { get; set; }
+        public int Column { get; set; }
+
+        public int X { get { return Column; }  }
+        public int Y { get { return Row; } }
+
 
         public TeamColor Team { get; set; }
 
@@ -46,7 +50,7 @@ namespace ThePlayers
             // [column , row]
             if (Neighbors[1, 0] == NeighborStatus.BLOCKED)
                 return FAILURE; 
-            row--;
+            Row--;
             return SUCCESS;
         }
         public int goDown()
@@ -54,7 +58,7 @@ namespace ThePlayers
             // [column , row]
             if (Neighbors[1, 2] == NeighborStatus.BLOCKED)
                 return FAILURE;
-            row++;
+            Row++;
             return SUCCESS;
         }
         public int goLeft()
@@ -62,7 +66,7 @@ namespace ThePlayers
             // [column , row]
             if (Neighbors[0, 1] == NeighborStatus.BLOCKED)
                 return FAILURE;
-            column--;
+            Column--;
             return SUCCESS;
         }
         public int goRight()
@@ -70,7 +74,7 @@ namespace ThePlayers
             // [column , row]
             if (Neighbors[2, 1] == NeighborStatus.BLOCKED)
                 return FAILURE;
-            column++;
+            Column++;
             return SUCCESS;
         }
         #endregion

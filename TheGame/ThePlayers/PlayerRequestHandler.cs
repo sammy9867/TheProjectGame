@@ -82,9 +82,9 @@ namespace ThePlayers
 
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = PlayerSocket.Player.playerID;
-            //CHANGE FOLLOWING
-            //magic.scope.x = PlayerSocket.Player.Team == Player.TeamColor.RED ? "red" : "blue";
-           // magic.scope.y = PlayerSocket.Player.Team == Player.TeamColor.RED ? "red" : "blue";
+
+            magic.scope.x = PlayerSocket.Player.X;
+            magic.scope.y = PlayerSocket.Player.Y;
 
             Console.WriteLine("Sending Discover.json....\n");
             PlayerSocket.Send(handler,

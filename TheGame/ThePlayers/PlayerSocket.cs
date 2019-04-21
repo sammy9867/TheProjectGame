@@ -69,10 +69,6 @@ namespace ThePlayers
                 Receive();
                 // Receive BeginGame message
                 Receive();
-                // Send Move action
-                PlayerRequestHandler.sendMove(socket);
-                // Receive Move Reponse
-                Receive();
 
            
 
@@ -117,22 +113,13 @@ namespace ThePlayers
                     }
                 }
                 var content = state.sb.ToString();
-//                content = content.Remove(content.IndexOf(ETB), 1);
                 content = content.Replace(ETB, ' ');
                 Console.WriteLine("Read {0} bytes from socket. \nData : {1}",
                     content.Length, content);
 
-                if (state.cb != null)
-                {
-                    state.cb(content);
-                    state.cb = null;
-                    receiveDone.Set();
-                }
-                else
-                {
-                    // Here the message is read and we may analize it
-                    AnalizeMessage(content);
-                }
+                // Here the message is read and we may analize it
+                AnalizeMessage(content);
+                
             }
             catch (Exception e)
             {
@@ -145,8 +132,9 @@ namespace ThePlayers
             byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
-
-            Receive(cb);
+            
+            // After every sent command the player expect the response
+            Receive(cb);    // RSP_LBL
         }
         private static void SendCallback(IAsyncResult ar)
         {
@@ -172,16 +160,17 @@ namespace ThePlayers
             string result = magic.result;
             string userGuid = magic.userGuid;
 
-            switch (action)
+            switch (action.ToLower())
             {
                 case "begin":
                     {
-                        string x = magic.location.x;
-                        string y = magic.location.y;
-                        Player.row = Int32.Parse(y);
-                        Player.column = Int32.Parse(x);
-                        Console.WriteLine("Player " + Player.playerID + "  [row,col]");
-                        Console.WriteLine("" + Player.row + " " + Player.column);
+                        ReadStartGame(json);
+                        SendDiscover();
+                        break;
+                    }
+                case "state":
+                    {
+                        ReadDiscover(json);
                         break;
                     }
                 case "move":
@@ -194,6 +183,39 @@ namespace ThePlayers
                 
             }
 
+        }
+        private static void ReadStartGame(string json)
+        {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            string x = magic.location.x;
+            string y = magic.location.y;
+            Player.Row = Int32.Parse(y);
+            Player.Column = Int32.Parse(x);
+            Console.WriteLine("Player " + Player.playerID + "  [row,col]");
+            Console.WriteLine("" + Player.Row + " " + Player.Column);
+        }
+
+        private static void SendDiscover()
+        {
+            // send Discover action
+            PlayerRequestHandler.sendDiscover(socket);
+            
+            // After every send command, player expect the response
+            // Receive() is called  at the end of Send() method 
+            // use ctrl+F to find lable RSP_LBL
+        }
+        private static void ReadDiscover(string json)
+        {
+            Console.WriteLine("DiscoverResponce:");
+            Console.WriteLine(json);
+        }
+
+        private static void SendMove()
+        {
+            // Send Move action
+            PlayerRequestHandler.sendMove(socket);
+            // Receive Move Reponse
+            // Receive();  check Send() method, it calls Receive()
         }
     }
 }

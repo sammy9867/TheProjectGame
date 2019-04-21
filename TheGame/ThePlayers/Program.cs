@@ -19,11 +19,13 @@ namespace ThePlayers
 
     class Program
     {
+        private static Player player;
         public static int Main(string[] args)
         {
-            foreach(Object ibj in args)
+            #region Arguments
+            foreach (Object ibj in args)
                 Console.WriteLine(ibj);
-            if(args.Length != 1)
+            if (args.Length != 1)
             {
                 Usage();
                 return -1;
@@ -33,25 +35,37 @@ namespace ThePlayers
                 Usage();
                 return -1;
             }
-            Console.WriteLine("Player ["+args[0]+"] has started");
+            #endregion
+            Console.WriteLine("Player [" + args[0] + "] has started");
 
             // Create Player object
-            Player player = new Player
+            player = new Player
             {
-                playerID = ""+(new Random()).Next(),
+                playerID = "" + (new Random()).Next(),
                 Team = args[0].ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE
             };
 
             // Initialize player 
             PlayerSocket.Player = player;
+       
 
             // Start Communication with CS
             PlayerSocket.StartClient();
+
+            // Once Communication established 
+            // Player start playing
+            StartPlaying();
 
             Console.WriteLine("Player "+player.playerID+" terminated");
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             return 0;
+        }
+
+        private static void StartPlaying()
+        {
+
+
         }
 
         private static void Usage()
