@@ -44,20 +44,17 @@ namespace TheGame
             updateBoard();
 
             var dueTime = TimeSpan.FromSeconds(5);
-            var interval = TimeSpan.FromSeconds(1);
+            var interval = TimeSpan.FromSeconds(0);
 
             // Add a CancellationTokenSource and supply the token here instead of None.
- //           RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+            //           RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
+            RunAsync(OnTick);
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            StartSocket();
-            ConnectPlayers();
-            BeginGame();
-            LetsMove();
-
-            updateBoard();
+            
         }
+
 
         private void StartSocket()
         {
@@ -214,15 +211,27 @@ namespace TheGame
             }
         }
 
-        private int counter_tmp = 0;
+        // The `onTick` method will be called periodically unless cancelled.
+        private static async Task RunAsync(Action action)
+        {
+            action?.Invoke();
+        }
+
         private void OnTick()
         {
-            if (pause) return;
-            doWork();
+            StartSocket();
+            Thread.Sleep(1000);
+            ConnectPlayers();
+            Thread.Sleep(1000);
+            BeginGame();
+            Thread.Sleep(1000);
+
             updateBoard();
-            counter_tmp++;
-            if (counter_tmp % 2 == 0 && board.Pieces.Count < board.InitialNumberOfPieces)
-                addPiece();
+
+            //if (pause) return;
+            //doWork();
+            //updateBoard();
+            //addPiece();
 
 
         }
