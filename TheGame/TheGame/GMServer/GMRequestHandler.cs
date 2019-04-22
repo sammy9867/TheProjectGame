@@ -17,10 +17,18 @@ namespace TheGame.GMServer
         public static ManualResetEvent allDone
             = new ManualResetEvent(false);
                 
-        //Sending ConfirmSetUpGame JSON to to client on connection
-        public static void SendSetUpGame(GMSocket gmSocket)
+        
+        /** 
+         * README
+         * Ok, before you start screaming, since running too many threads causes too many problems,
+         * I have combined GMSocket and Main thread.
+         * So, we may call Send() Receive() and have GUI, access to Board object,
+         * and methods to write report file, and do the actual GM job, soooooo
+         * METHODS JUST RETURN DUMMY JSON TO SEND
+         */
+
+        public static string SendSetUpGame()
         {
-            Socket handler = gmSocket.socket;
             string file = @"..\..\JSONs\SetUpGame.json";
             string json = "";
             if (!File.Exists(file))
@@ -31,41 +39,34 @@ namespace TheGame.GMServer
             {
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            gmSocket.Send(handler, json);
-            gmSocket.sendDone.WaitOne();
-
-            gmSocket.Receive();
-            
-            Response = gmSocket.Response;
-            gmSocket.Response = "";
-            allDone.Set();
+            return (json);
         }
 
-        internal static void ConnectPlayer(GMSocket GMSocket, out Player player)
+        // NO NEED
+        //internal static void ConnectPlayer(GMSocket GMSocket, out Player player)
+        //{
+        //    GMSocket.Receive();
+        //    player = null;
+
+        //    dynamic magic = JsonConvert.DeserializeObject(GMSocket.SyncResponse);
+        //    string action = magic.action;
+        //    string team = magic.preferredTeam;
+
+        //    if (!action.ToLower().Equals("connect"))
+        //        return;
+        //    if (!team.ToLower().Equals("red") && !team.ToLower().Equals("blue"))
+        //        return;
+
+        //    player = new Player();
+        //    player.playerID = magic.userGuid;
+        //    player.Team = team.ToLower().Equals("red") ? 
+        //        Team.TeamColor.RED : Team.TeamColor.BLUE ;
+
+        //}
+
+        /* Returns JSON for Successfull Joining Notification */
+        internal static string ConnectPlayerOK(Player player)
         {
-            GMSocket.Receive();
-            player = null;
-
-            dynamic magic = JsonConvert.DeserializeObject(GMSocket.Response);
-            string action = magic.action;
-            string team = magic.preferredTeam;
-
-            if (!action.ToLower().Equals("connect"))
-                return;
-            if (!team.ToLower().Equals("red") && !team.ToLower().Equals("blue"))
-                return;
-
-            player = new Player();
-            player.playerID = magic.userGuid;
-            player.Team = team.ToLower().Equals("red") ? 
-                Team.TeamColor.RED : Team.TeamColor.BLUE ;
-            
-        }
-
-        internal static void ConnectPlayerOK(GMSocket gmSocket, Player player)
-        {
-            Socket handler = gmSocket.socket;
             string file = @"..\..\JSONs\ConfirmJoiningGame.json";
             string json = "";
             if (!File.Exists(file))
@@ -79,13 +80,12 @@ namespace TheGame.GMServer
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
 
-            gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
-//            gmSocket.sendDone.WaitOne();
+            return (JsonConvert.SerializeObject(magic));
+//          
         }
-        
-        internal static void ConnectPlayerDeny(GMSocket gmSocket, Player player)
+        /* Returns JSON for Failure Joining Notification */
+        internal static string ConnectPlayerDeny(Player player)
         {
-            Socket handler = gmSocket.socket;
             string file = @"..\..\JSONs\RejectJoiningGame.json";
             string json = "";
             if (!File.Exists(file))
@@ -99,14 +99,13 @@ namespace TheGame.GMServer
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
 
-            gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
-//            gmSocket.sendDone.WaitOne();
+            return JsonConvert.SerializeObject(magic);
         }
 
-        internal static void BeginGame(GMSocket gmSocket, 
+        /* Returns JSON for Begin Game Notification */
+        internal static string BeginGame( 
             Player player, List<Player> members, Player leader)
         {
-            Socket handler = gmSocket.socket;
             string file = @"..\..\JSONs\BeginGame.json";
             string json = "";
             if (!File.Exists(file))
@@ -142,13 +141,13 @@ namespace TheGame.GMServer
             magic.board.tasksHeight = "" + Board.TaskHeight;
             magic.board.goalsHeight = "" + Board.GoalHeight;
 
-            gmSocket.Send(handler, JsonConvert.SerializeObject(magic));
+            return  (JsonConvert.SerializeObject(magic));
         }
 
         //TODO: 2nd Communication phase
-        internal static void ResponseForMove(GMSocket gmSocket, Player player)
+        internal static void ResponseForMove(Player player)
         {
-            Socket handler = gmSocket.socket;
+
             string file = @"..\..\JSONs\Response\MoveResponseAcceptance.json";
             string json = "";
             if (!File.Exists(file))
@@ -165,9 +164,23 @@ namespace TheGame.GMServer
 
         }
 
-
-        internal static void ResponseForDiscover()
+        /* Returns JSON for Discovery Response */
+        internal static string ResponseForDiscover(Player player)
         {
+            string file = @"..\..\JSONs\Response\DiscoverResponse.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            return JsonConvert.SerializeObject(magic);
 
         }
         internal static void ResponseForPickUp()
@@ -189,12 +202,11 @@ namespace TheGame.GMServer
         internal static void sendGameOver()
         {
 
-        }   
-
+        }
 
         //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
 
-            
+
 
 
     }

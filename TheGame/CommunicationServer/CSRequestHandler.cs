@@ -13,7 +13,7 @@ namespace CommunicationServer
     public static class CSRequestHandler
     {
 
-        public static bool beginGame { get; set; }
+//        public static bool beginGame { get; set; }  WHY ??
 
         //Sending ConfirmSetUpGame JSON to to client on connection
         public static void SendConfirmGame(Socket handler)
@@ -36,25 +36,28 @@ namespace CommunicationServer
 
         }
 
+        /* I think ConnectPlayer can be simplified as we  have in Server.AnalizeTheMessage's switch 
+         * BUT! I am tired to test :-) */
         public static void ConnectPlayer(String data, Socket gMSocket)
         {
             Console.WriteLine("ConnectPlayer");
             Server.Send(gMSocket, data);
         }
-
         internal static void ConnectPlayerConfirmation(String data, Socket destPlayer)
         {
             Console.WriteLine("ConnectPlayer");
             Server.Send(destPlayer, data);
         }
 
+        // Send player confirmation that the game has started 
         internal static void BeginPlayer(string data, Socket destPlayer)
         {
             Console.WriteLine("BeginPlayer");
             Server.Send(destPlayer, data);
-            beginGame = true; 
+//            beginGame = true; 
         }
 
+        /* Why so many methods for Phase2, we do not need them [anymore] :-P */
         #region Communication Phase2
 
         //Move action is sent by playerto GM, so the destination socket will be GM socket.

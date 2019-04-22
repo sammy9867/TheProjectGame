@@ -17,6 +17,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TheGame.Model;
 using TheGame.GMServer;
+using System.Net.Sockets;
+using System.Net;
 
 namespace TheGame
 {
@@ -25,8 +27,22 @@ namespace TheGame
         private Board board;
         private Team RedTeam;
         private Team BlueTeam;
-        private GMSocket GMSocket;
-        private bool pause;
+
+        private const int port = 11000;
+        private const char ETB = (char)23;
+
+        // ManualResetEvent instances signal completion.
+        public ManualResetEvent connectDone =
+            new ManualResetEvent(false);
+        public ManualResetEvent sendDone =
+            new ManualResetEvent(false);
+        public ManualResetEvent receiveDone =
+            new ManualResetEvent(false);
+
+        public Socket GMSocket;
+
+        // Boolean to indicate if the game is over
+        private bool endgame;
 
         
         public MainWindow()
@@ -35,7 +51,7 @@ namespace TheGame
             InitializeComponent();
             ConsoleWriteLine("Game master has started.");
             RedTeam = BlueTeam = null;
-            pause = false;
+            endgame = false;
             board = new Board();
 
             initFile();
@@ -43,34 +59,41 @@ namespace TheGame
 
             updateBoard();
 
+            // offset before running communication routine
             var dueTime = TimeSpan.FromSeconds(5);
+
+            // run separate thread for communication routine
+            RunAsync(CommunicationRoutine, dueTime, CancellationToken.None);
+
             var interval = TimeSpan.FromSeconds(0);
-
-            // Add a CancellationTokenSource and supply the token here instead of None.
-            //           RunPeriodicAsync(OnTick, dueTime, interval, CancellationToken.None);
-            RunAsync(OnTick);
-        }
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            
         }
 
-
+        /* Start Socket */
         private void StartSocket()
         {
             ConsoleWriteLine("GM Socket started.");
+            // Start client sync
+            StartClient();
 
-            GMSocket = new GMSocket();
-            GMSocket.StartClient();
-            GMRequestHandler.SendSetUpGame(GMSocket);
-            GMRequestHandler.allDone.WaitOne();
+            // Sending SetUp reuest and getting response
+            string json = GMRequestHandler.SendSetUpGame();
+            Send(GMSocket, json);
+            sendDone.WaitOne();
+            sendDone.Reset();
 
-            dynamic magic = 
-                JsonConvert.DeserializeObject(GMRequestHandler.Response);
+            // Receive response and analize it in StartGameResponse method
+            Receive(StartGameResponse);
+        }
+        private void StartGameResponse(string json)
+        {
+            /* Response to Start Game request, always OK for now */
+            dynamic magic =
+                JsonConvert.DeserializeObject(json);
             string action = magic.action;
             string result = magic.result;
-            ConsoleWriteLine("action: "+action);
-            ConsoleWriteLine("result: "+result);
+            ConsoleWriteLine("action: " + action);
+            ConsoleWriteLine("result: " + result);
+            sendDone.Set();
             if (result.ToLower().Equals("denied"))
             {
                 ConsoleWriteLine("Game has been denied");
@@ -79,6 +102,8 @@ namespace TheGame
                 this.Close();
             }
         }
+
+        /* Metod to connect players, while there is at least one available slot */
         private void ConnectPlayers()
         {
             if (null == GMSocket)
@@ -92,70 +117,104 @@ namespace TheGame
             while(board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers || 
                   board.BlueTeam.NumOfPlayers < Board.MaxNumOfPlayers)
             {
-                Player player;
-                GMRequestHandler.ConnectPlayer(GMSocket, out player);
-                if (player.Team == Team.TeamColor.RED)
-                {
-                    if (board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers)
-                        GMRequestHandler.ConnectPlayerDeny(GMSocket, player);
-                    if (board.RedTeam.leader == null)
-                        board.RedTeam.leader = player;
-                    player.Neighbors = new Player.NeighborStatus[3, 3];
-                    player.row = 1; // TODO: Update the row
-                    player.column = RedTeam.members.Count;
-                    board.RedTeam.members.Add(player);
-                }
-                else
-                {
-                    if (board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers)
-                        GMRequestHandler.ConnectPlayerDeny(GMSocket, player);
-                    if (board.BlueTeam.leader == null)
-                        board.BlueTeam.leader = player;
-                    player.Neighbors = new Player.NeighborStatus[3, 3];
-                    player.row = Board.Height - 1;  // TODO: Update the row
-                    player.column = BlueTeam.members.Count;
-                    board.BlueTeam.members.Add(player);
-                }
-                GMRequestHandler.ConnectPlayerOK(GMSocket, player);
-                ConsoleWriteLine("Players connected "+RedTeam.NumOfPlayers+"|"+
-                    BlueTeam.NumOfPlayers+"|"+Board.MaxNumOfPlayers);
+                // Received Message is analized by ConnectPlayer method
+                Receive(ConnectPlayer);
+                connectDone.WaitOne();  // wait untill ConnectPlayer completes
+                connectDone.Reset();    // reset handler
+
+                // ConsoleWrite[Line] and GUI are not working properly 
+                // be awere that the same objects cannot be used 
+                // by multiple threads simultaneously without safty
+                string line = ("Players connected " + RedTeam.NumOfPlayers + "|" +
+                                    BlueTeam.NumOfPlayers + "|" + Board.MaxNumOfPlayers);
+                ConsoleWriteLine(line);
+
             }
             ConsoleWriteLine("All Players Connected");
 
         }
+        private void ConnectPlayer(string json)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            string action = magic.action;
+            string team = magic.preferredTeam;
+
+            if (!action.ToLower().Equals("connect"))
+                return;
+            if (!team.ToLower().Equals("red") && !team.ToLower().Equals("blue"))
+                return;
+
+            Player player = new Player();
+            player.playerID = magic.userGuid;
+            player.Team = team.ToLower().Equals("red") ?
+                Team.TeamColor.RED : Team.TeamColor.BLUE;
+            player.Neighbors = new Player.NeighborStatus[3, 3];
+            if (player.Team == Team.TeamColor.RED)
+            {
+                if (board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers)
+                {
+                    Send(GMSocket, GMRequestHandler.ConnectPlayerDeny(player));
+                    return;
+                }
+                if (board.RedTeam.leader == null)
+                    board.RedTeam.leader = player;
+                player.row = 1; // TODO: Update the row
+                player.column = RedTeam.members.Count;
+                board.RedTeam.members.Add(player);
+            }
+            else
+            {
+                if (board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers)
+                {
+                    Send(GMSocket, GMRequestHandler.ConnectPlayerDeny(player));
+                    return;
+                }
+                if (board.BlueTeam.leader == null)
+                    board.BlueTeam.leader = player;
+                player.row = Board.Height - 1;  // TODO: Update the row
+                player.column = BlueTeam.members.Count;
+                board.BlueTeam.members.Add(player);
+            }
+            Send(GMSocket, GMRequestHandler.ConnectPlayerOK(player));
+
+            connectDone.Set();
+        }
+
+        /* Send all refistered players notification that the game has started */
         private void BeginGame()
         {
             ConsoleWriteLine("");
             ConsoleWriteLine("Begin the game for Blue Team");
             foreach (var p in BlueTeam.members)
             {
-                GMRequestHandler.BeginGame(GMSocket, p, BlueTeam.members, BlueTeam.leader);
+                Send(GMSocket, GMRequestHandler.BeginGame( p, BlueTeam.members, BlueTeam.leader) );
             }
             ConsoleWriteLine("Begin the game for Red Team");
             foreach (var p in RedTeam.members)
             {
-                GMRequestHandler.BeginGame(GMSocket, p, RedTeam.members, RedTeam.leader);
+                Send(GMSocket, GMRequestHandler.BeginGame(p, RedTeam.members, RedTeam.leader));
             }
             ConsoleWriteLine("Started");
         }
 
-        private void LetsMove()
-        {
-            ConsoleWriteLine("");
-            ConsoleWriteLine("Move player from Blue Team");
-            foreach (var p in BlueTeam.members)
-            {
-                GMRequestHandler.ResponseForMove(GMSocket, p);
-            }
-            ConsoleWriteLine("Move player from Red Team");
-            foreach (var p in RedTeam.members)
-            {
-                GMRequestHandler.ResponseForMove(GMSocket, p);
-            }
+        //private void LetsMove()
+        //{
+        //    ConsoleWriteLine("");
+        //    ConsoleWriteLine("Move player from Blue Team");
+        //    foreach (var p in BlueTeam.members)
+        //    {
+        //        GMRequestHandler.ResponseForMove(GMSocket, p);
+        //    }
+        //    ConsoleWriteLine("Move player from Red Team");
+        //    foreach (var p in RedTeam.members)
+        //    {
+        //        GMRequestHandler.ResponseForMove(GMSocket, p);
+        //    }
 
-        }
+        //}
 
-        
+        /** File Report most probably will be changed since we have multiple threads **/
+        #region File Report
         private void initFile()
         {
             // create a file object
@@ -190,6 +249,7 @@ namespace TheGame
                 return false;
             }
         }
+        #endregion  
 
         #region Async Cyclic Method
         // The `onTick` method will be called periodically unless cancelled.
@@ -210,30 +270,85 @@ namespace TheGame
                     await Task.Delay(interval, token);
             }
         }
+        #endregion
 
-        // The `onTick` method will be called periodically unless cancelled.
-        private static async Task RunAsync(Action action)
+        /* The `action` method will be called in the sep thread. */
+        private static async Task RunAsync(Action action, TimeSpan dueTime, CancellationToken token)
         {
+            // Initial wait time before we begin the periodic loop.
+            if (dueTime > TimeSpan.Zero)
+                await Task.Delay(dueTime, token);
+
             action?.Invoke();
+            
         }
-
-        private void OnTick()
+        private void CommunicationRoutine()
         {
+            // Init Socket and register a game
             StartSocket();
-            Thread.Sleep(1000);
+            // Connect new players
             ConnectPlayers();
-            Thread.Sleep(1000);
+            // Notify players about the game
             BeginGame();
-            Thread.Sleep(1000);
 
+            // Update the board, strange behaviour :(
             updateBoard();
 
+            while (!endgame)
+            {
+                // Receive message from players while game is on
+                // received messages will be passed to the method
+                // AnalizeMessage
+                Receive(AnalizeMessage);
+            }
             //if (pause) return;
             //doWork();
             //updateBoard();
             //addPiece();
+        }
 
+        /* Analize received message from a player */
+        private void AnalizeMessage(string obj)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(obj);
+            string action = magic.action;
+            string playerId = magic.userGuid;
+            switch (action.ToLower())
+            {
+                case "state":
+                    {
+                        // find player
+                        Player player = findPlayerById(playerId);
+                        if (player == null) return;
+                        // get json to response
+                        string json = GMRequestHandler.ResponseForDiscover(player);
+                        // fill json
+                        // TODO:
+                        // response
+                        Send(GMSocket, json);
+                        // TODO: WRITE REPORT IN REPORT FILE
+                        // Sammy, please check how to use one obj in multiple threads
+                        // so we can write to the same file from different threads
+                        break;
+                    }
+                case "move":
+                    break; 
+                // and so on ....
+                default:
+                    break;
+            }
+        }
 
+        /* Find player by id, no hash applied yet */
+        private Player findPlayerById(string playerId)
+        {
+            foreach (Player p in RedTeam.members)
+                if (p.playerID.Equals(playerId))
+                    return p;
+            foreach (Player p in BlueTeam.members)
+                if (p.playerID.Equals(playerId))
+                    return p;
+            return null;
         }
 
         private void checkVictory(Player player)
@@ -241,7 +356,7 @@ namespace TheGame
             if (board.DiscoveredBlueGoals.Count >= board.NumberOfGoals)
             {
                 // Blue WINS
-                pause = true;
+                endgame = true;
                 string message = "Congratulations, Blue team wins!";
                 string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
                 string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
@@ -256,7 +371,7 @@ namespace TheGame
             if (board.DiscoveredRedGoals.Count >= board.NumberOfGoals)
             {
                 // Red WINS
-                pause = true;
+                endgame = true;
                 string message = "Congratulations, Red team wins!";
                 string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
                 string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
@@ -295,6 +410,7 @@ namespace TheGame
 
         }
 
+        #region Player Routine and stuff
         private void doWork()
         {
             foreach (Player player in board.BlueTeam.members)
@@ -311,9 +427,9 @@ namespace TheGame
                 // write to file
             }
         }
-        #endregion
+       
 
-        #region Player Routine and stuff
+        
         private void playerRoutine(Player player)
         {
             PlayerDiscoversNeighboringCells(player);
@@ -423,6 +539,7 @@ namespace TheGame
         }
         #endregion
 
+        #region Init GOALS and load BOARD
         /**Undiscovered Goals are initialised randomly**/
         private void initGoals()
         {
@@ -523,6 +640,7 @@ namespace TheGame
             loadPieces();
 
         }
+        #endregion
 
         private void updateBoard()
         {
@@ -595,10 +713,145 @@ namespace TheGame
                 }
         }
 
-        private void pauseMenuItem_Click(object sender, RoutedEventArgs e)
+        /* Socket Code, basically what we had in GMSocket class but 
+         * BUT! please be careful with them, try to avoid changing */
+        #region Socket Code
+
+        #region Start Client and Connect 
+        public void StartClient()
         {
-            pause = !pause;
+            try
+            {
+                IPAddress ipAddress = IPAddress.Loopback;
+                IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
+
+                GMSocket = new Socket(AddressFamily.InterNetwork,
+                    SocketType.Stream, ProtocolType.Tcp);
+                GMSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, 1000);
+                GMSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
+
+                GMSocket.BeginConnect(remoteEP,
+                    new AsyncCallback(ConnectCallback), GMSocket);
+                connectDone.WaitOne();
+                connectDone.Reset();
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
+        private void ConnectCallback(IAsyncResult ar)
+        {
+            try
+            {
+                Socket client = (Socket)ar.AsyncState;
+                client.EndConnect(ar);
+
+                Console.WriteLine("Socket connected to {0}\n",
+                    client.RemoteEndPoint.ToString());
+
+                connectDone.Set();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+        #endregion
+
+        public string Receive(Action<string> cb = null)
+        {
+            try
+            {
+                StateObject state = new StateObject();
+                state.workSocket = GMSocket;
+                if (cb != null)
+                    state.cb = cb;
+
+                GMSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                    new AsyncCallback(ReceiveCallback), state);
+                receiveDone.WaitOne();
+                receiveDone.Reset();
+                var content = state.sb.ToString();
+                content = content.Remove(content.IndexOf(ETB));
+                state.sb.Clear();
+                return content;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return null;
+            }
+        }
+        private void ReceiveCallback(IAsyncResult ar)
+        {
+            try
+            {
+                StateObject state = (StateObject)ar.AsyncState;
+                Socket client = state.workSocket;
+
+                int bytesRead = client.EndReceive(ar);
+                state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
+                if (bytesRead > 0)
+                {
+                    var content = state.sb.ToString();
+                    if (content.IndexOf(ETB) > -1)
+                    {
+                        content = content.Remove(content.IndexOf(ETB));
+                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}\n",
+                            content.Length, content);
+                        //   RequestHandler.handleRequest(content, client);
+                        //   state.sb.Clear();
+                        receiveDone.Set();
+
+
+                        if (state.cb != null)
+                        {
+                            state.cb(content);
+                            state.cb = null;
+                        }
+                        //Receive();
+                    }
+                    else
+                    {
+                        client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                        new AsyncCallback(ReceiveCallback), state);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        public void Send(Socket handler, String data)
+        {
+            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            handler.BeginSend(byteData, 0, byteData.Length, 0,
+                new AsyncCallback(SendCallback), handler);
+           
+        }
+        private void SendCallback(IAsyncResult ar)
+        {
+            try
+            {
+                Socket client = (Socket)ar.AsyncState;
+
+                int bytesSent = client.EndSend(ar);
+                Console.WriteLine("Sent {0} bytes to server.\n", bytesSent);
+
+                sendDone.Set();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        #endregion
 
 
         #region Load Pieces
@@ -648,12 +901,14 @@ namespace TheGame
         }
         #endregion
 
+        /* This console is SHIT, needs to be updated */
         #region WPF Console writting
         public void ConsoleWrite(string line)
         {
             string curr = this.ConsoleTextBlock.Text;
             curr += "> " + line;
             this.ConsoleTextBlock.Text = curr;
+            updateBoard();
         }
         public void ConsoleWriteLine(string line)
         {
@@ -661,6 +916,7 @@ namespace TheGame
         }
         #endregion
 
+        /* not used yet, will be used for port and ip address */
         #region Command Line Parameters
         private void Application_Startup(object sender, StartupEventArgs e)
         {
@@ -676,5 +932,18 @@ namespace TheGame
         #endregion
 
         
+    }
+
+    public class StateObject
+    {
+        // Client socket.
+        public Socket workSocket = null;
+        // Size of receive buffer.
+        public const int BufferSize = 256;
+        // Receive buffer.
+        public byte[] buffer = new byte[BufferSize];
+        // Received data string.
+        public StringBuilder sb = new StringBuilder();
+        public Action<string> cb = null;
     }
 }

@@ -237,24 +237,23 @@ namespace CommunicationServer
                         break;
                     }
                 case "move":
-                    {
-                        if (result == null && CSRequestHandler.beginGame == true)
-                        {
-                            //Player to GM
-                            CSRequestHandler.Move(state.sb.ToString(), GMSocket);
-                        }
-                        else if(result != null && CSRequestHandler.beginGame == true)
-                        {
-                            //GM to Player
-                            Socket destPlayer = null;
-                            if (Clients.TryGetValue(userGuid, out destPlayer))
-                            {
-                                CSRequestHandler.ResponseForValidMove(state.sb.ToString(), destPlayer);
-                            }
-                        }
-                        break;
-                    }
-
+                    //{
+                    //    if (result == null && CSRequestHandler.beginGame == true)
+                    //    {
+                    //        //Player to GM
+                    //        CSRequestHandler.Move(state.sb.ToString(), GMSocket);
+                    //    }
+                    //    else if(result != null && CSRequestHandler.beginGame == true)
+                    //    {
+                    //        //GM to Player
+                    //        Socket destPlayer = null;
+                    //        if (Clients.TryGetValue(userGuid, out destPlayer))
+                    //        {
+                    //            CSRequestHandler.ResponseForValidMove(state.sb.ToString(), destPlayer);
+                    //        }
+                    //    }
+                    //    break;
+                    //}
                 case "state":
                     {
                         if (GMSocket == state.workSocket)

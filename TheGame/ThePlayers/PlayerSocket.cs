@@ -165,6 +165,7 @@ namespace ThePlayers
                 case "begin":
                     {
                         ReadStartGame(json);
+                        // Send Discover as soon as the game begins, so player knows something... could be move later somewhere else... 
                         SendDiscover();
                         break;
                     }
@@ -174,7 +175,7 @@ namespace ThePlayers
                         break;
                     }
                 case "move":
-                    {
+                    {   // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
                         string direction = magic.direction;
                         Console.WriteLine("Direction: " + direction);
                         break;

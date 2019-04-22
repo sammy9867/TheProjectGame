@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:TheGame"
         mc:Ignorable="d"
         Title="MainWindow" Height="500" Width="500" 
-        WindowStartupLocation="CenterScreen" Loaded="Window_Loaded">
+        WindowStartupLocation="CenterScreen">
 
     <DockPanel>
         <!-- Menu Bar -->
@@ -15,7 +15,7 @@
                 <MenuItem Header="_Open"/>
                 <MenuItem Header="_Close"/>
                 <MenuItem Header="_Save"/>
-                <MenuItem Header="_Pause" x:Name="pauseMenuItem" Click="pauseMenuItem_Click"/>
+                <MenuItem Header="_Pause" x:Name="pauseMenuItem"/>
             </MenuItem>
         </Menu>
 

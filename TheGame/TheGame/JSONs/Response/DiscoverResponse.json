@@ -23,8 +23,8 @@
       "value": {
         "manhattanDistance": "<null|0|1|2|...|Nearest",
         "contains": "<goal|piece|empty>",
-        "timestamp": 2137,
-        "userGuid": null
+        "timestamp": "2137",
+        "userGuid": "null"
       }
     }
   ]
