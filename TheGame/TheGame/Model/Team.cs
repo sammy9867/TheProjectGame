@@ -38,7 +38,7 @@ namespace TheGame.Model
 
             foreach (var item in members)
             {
-                if (item.row == row && item.column == col)
+                if (item.Row == row && item.Column == col)
                 {
                     if (item.hasPiece()) return TeamCell.PLAYER_PIECE;
                     else return TeamCell.PLAYER;

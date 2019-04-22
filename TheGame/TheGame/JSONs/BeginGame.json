@@ -1,21 +1,21 @@
 ﻿{
   "action": "begin",
   "userGuid": "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
-  "team": "<blue|red>",
-  "role": "<member|leader>",
-  "teamSize": "<1|2|3|4|...|maximal>",
+  "team": "bluered",
+  "role": "memberleader",
+  "teamSize": "1234...maximal",
   "teamGuids": [
     "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
     "0a041a66-01b7-40cf-a06a-a47550f0e6c1",
     "0a041a66-01b7-40cf-a06a-a47550f0e6c2"
   ],
   "location": {
-    "x": "<0|1|2|3|4|...|board>",
-    "y": "<0|1|2|3|4|...|board>"
+    "x": "01234...board",
+    "y": "01234...board"
   },
   "board": {
-    "width": "<1|2|3|...|board>",
-    "tasksHeight": "<1|2|3|...|tasks>",
-    "goalsHeight": "<1|2|3|...|goals>"
+    "width": "123...board",
+    "tasksHeight": "123...tasks",
+    "goalsHeight": "123...goals"
   }
 }

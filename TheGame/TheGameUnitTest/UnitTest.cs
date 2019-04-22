@@ -35,8 +35,8 @@ namespace TheGameUnitTest
             {
                 role = Player.Role.LEADER,
                 //playerID = 0,
-                row = 0,
-                column = 0,
+                Row = 0,
+                Column = 0,
                 //toCheck = true,
                 Team = Team.TeamColor.BLUE
             };
@@ -45,8 +45,8 @@ namespace TheGameUnitTest
             {
                 role = Player.Role.LEADER,
                 //playerID = 1,
-                row = 1,
-                column = 10,
+                Row = 1,
+                Column = 10,
                 //toCheck = true,
                 Team = Team.TeamColor.RED
             };
@@ -82,8 +82,8 @@ namespace TheGameUnitTest
             {
                 role = Player.Role.LEADER,
                 //playerID = 1,
-                row = 0,
-                column = 1,
+                Row = 0,
+                Column = 1,
                 //toCheck = true,
                 Team = Team.TeamColor.RED
             };
@@ -130,8 +130,8 @@ namespace TheGameUnitTest
             {
                 role = Player.Role.LEADER,
                 //playerID = 0,
-                row = 0,
-                column = 0,
+                Row = 0,
+                Column = 0,
                 //toCheck = true,
                 Team = Team.TeamColor.BLUE
             };
@@ -140,8 +140,8 @@ namespace TheGameUnitTest
             {
                 role = Player.Role.LEADER,
                 //playerID = 1,
-                row = 1,
-                column = 10,
+                Row = 1,
+                Column = 10,
                 //toCheck = true,
                 Team = Team.TeamColor.RED
             };
@@ -221,10 +221,10 @@ namespace TheGameUnitTest
                 column = 0
             };
             p.Piece = pi;
-            p.row = 0;
+            p.Row = 0;
             Assert.AreEqual(p.goUp(), -1);
 
-            p.column = 1;
+            p.Column = 1;
             p.Team = Team.TeamColor.RED;
             Assert.AreEqual(p.goLeft(), 0);
 

@@ -165,9 +165,10 @@ namespace TheGame
                 }
                 if (board.RedTeam.leader == null)
                     board.RedTeam.leader = player;
-                player.row = 1; // TODO: Update the row
-                player.column = RedTeam.members.Count;
+                player.Row = 1; // TODO: Update the row
+                player.Column = RedTeam.members.Count;
                 board.RedTeam.members.Add(player);
+                board.boardtable[player.Column, player.Row] = Board.Status.RED_PLAYER;
             }
             else
             {
@@ -178,9 +179,10 @@ namespace TheGame
                 }
                 if (board.BlueTeam.leader == null)
                     board.BlueTeam.leader = player;
-                player.row = Board.Height - 1;  // TODO: Update the row
-                player.column = BlueTeam.members.Count;
+                player.Row = Board.Height - 1;  // TODO: Update the row
+                player.Column = BlueTeam.members.Count;
                 board.BlueTeam.members.Add(player);
+                board.boardtable[player.Column, player.Row] = Board.Status.BLUE_PLAYER;
             }
             Send(GMSocket, GMRequestHandler.ConnectPlayerOK(player));
 
@@ -313,12 +315,13 @@ namespace TheGame
                 case "state":
                     {
                         // find player
-                        Player player = findPlayerById(playerId);
+                        Player player = FindPlayerById(playerId);
                         if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForDiscover(player);
                         // fill json
-                        // TODO:
+                        PlayerDiscoversNeighboringCells(player, ref json);
+
                         // response
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
@@ -365,65 +368,9 @@ namespace TheGame
         }
         #endregion
 
-        #region Player Routine and stuff
-        private void doWork()
-        {
-            foreach (Player player in board.BlueTeam.members)
-            {
-                // prev coor
-                playerRoutine(player);
-                // write to file
-
-            }
-
-            foreach (Player player in board.RedTeam.members)
-            {
-                playerRoutine(player);
-                // write to file
-            }
-        }
-       
-
-        
-        private void playerRoutine(Player player)
-        {
-            PlayerDiscoversNeighboringCells(player);
-
-            //If the player steps in the undiscovered red goal cell and he has a piece
-            if (player.hasPiece() && player.Neighbors[1, 1] == Player.NeighborStatus.GOAL_AREA)
-            {
-                placesPiece(player);
-                string Pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                string Pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, Pc, Pr);
-                return;
-            }
-            // if player.tochec is true thatn goRnd will check piece for being sham
-            // if playwe.tochec is false thatn goRnd wil move a player
-            player.goRnd();
-            string pcc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-            string prr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-            insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pcc, prr);
-
-
-
-            int c = player.column;
-            int r = player.row;
-
-            if (!player.hasPiece())
-            {
-                takePiece(player);
-                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                insertIntoConfig("TakePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                return;
-            }
-
-
-        }
-
+        #region Player Routine
         /* PLayer places a piece */
-        private void placesPiece(Player player)
+        private void PlacesPiece(Player player)
         {
             List<Goal> UndiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.UndiscoveredRedGoals : board.UndiscoveredBlueGoals;
             List<Goal> DiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.DiscoveredRedGoals : board.DiscoveredBlueGoals;
@@ -431,7 +378,7 @@ namespace TheGame
             /* Discover a goal */
             foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
             {
-                if (goalDiscoverdByPlayer.row == player.row && goalDiscoverdByPlayer.column == player.column)
+                if (goalDiscoverdByPlayer.row == player.Row && goalDiscoverdByPlayer.column == player.Column)
                 {
                     UndiscoveredGoals.Remove(goalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
                     DiscoveredGoals.Add(goalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
@@ -443,9 +390,9 @@ namespace TheGame
                         Board.BlueScore++;
 
                     if (player.Team == Team.TeamColor.BLUE)
-                        BlueTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column });
+                        BlueTeam.DiscoveredGoals.Add(new Goal { row = player.Row, column = player.Column });
                     else
-                        RedTeam.DiscoveredGoals.Add(new Goal { row = player.row, column = player.column });
+                        RedTeam.DiscoveredGoals.Add(new Goal { row = player.Row, column = player.Column });
 
                     return;
                 }
@@ -453,28 +400,86 @@ namespace TheGame
 
             /* Discover a non-goal */
             if (player.Team == Team.TeamColor.BLUE)
-                BlueTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
+                BlueTeam.DiscoveredNonGoals.Add(new Goal { row = player.Row, column = player.Column });
             else
-                RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.row, column = player.column });
+                RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.Row, column = player.Column });
 
             player.Piece = null; //Player no longer has the piece.
             checkVictory(player);
         }
 
-        /* Player discovers its 8 neighbors */
-        private void PlayerDiscoversNeighboringCells(Player player)
+        /* Player Discovers its 8 neighbors */
+        private void PlayerDiscoversNeighboringCells(Player player, ref string json)
         {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+            magic.result = "ok";
+            magic.scope.x = player.X;
+            magic.scope.y = player.Y;
+            List<JField> jfields = new List<JField>();
+
             for (int c = 0; c < 3; c++)
                 for (int r = 0; r < 3; r++)
-                    player.Neighbors[c, r] = board.GetPlayersNeighbor(player.column - 1 + c, player.row - 1 + r, player.Team);
+                {
+                    int column = player.Column - 1 + c;
+                    int row = player.Row - 1 + r;
+                    if (column < 0) continue;
+                    if (column >= Board.Width) continue;
+                    if (row < 0) continue;
+                    if (row >= Board.Height) continue;
+                    JField jField = new JField
+                    {
+                        x = column,
+                        y = row
+                    };
+                    jField.value = new JValue();
+                    jField.value.manhattanDistance =
+                        Math.Abs(player.X - column) + Math.Abs(player.Y - row);
+                    jField.value.timestamp = GetTimestamp();
+                    jField.value.userGuid = "null";
 
+                    switch (board.boardtable[column, row])
+                    {
+                        case Board.Status.TASK_CELL:
+                        case Board.Status.RED_GOALS_CELL:
+                        case Board.Status.BLUE_GOALS_CELL:
+                        case Board.Status.UNDISCOVERED_GOAL:   // Player does not receive this data
+                        case Board.Status.DISCOVERED_NON_GOAL: // Player gets it via Knowledge exchange
+                            jField.value.contains = "empty";   // could be set as default
+                            break;
+                        case Board.Status.PIECE:
+                        case Board.Status.SHAM:
+                            jField.value.contains = "piece";
+                            break;
+                        case Board.Status.RED_PLAYER:
+                        case Board.Status.BLUE_PLAYER:
+                        case Board.Status.RED_PLAYER_WITH_PIECE:
+                        case Board.Status.BLUE_PLAYER_WITH_PIECE:
+                            jField.value.contains = "empty"; // ??? right?
+                            jField.value.userGuid = FindPlayerByCoor(column, row).playerID;
+                            break;
+                        case Board.Status.DISCOVERED_GOAL:
+                            jField.value.contains = "goal";
+                            break;
+                    }
+
+                    jfields.Add(jField);
+                    //player.Neighbors[c, r] =
+                    //board.GetPlayersNeighbor(player.Column - 1 + c,
+                    // player.Row - 1 + r, player.Team);
+                }
+                
+
+            string ser = Newtonsoft.Json.JsonConvert.SerializeObject(jfields);
+            magic.fields = ser;
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
         }
 
         /** Player takes a  Piece **/
-        private void takePiece(Player player)
+        private void TakePiece(Player player)
         {
-            int c = player.column;
-            int r = player.row;
+            int c = player.Column;
+            int r = player.Row;
 
             foreach (Piece p in board.Pieces)
             {
@@ -492,6 +497,14 @@ namespace TheGame
             string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
             insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
+
+        private long GetTimestamp()
+        {
+            // TODO: Get proper Timestamp
+            long timestamp = 777;
+            return timestamp;
+        }
+
         #endregion
 
         #region Init GOALS and load BOARD, PIECES, TEAMS
@@ -665,8 +678,8 @@ namespace TheGame
                     switch (board.boardtable[col, row]) 
                   //switch (board.getCellStatus(col, row))
                     {
-                        case Board.Status.BLUE_GOALS_CELL:
                         case Board.Status.RED_GOALS_CELL:
+                        case Board.Status.BLUE_GOALS_CELL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/brown_picture.png", UriKind.Relative));
                             break;
 
@@ -678,11 +691,11 @@ namespace TheGame
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player.png", UriKind.Relative));
                             break;
 
-                        case Board.Status.RED_PLAYER_PIECE:
+                        case Board.Status.RED_PLAYER_WITH_PIECE:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/red_player_piece.png", UriKind.Relative));
                             break;
 
-                        case Board.Status.BLUE_PLAYER_PIECE:
+                        case Board.Status.BLUE_PLAYER_WITH_PIECE:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player_piece.png", UriKind.Relative));
                             break;
 
@@ -731,15 +744,15 @@ namespace TheGame
                         case Board.Status.TASK_CELL: line += "TC"; break;
                         case Board.Status.PIECE: line += "PC"; break;
                         case Board.Status.SHAM: line += "SH"; break;
-                        case Board.Status.RED_GOALS_CELL: line += "RG"; break;
-                        case Board.Status.BLUE_GOALS_CELL: line += "BG"; break;
+                        case Board.Status.RED_GOALS_CELL: line += "GC"; break;
+                        case Board.Status.BLUE_GOALS_CELL: line += "GC"; break;
                         case Board.Status.RED_PLAYER: line += "RE"; break;
                         case Board.Status.BLUE_PLAYER: line += "BL"; break;
                         case Board.Status.UNDISCOVERED_GOAL: line += "UG"; break;
                         case Board.Status.DISCOVERED_GOAL: line += "DG"; break;
                         case Board.Status.DISCOVERED_NON_GOAL: line += "NG"; break;
-                        case Board.Status.RED_PLAYER_PIECE: line += "RP"; break;
-                        case Board.Status.BLUE_PLAYER_PIECE: line += "BP"; break;
+                        case Board.Status.RED_PLAYER_WITH_PIECE: line += "RP"; break;
+                        case Board.Status.BLUE_PLAYER_WITH_PIECE: line += "BP"; break;
                     }
                     line += " ";
                 }
@@ -887,9 +900,9 @@ namespace TheGame
 
         #endregion
 
-        #region Find Player By ID
+        #region Find Player By *
         /* Find player by id, no hash applied yet */
-        private Player findPlayerById(string playerId)
+        private Player FindPlayerById(string playerId)
         {
             foreach (Player p in RedTeam.members)
                 if (p.playerID.Equals(playerId))
@@ -899,6 +912,17 @@ namespace TheGame
                     return p;
             return null;
         }
+        private Player FindPlayerByCoor(int col, int row)
+        {
+            foreach (Player p in RedTeam.members)
+                if (p.Row == row && p.Column == col)
+                    return p;
+            foreach (Player p in BlueTeam.members)
+                if (p.Row ==row && p.Column == col)
+                    return p;
+            return null;
+        }
+
         #endregion
 
         #region Check for Victory

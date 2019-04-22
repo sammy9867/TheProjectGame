@@ -15,16 +15,19 @@ namespace TheGame.Model
             TASK_CELL,
             PIECE,
             SHAM,
-            RED_GOALS_CELL,
-            BLUE_GOALS_CELL,
+            RED_GOALS_CELL,  // red above !!!
+            BLUE_GOALS_CELL, // blue below!!!
             RED_PLAYER,
             BLUE_PLAYER,
             UNDISCOVERED_GOAL,
             DISCOVERED_GOAL,
             DISCOVERED_NON_GOAL,
-            RED_PLAYER_PIECE,
-            BLUE_PLAYER_PIECE,
+            RED_PLAYER_WITH_PIECE,
+            BLUE_PLAYER_WITH_PIECE,
             END_OF_BOARD
+            // RED_PLAYER_AND_PIECE          for a player standing on the same 
+            // BLUE_PLAYER_AND_PIECE cell    as a piece, but the player has not
+            //                               picked it up yet. Do we need such ????
         }
 
         public static int RedScore { get; set; }
@@ -64,13 +67,13 @@ namespace TheGame.Model
             if (RedTeam.isTaken(col, row) == Team.TeamCell.PLAYER)
                 return (int)Board.Status.RED_PLAYER;
             else if (RedTeam.isTaken(col, row) == Team.TeamCell.PLAYER_PIECE)
-                return (int)Board.Status.RED_PLAYER_PIECE;
+                return (int)Board.Status.RED_PLAYER_WITH_PIECE;
 
             /* Check if BLUE player occupaes a cell */
             if (BlueTeam.isTaken(col, row) == Team.TeamCell.PLAYER)
                 return (int)Board.Status.BLUE_PLAYER;
             else if (BlueTeam.isTaken(col, row) == Team.TeamCell.PLAYER_PIECE)
-                return (int)Board.Status.BLUE_PLAYER_PIECE;
+                return (int)Board.Status.BLUE_PLAYER_WITH_PIECE;
             #endregion
 
             #region Check if PIECE occupaes a cell 
@@ -199,15 +202,15 @@ namespace TheGame.Model
 
             /* Other player */
             foreach (Player p in RedTeam.members)
-                if (p.column == column && p.row == row)
+                if (p.Column == column && p.Row == row)
                     return Player.NeighborStatus.BLOCKED;
-            if (RedTeam.leader.column == column && RedTeam.leader.row == row)
+            if (RedTeam.leader.Column == column && RedTeam.leader.Row == row)
                 return Player.NeighborStatus.BLOCKED;
 
             foreach (Player p in BlueTeam.members)
-                if (p.column == column && p.row == row)
+                if (p.Column == column && p.Row == row)
                     return Player.NeighborStatus.BLOCKED;
-            if (BlueTeam.leader.column == column && BlueTeam.leader.row == row)
+            if (BlueTeam.leader.Column == column && BlueTeam.leader.Row == row)
                 return Player.NeighborStatus.BLOCKED;
 
             /* Piece */

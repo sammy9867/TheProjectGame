@@ -23,8 +23,12 @@ namespace TheGame.Model
 
         public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
         public string playerID { get; set; }
-        public int row { get; set; }
-        public int column { get; set; }
+
+        public int Row { get; set; }
+        public int Column { get; set; }
+        public int X { get { return Column; } }
+        public int Y { get { return Row; } }
+
         public Role role { get; set; }
         public Piece Piece { get; set; }
 
@@ -43,12 +47,12 @@ namespace TheGame.Model
          */
         public int goUp()
         {
-            if (Team == Model.Team.TeamColor.RED && row == 0)
+            if (Team == Model.Team.TeamColor.RED && Row == 0)
                 return -1;
-            if (Team == Model.Team.TeamColor.BLUE && row == Board.GoalHeight)
+            if (Team == Model.Team.TeamColor.BLUE && Row == Board.GoalHeight)
                 return -1;
 
-            row--;
+            Row--;
             return 0;
         }
 
@@ -58,12 +62,12 @@ namespace TheGame.Model
          */
         public int goDown()
         {
-            if (Team == Model.Team.TeamColor.BLUE && row == Board.Height - 1)
+            if (Team == Model.Team.TeamColor.BLUE && Row == Board.Height - 1)
                 return -1;
-            if (Team == Model.Team.TeamColor.RED && row == Board.Height - Board.GoalHeight - 1)
+            if (Team == Model.Team.TeamColor.RED && Row == Board.Height - Board.GoalHeight - 1)
                 return -1;
 
-            row++;
+            Row++;
             return 0;
         }
             
@@ -73,9 +77,9 @@ namespace TheGame.Model
          */
         public int goLeft()
         {
-            if (column == 0)
+            if (Column == 0)
                 return -1;
-            column--;
+            Column--;
             return 0;
         }
 
@@ -85,9 +89,9 @@ namespace TheGame.Model
          */
         public int goRight()
         {
-            if (Board.Width - 1 == column)
+            if (Board.Width - 1 == Column)
                 return -1;
-            column++;
+            Column++;
             return 0;
         }
         #endregion

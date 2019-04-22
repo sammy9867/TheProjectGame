@@ -134,8 +134,8 @@ namespace TheGame.GMServer
             magic.teamGuids = JsonConvert.SerializeObject(ids) ;
 
             
-            magic.location.x = "" + player.column;
-            magic.location.y = "" + player.row;
+            magic.location.x = "" + player.Column;
+            magic.location.y = "" + player.Row;
 
             magic.board.width = "" + Board.Width;
             magic.board.tasksHeight = "" + Board.TaskHeight;
@@ -205,8 +205,6 @@ namespace TheGame.GMServer
         }
 
         //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
-
-
 
 
     }
