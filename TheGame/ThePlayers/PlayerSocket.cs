@@ -70,8 +70,6 @@ namespace ThePlayers
                 // Receive BeginGame message
                 Receive();
 
-           
-
                 Console.WriteLine("Player begins the game");
             }
             catch (Exception e)
@@ -157,8 +155,6 @@ namespace ThePlayers
         {
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             string action = magic.action;
-            string result = magic.result;
-            string userGuid = magic.userGuid;
 
             switch (action.ToLower())
             {
@@ -194,6 +190,7 @@ namespace ThePlayers
             Player.Column = Int32.Parse(x);
             Console.WriteLine("Player " + Player.playerID + "  [row,col]");
             Console.WriteLine("" + Player.Row + " " + Player.Column);
+
         }
 
         private static void SendDiscover()

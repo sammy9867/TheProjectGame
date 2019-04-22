@@ -1,7 +1,7 @@
 ﻿TheGame
 
 
-winexe
+exe
 C#
 .cs
 C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\
@@ -16,5 +16,5 @@ C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame
 141602219014
 MainWindow.xaml;
 
-False
+True
 

@@ -12,14 +12,14 @@ namespace TheGame.Model
         /**Changing "Status" during Communication phase **/
         public enum Status
         {
-            TASK_AREA,
-            PIECE_AREA,
-            SHAM_AREA,
-            RED_GOAL_AREA,
-            BLUE_GOAL_AREA,
+            TASK_CELL,
+            PIECE,
+            SHAM,
+            RED_GOALS_CELL,
+            BLUE_GOALS_CELL,
             RED_PLAYER,
             BLUE_PLAYER,
-            UNDISCOVERED_GOALS,
+            UNDISCOVERED_GOAL,
             DISCOVERED_GOAL,
             DISCOVERED_NON_GOAL,
             RED_PLAYER_PIECE,
@@ -34,6 +34,11 @@ namespace TheGame.Model
         public static int GoalHeight { get; set; }
         public static int TaskHeight { get; set; }
         public static int MaxNumOfPlayers { get; set; }
+        public static double ProbabilityOfBeingSham { get; set; }
+        public static int FrequencyOfPlacingPieces { get; set; }
+        public static int InitialNumberOfPieces { get; set; }
+        public static int NumberOfGoals { get; set; }
+        public static int ShamProbability { get; set; }
 
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
@@ -46,11 +51,7 @@ namespace TheGame.Model
         public List<Goal> DiscoveredBlueGoals { get; set; }
         public List<Goal> NonGoals { get; set; }
 
-        public double ProbabilityOfBeingSham { get; set; }
-        public int FrequencyOfPlacingPieces { get; set; }
-        public int InitialNumberOfPieces { get; set; }
-        public int NumberOfGoals { get; set; }
-        public int ShamProbability { get; set; }
+        public Status[,] boardtable; // column row
         
 
         public int getCellStatus(int col, int row)
@@ -78,8 +79,8 @@ namespace TheGame.Model
             {
                 if (item.isTaken(col, row))
                 {
-                    if (item.isSham) return (int)Board.Status.SHAM_AREA;
-                    else return (int)Board.Status.PIECE_AREA;
+                    if (item.isSham) return (int)Board.Status.SHAM;
+                    else return (int)Board.Status.PIECE;
                 }
             }
             #endregion
@@ -91,7 +92,7 @@ namespace TheGame.Model
                 
                 if(item.isTaken(col,row))
                 {
-                    return (int)Board.Status.UNDISCOVERED_GOALS;
+                    return (int)Board.Status.UNDISCOVERED_GOAL;
                 }
             }
 
@@ -100,7 +101,7 @@ namespace TheGame.Model
 
                 if (item.isTaken(col, row))
                 {
-                    return (int)Board.Status.UNDISCOVERED_GOALS;
+                    return (int)Board.Status.UNDISCOVERED_GOAL;
                 }
             }
 
@@ -137,7 +138,7 @@ namespace TheGame.Model
             if (row < GoalHeight)
             {
                 Team.TeamCell teamCell = RedTeam.isDiscovered(col, row);
-                if (teamCell == Team.TeamCell.FREE) return (int)Board.Status.RED_GOAL_AREA;
+                if (teamCell == Team.TeamCell.FREE) return (int)Board.Status.RED_GOALS_CELL;
                 if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return (int)Board.Status.DISCOVERED_GOAL;
                 if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return (int)Board.Status.DISCOVERED_NON_GOAL;
             }
@@ -145,12 +146,12 @@ namespace TheGame.Model
             if (Height - row - 1 < GoalHeight)
             {
                 Team.TeamCell teamCell = BlueTeam.isDiscovered(col, row);
-                if (teamCell == Team.TeamCell.FREE) return (int)Board.Status.BLUE_GOAL_AREA;
+                if (teamCell == Team.TeamCell.FREE) return (int)Board.Status.BLUE_GOALS_CELL;
                 if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return (int)Board.Status.DISCOVERED_GOAL;
                 if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return (int)Board.Status.DISCOVERED_NON_GOAL;
             }
             
-            return (int)Board.Status.TASK_AREA;
+            return (int)Board.Status.TASK_CELL;
         }
 
         internal bool IsUndiscoveredGoal(int c, int r)

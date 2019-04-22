@@ -19,6 +19,7 @@ using TheGame.Model;
 using TheGame.GMServer;
 using System.Net.Sockets;
 using System.Net;
+using System.Diagnostics;
 
 namespace TheGame
 {
@@ -43,35 +44,40 @@ namespace TheGame
 
         // Boolean to indicate if the game is over
         private bool endgame;
-
+        private bool startgame;
         
         public MainWindow()
         {
 
             InitializeComponent();
-            ConsoleWriteLine("Game master has started.");
+            Console.WriteLine("Game master has started.");
             RedTeam = BlueTeam = null;
             endgame = false;
+            startgame = true;
+
             board = new Board();
 
             initFile();
             loadBoard();
 
-            updateBoard();
+            UpdateBoard();
 
             // offset before running communication routine
-            var dueTime = TimeSpan.FromSeconds(5);
+            var dueTime = TimeSpan.FromSeconds(1);
 
             // run separate thread for communication routine
-            RunAsync(CommunicationRoutine, dueTime, CancellationToken.None);
+            //            RunAsync(CommunicationRoutine, dueTime, CancellationToken.None);
 
-            var interval = TimeSpan.FromSeconds(0);
+            var interval = TimeSpan.FromMilliseconds(10); // FromSeconds(0);
+            RunPeriodicAsync(CommunicationRoutine, dueTime, interval, CancellationToken.None);
         }
 
+       
+        #region Start Socket
         /* Start Socket */
         private void StartSocket()
         {
-            ConsoleWriteLine("GM Socket started.");
+            Console.WriteLine("GM Socket started.");
             // Start client sync
             StartClient();
 
@@ -91,29 +97,30 @@ namespace TheGame
                 JsonConvert.DeserializeObject(json);
             string action = magic.action;
             string result = magic.result;
-            ConsoleWriteLine("action: " + action);
-            ConsoleWriteLine("result: " + result);
+            Console.WriteLine("action: " + action);
+            Console.WriteLine("result: " + result);
             sendDone.Set();
             if (result.ToLower().Equals("denied"))
             {
-                ConsoleWriteLine("Game has been denied");
+                Console.WriteLine("Game has been denied");
                 MessageBox.Show("Game has been denied",
                     "Error");
                 this.Close();
             }
         }
-
+        #endregion
+        #region Connect Players
         /* Metod to connect players, while there is at least one available slot */
         private void ConnectPlayers()
         {
             if (null == GMSocket)
             {
-                ConsoleWriteLine("Socket is null");
+                Console.WriteLine("Socket is null");
                 MessageBox.Show("Socket is null", "Error");
                 this.Close();
             }
 
-            ConsoleWriteLine("Expect players");
+            Console.WriteLine("Expect players");
             while(board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers || 
                   board.BlueTeam.NumOfPlayers < Board.MaxNumOfPlayers)
             {
@@ -127,10 +134,10 @@ namespace TheGame
                 // by multiple threads simultaneously without safty
                 string line = ("Players connected " + RedTeam.NumOfPlayers + "|" +
                                     BlueTeam.NumOfPlayers + "|" + Board.MaxNumOfPlayers);
-                ConsoleWriteLine(line);
+                Console.WriteLine(line);
 
             }
-            ConsoleWriteLine("All Players Connected");
+            Console.WriteLine("All Players Connected");
 
         }
         private void ConnectPlayer(string json)
@@ -179,42 +186,27 @@ namespace TheGame
 
             connectDone.Set();
         }
-
+        #endregion
+        #region Begion Game
         /* Send all refistered players notification that the game has started */
         private void BeginGame()
         {
-            ConsoleWriteLine("");
-            ConsoleWriteLine("Begin the game for Blue Team");
+            Console.WriteLine("");
+            Console.WriteLine("Begin the game for Blue Team");
             foreach (var p in BlueTeam.members)
             {
                 Send(GMSocket, GMRequestHandler.BeginGame( p, BlueTeam.members, BlueTeam.leader) );
             }
-            ConsoleWriteLine("Begin the game for Red Team");
+            Console.WriteLine("Begin the game for Red Team");
             foreach (var p in RedTeam.members)
             {
                 Send(GMSocket, GMRequestHandler.BeginGame(p, RedTeam.members, RedTeam.leader));
             }
-            ConsoleWriteLine("Started");
+            Console.WriteLine("Started");
         }
-
-        //private void LetsMove()
-        //{
-        //    ConsoleWriteLine("");
-        //    ConsoleWriteLine("Move player from Blue Team");
-        //    foreach (var p in BlueTeam.members)
-        //    {
-        //        GMRequestHandler.ResponseForMove(GMSocket, p);
-        //    }
-        //    ConsoleWriteLine("Move player from Red Team");
-        //    foreach (var p in RedTeam.members)
-        //    {
-        //        GMRequestHandler.ResponseForMove(GMSocket, p);
-        //    }
-
-        //}
-
-        /** File Report most probably will be changed since we have multiple threads **/
+        #endregion
         #region File Report
+        /** File Report most probably will be changed since we have multiple threads **/
         private void initFile()
         {
             // create a file object
@@ -234,7 +226,6 @@ namespace TheGame
             }
 
         }
-
         private bool insertIntoConfig(string type, string dateTime, string playerID, string colour, string role)
         {
             try
@@ -249,11 +240,12 @@ namespace TheGame
                 return false;
             }
         }
-        #endregion  
-
-        #region Async Cyclic Method
-        // The `onTick` method will be called periodically unless cancelled.
-        private static async Task RunPeriodicAsync(Action onTick, TimeSpan dueTime, TimeSpan interval, CancellationToken token)
+        #endregion
+        #region Async and Communication Routine
+        private static async Task RunPeriodicAsync(Action onTick,
+                                           TimeSpan dueTime,
+                                           TimeSpan interval,
+                                           CancellationToken token)
         {
             // Initial wait time before we begin the periodic loop.
             if (dueTime > TimeSpan.Zero)
@@ -270,7 +262,7 @@ namespace TheGame
                     await Task.Delay(interval, token);
             }
         }
-        #endregion
+
 
         /* The `action` method will be called in the sep thread. */
         private static async Task RunAsync(Action action, TimeSpan dueTime, CancellationToken token)
@@ -284,28 +276,31 @@ namespace TheGame
         }
         private void CommunicationRoutine()
         {
-            // Init Socket and register a game
-            StartSocket();
-            // Connect new players
-            ConnectPlayers();
-            // Notify players about the game
-            BeginGame();
+            if (startgame)
+            {  
+                // Init Socket and register a game
+                StartSocket();
+                // Connect new players
+                ConnectPlayers();
+                // Notify players about the game
+                BeginGame();
+                startgame = false;
+            }
 
-            // Update the board, strange behaviour :(
-            updateBoard();
-
-            while (!endgame)
+            if (!endgame)
             {
                 // Receive message from players while game is on
                 // received messages will be passed to the method
                 // AnalizeMessage
                 Receive(AnalizeMessage);
             }
-            //if (pause) return;
-            //doWork();
-            //updateBoard();
-            //addPiece();
+
+            // Update the board, strange behaviour :(
+            UpdateBoard();
+
         }
+        #endregion
+
 
         /* Analize received message from a player */
         private void AnalizeMessage(string obj)
@@ -339,49 +334,8 @@ namespace TheGame
             }
         }
 
-        /* Find player by id, no hash applied yet */
-        private Player findPlayerById(string playerId)
-        {
-            foreach (Player p in RedTeam.members)
-                if (p.playerID.Equals(playerId))
-                    return p;
-            foreach (Player p in BlueTeam.members)
-                if (p.playerID.Equals(playerId))
-                    return p;
-            return null;
-        }
-
-        private void checkVictory(Player player)
-        {
-            if (board.DiscoveredBlueGoals.Count >= board.NumberOfGoals)
-            {
-                // Blue WINS
-                endgame = true;
-                string message = "Congratulations, Blue team wins!";
-                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                //int pId = Player.playerID;
-
-                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-
-                MessageBox.Show(message);
-                this.Close();
-            }
-            if (board.DiscoveredRedGoals.Count >= board.NumberOfGoals)
-            {
-                // Red WINS
-                endgame = true;
-                string message = "Congratulations, Red team wins!";
-                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                MessageBox.Show(message);
-                this.Close();
-            }
-        }
-
+    
+        #region Add A New Piece During The Game
         private void addPiece()
         {
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
@@ -403,12 +357,13 @@ namespace TheGame
                 piece.row = row;
                 piece.column = column;
 
-                piece.isSham = (rnd.Next(0, 100) < board.ShamProbability) ? true : false;
+                piece.isSham = (rnd.Next(0, 100) < Board.ShamProbability) ? true : false;
                 board.Pieces.Add(piece);
                 break;
             }
 
         }
+        #endregion
 
         #region Player Routine and stuff
         private void doWork()
@@ -539,27 +494,26 @@ namespace TheGame
         }
         #endregion
 
-        #region Init GOALS and load BOARD
+        #region Init GOALS and load BOARD, PIECES, TEAMS
         /**Undiscovered Goals are initialised randomly**/
         private void initGoals()
         {
 
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
 
-            for (int i = 0; i < board.NumberOfGoals; i++)
+            for (int i = 0; i < Board.NumberOfGoals; i++)
             {
-                Goal goal = new Goal();
-                goal.row = rnd.Next(0, Board.GoalHeight);
-                goal.column = rnd.Next(0, Board.Width);
-                board.UndiscoveredRedGoals.Add(goal);
-            }
-
-            for (int i = 0; i < board.NumberOfGoals; i++)
-            {
-                Goal goal = new Goal();
-                goal.row = rnd.Next(Board.Height - Board.GoalHeight, Board.Height);
-                goal.column = rnd.Next(0, Board.Width);
-                board.UndiscoveredBlueGoals.Add(goal);
+                Goal redgoal = new Goal();
+                redgoal.row = rnd.Next(0, Board.GoalHeight);
+                redgoal.column = rnd.Next(0, Board.Width);
+                board.UndiscoveredRedGoals.Add(redgoal);
+                board.boardtable[redgoal.column, redgoal.row] = Board.Status.UNDISCOVERED_GOAL;
+            
+                Goal bluegoal = new Goal();
+                bluegoal.row = Board.Height - 1 - redgoal.row; ;
+                bluegoal.column = redgoal.column;
+                board.UndiscoveredBlueGoals.Add(bluegoal);
+                board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
             }
         }
 
@@ -587,9 +541,17 @@ namespace TheGame
             Board.TaskHeight = magic.TaskHeight;
             Board.Height = 2 * Board.GoalHeight + Board.TaskHeight;
             Board.MaxNumOfPlayers = magic.MaxNumOfPlayers;
-            board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
-            board.NumberOfGoals = magic.NumberOfGoals;
-            board.ShamProbability = magic.ShamProbability; // 50%
+            Board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
+            Board.NumberOfGoals = magic.NumberOfGoals;
+            Board.ShamProbability = magic.ShamProbability; // 50%
+
+            board.boardtable = new Board.Status[Board.Width, Board.Height];
+            for (int r = 0; r < Board.GoalHeight; r++)
+                for (int c = 0; c < Board.Width; c++)
+                {
+                    board.boardtable[c, r] = Board.Status.RED_GOALS_CELL;
+                    board.boardtable[c, Board.Height - 1 - r] = Board.Status.BLUE_GOALS_CELL;
+                }
 
             RedTeam = loadTeam(Team.TeamColor.RED);
             board.RedTeam = RedTeam;
@@ -637,12 +599,57 @@ namespace TheGame
             #endregion
 
             initGoals();
-            loadPieces();
 
+
+        }
+
+        private List<Piece> loadPieces()
+        {
+            List<Piece> pieces = new List<Piece>();
+
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
+
+            while (pieces.Count < Board.InitialNumberOfPieces)
+            {
+                int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
+                int column = rnd.Next(0, Board.Width);
+                bool exist = false;
+                if (RedTeam.isTaken(column, row) != 0) continue;
+                if (BlueTeam.isTaken(column, row) != 0) continue;
+                foreach (Piece p in pieces)
+                    if (p.isTaken(column, row))
+                    {
+                        exist = true;
+                        break;
+                    }
+                if (exist) continue;
+                Piece piece = new Piece();
+                piece.row = row;
+                piece.column = column;
+
+                piece.isSham = (rnd.Next(0, 100) < Board.ShamProbability) ? true : false;
+                pieces.Add(piece);
+                board.boardtable[piece.column, piece.row] =
+                    piece.isSham ? Board.Status.SHAM : Board.Status.PIECE;
+            }
+            return pieces;
+
+        }
+
+        private Team loadTeam(Team.TeamColor teamColor)
+        {
+            Team team = new Team();
+
+            team.members = new List<Player>();
+            team.DiscoveredGoals = new List<Goal>();
+            team.DiscoveredNonGoals = new List<Goal>();
+            team.teamColor = teamColor;
+
+            return team;
         }
         #endregion
 
-        private void updateBoard()
+        private void UpdateBoard()
         {
 
             for (int row = 0; row < Board.Height; row++)
@@ -655,51 +662,52 @@ namespace TheGame
                         Margin = new Thickness(2)
                     };
 
-                    switch (board.getCellStatus(col, row))
+                    switch (board.boardtable[col, row]) 
+                  //switch (board.getCellStatus(col, row))
                     {
-                        case (int)Board.Status.BLUE_GOAL_AREA:
-                        case (int)Board.Status.RED_GOAL_AREA:
+                        case Board.Status.BLUE_GOALS_CELL:
+                        case Board.Status.RED_GOALS_CELL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/brown_picture.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.RED_PLAYER:
+                        case Board.Status.RED_PLAYER:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/red_player.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.BLUE_PLAYER:
+                        case Board.Status.BLUE_PLAYER:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.RED_PLAYER_PIECE:
+                        case Board.Status.RED_PLAYER_PIECE:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/red_player_piece.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.BLUE_PLAYER_PIECE:
+                        case Board.Status.BLUE_PLAYER_PIECE:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/blue_player_piece.png", UriKind.Relative));
                             break;
 
 
 
-                        case (int)Board.Status.TASK_AREA:
+                        case Board.Status.TASK_CELL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/white_picture.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.PIECE_AREA:
+                        case Board.Status.PIECE:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/piece_picture.png", UriKind.Relative));
                             break;
-                        case (int)Board.Status.SHAM_AREA:
+                        case Board.Status.SHAM:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/sham_picture.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.UNDISCOVERED_GOALS:
+                        case Board.Status.UNDISCOVERED_GOAL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/undiscovered_goal.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.DISCOVERED_GOAL:
+                        case Board.Status.DISCOVERED_GOAL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/discovered_goal.png", UriKind.Relative));
                             break;
 
-                        case (int)Board.Status.DISCOVERED_NON_GOAL:
+                        case Board.Status.DISCOVERED_NON_GOAL:
                             img.Source = new BitmapImage(new Uri("/TheGame;component/Image/discovered_non_goal.png", UriKind.Relative));
                             break;
 
@@ -711,6 +719,32 @@ namespace TheGame
 
                     playgroundDockPanel.Children.Add(img);
                 }
+
+            // please keep it as separate loops for now
+            for (int row = 0; row < Board.Height; row++)
+            {
+                string line = "";
+                for (int col = 0; col < Board.Width; col++)
+                {
+                    switch (board.boardtable[col, row])
+                    {
+                        case Board.Status.TASK_CELL: line += "TC"; break;
+                        case Board.Status.PIECE: line += "PC"; break;
+                        case Board.Status.SHAM: line += "SH"; break;
+                        case Board.Status.RED_GOALS_CELL: line += "RG"; break;
+                        case Board.Status.BLUE_GOALS_CELL: line += "BG"; break;
+                        case Board.Status.RED_PLAYER: line += "RE"; break;
+                        case Board.Status.BLUE_PLAYER: line += "BL"; break;
+                        case Board.Status.UNDISCOVERED_GOAL: line += "UG"; break;
+                        case Board.Status.DISCOVERED_GOAL: line += "DG"; break;
+                        case Board.Status.DISCOVERED_NON_GOAL: line += "NG"; break;
+                        case Board.Status.RED_PLAYER_PIECE: line += "RP"; break;
+                        case Board.Status.BLUE_PLAYER_PIECE: line += "BP"; break;
+                    }
+                    line += " ";
+                }
+                Console.WriteLine(line);
+            }
         }
 
         /* Socket Code, basically what we had in GMSocket class but 
@@ -853,68 +887,53 @@ namespace TheGame
 
         #endregion
 
-
-        #region Load Pieces
-        private List<Piece> loadPieces()
+        #region Find Player By ID
+        /* Find player by id, no hash applied yet */
+        private Player findPlayerById(string playerId)
         {
-            List<Piece> pieces = new List<Piece>();
+            foreach (Player p in RedTeam.members)
+                if (p.playerID.Equals(playerId))
+                    return p;
+            foreach (Player p in BlueTeam.members)
+                if (p.playerID.Equals(playerId))
+                    return p;
+            return null;
+        }
+        #endregion
 
-            Random rnd = new Random(Guid.NewGuid().GetHashCode());
-
-            while (pieces.Count < board.InitialNumberOfPieces)
+        #region Check for Victory
+        private void checkVictory(Player player)
+        {
+            if (board.DiscoveredBlueGoals.Count >= Board.NumberOfGoals)
             {
-                int row = rnd.Next(Board.GoalHeight, Board.GoalHeight + Board.TaskHeight);
-                int column = rnd.Next(0, Board.Width);
-                bool exist = false;
-                if (RedTeam.isTaken(column, row) != 0) continue;
-                if (BlueTeam.isTaken(column, row) != 0) continue;
-                foreach (Piece p in pieces)
-                    if (p.isTaken(column, row))
-                    {
-                        exist = true;
-                        break;
-                    }
-                if (exist) continue;
-                Piece piece = new Piece();
-                piece.row = row;
-                piece.column = column;
+                // Blue WINS
+                endgame = true;
+                string message = "Congratulations, Blue team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                //int pId = Player.playerID;
 
-                piece.isSham = (rnd.Next(0, 100) < board.ShamProbability) ? true : false;
-                pieces.Add(piece);
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+
+                MessageBox.Show(message);
+                this.Close();
             }
-            return pieces;
-
+            if (board.DiscoveredRedGoals.Count >= Board.NumberOfGoals)
+            {
+                // Red WINS
+                endgame = true;
+                string message = "Congratulations, Red team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                MessageBox.Show(message);
+                this.Close();
+            }
         }
         #endregion
 
-        #region Load Team 
-        private Team loadTeam(Team.TeamColor teamColor)
-        {
-            Team team = new Team();
-
-            team.members = new List<Player>();
-            team.DiscoveredGoals = new List<Goal>();
-            team.DiscoveredNonGoals = new List<Goal>();
-            team.teamColor = teamColor;
-
-            return team;
-        }
-        #endregion
-
-        /* This console is SHIT, needs to be updated */
-        #region WPF Console writting
-        public void ConsoleWrite(string line)
-        {
-            string curr = this.ConsoleTextBlock.Text;
-            curr += "> " + line;
-            this.ConsoleTextBlock.Text = curr;
-            updateBoard();
-        }
-        public void ConsoleWriteLine(string line)
-        {
-            ConsoleWrite(line + "\n");
-        }
-        #endregion
 
         /* not used yet, will be used for port and ip address */
         #region Command Line Parameters
