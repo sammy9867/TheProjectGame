@@ -232,7 +232,7 @@ namespace CommunicationServer
                         if (Clients.TryGetValue(userGuid, out destPlayer))
                         {
                             CSRequestHandler.BeginPlayer(json, destPlayer);
-                            Clients.Remove(userGuid);
+//                            Clients.Remove(userGuid);
                         }
                         break;
                     }
