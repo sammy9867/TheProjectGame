@@ -29,7 +29,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
             magic.preferredTeam = PlayerSocket.Player.Team == Player.TeamColor.RED ? "red" : "blue";
 
             Console.WriteLine("Sending JoinGame.json to ComServer.....\n");
@@ -54,7 +54,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
             //CHANGE follow:
             magic.direction = PlayerSocket.Player.Team == Player.TeamColor.RED ? "S" : "N";
 
@@ -81,7 +81,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
 
             magic.scope.x = PlayerSocket.Player.X;
             magic.scope.y = PlayerSocket.Player.Y;
@@ -107,7 +107,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
           
             Console.WriteLine("Sending Pickup.json....\n");
             PlayerSocket.Send(handler,
@@ -130,7 +130,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
 
             Console.WriteLine("Sending TestPiece.json....\n");
             PlayerSocket.Send(handler,
@@ -153,7 +153,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
 
             Console.WriteLine("Sending TestPiece.json....\n");
             PlayerSocket.Send(handler,
@@ -176,7 +176,7 @@ namespace ThePlayers
             }
 
             dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = PlayerSocket.Player.playerID;
+            magic.userGuid = PlayerSocket.Player.ID;
 
             Console.WriteLine("Sending Destroy.json....\n");
             PlayerSocket.Send(handler,

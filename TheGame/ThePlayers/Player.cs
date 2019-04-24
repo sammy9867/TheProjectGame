@@ -24,16 +24,36 @@ namespace ThePlayers
 
             BLOCKED = 8,            // 1000
         }
+        public enum BoardCell
+        {
+            TASK_CELL,
+            GOAL_CELL,
+            GOAL,
+            PIECE,
+            SHAM,
+            PLAYER,
+            ME
+        }
+
 
         public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
-        public string playerID { get; set; }
+        public BoardCell[,] Board { get; set; }
+
+        #region Board Fimensions
+        public int Width { get; set; }
+        public int TaskHeight { get; set; }
+        public int GoalHeight { get; set; }
+        public int Height { get { return TaskHeight + GoalHeight; } }
+        #endregion 
+
+        public string ID { get; set; }
         public Role role { get; set; }
         public bool hasPiece { get; set; }
+
         public int Row { get; set; }
         public int Column { get; set; }
-
-        public int X { get { return Column; }  }
-        public int Y { get { return Row; } }
+        public int X { get { return Column; } set { Column = X; } }
+        public int Y { get { return Row; } set { Row = Y; } }
 
 
         public TeamColor Team { get; set; }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace ThePlayers
 {
 
-    class PlayerSocket
+    public class PlayerSocket
     {
         private const int port = 11000;
         private const char ETB = (char)23;
@@ -161,7 +161,8 @@ namespace ThePlayers
                 case "begin":
                     {
                         ReadStartGame(json);
-                        // Send Discover as soon as the game begins, so player knows something... could be move later somewhere else... 
+                        // Send Discover as soon as the game begins, 
+                        // so player knows something... could be move later somewhere else... 
                         SendDiscover();
                         break;
                     }
@@ -188,7 +189,7 @@ namespace ThePlayers
             string y = magic.location.y;
             Player.Row = Int32.Parse(y);
             Player.Column = Int32.Parse(x);
-            Console.WriteLine("Player " + Player.playerID + "  [row,col]");
+            Console.WriteLine("Player " + Player.ID + "  [row,col]");
             Console.WriteLine("" + Player.Row + " " + Player.Column);
 
         }
@@ -206,6 +207,23 @@ namespace ThePlayers
         {
             Console.WriteLine("DiscoverResponce:");
             Console.WriteLine(json);
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            string result = magic.result;
+            if (result.ToLower().Equals("denied"))
+            {
+                SendDiscover(); // Repeat Discover ??
+                return;
+            }
+
+            // Update coordinates 
+            Player.X = magic.scope.x;   // shall we check for correctness first ?
+            Player.Y = magic.scope.y;   // shall we check for correctness first ?
+
+            for (int i = 0; i < magic.fields.Count; i++)
+            {
+                int col = magic.fields[i].x;
+                int row = magic.fields[i].y;
+            }
         }
 
         private static void SendMove()

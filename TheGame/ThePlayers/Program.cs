@@ -41,7 +41,7 @@ namespace ThePlayers
             // Create Player object
             player = new Player
             {
-                playerID = "" + (new Random()).Next(),
+                ID = "" + (new Random()).Next(),
                 Team = args[0].ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE
             };
 
@@ -56,7 +56,7 @@ namespace ThePlayers
             // Player start playing
             StartPlaying();
 
-            Console.WriteLine("Player "+player.playerID+" terminated");
+            Console.WriteLine("Player "+player.ID+" terminated");
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
             return 0;
