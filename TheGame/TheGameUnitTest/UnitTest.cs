@@ -24,7 +24,7 @@ namespace TheGameUnitTest
             bool actual = p.isTaken(column, row);
 
             //Assert
-
+            
             Assert.AreEqual(expected, actual);
         }
 
