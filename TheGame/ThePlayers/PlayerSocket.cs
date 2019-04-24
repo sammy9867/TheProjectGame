@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace ThePlayers
 {
 
-    class PlayerSocket
+    public class PlayerSocket
     {
         private const int port = 11000;
         private const char ETB = (char)23;

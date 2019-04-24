@@ -11,6 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationServer", "Comm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThePlayers", "ThePlayers\ThePlayers.csproj", "{519A450B-96DA-4D08-92CE-6AD2142D6891}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject_ForExceptions", "UnitTestProject_ForExceptions\UnitTestProject_ForExceptions.csproj", "{05594899-5906-47A3-85F1-05EAAE723282}"
+	ProjectSection(ProjectDependencies) = postProject
+		{519A450B-96DA-4D08-92CE-6AD2142D6891} = {519A450B-96DA-4D08-92CE-6AD2142D6891}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +38,10 @@ Global
 		{519A450B-96DA-4D08-92CE-6AD2142D6891}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{519A450B-96DA-4D08-92CE-6AD2142D6891}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{519A450B-96DA-4D08-92CE-6AD2142D6891}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05594899-5906-47A3-85F1-05EAAE723282}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05594899-5906-47A3-85F1-05EAAE723282}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05594899-5906-47A3-85F1-05EAAE723282}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05594899-5906-47A3-85F1-05EAAE723282}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
