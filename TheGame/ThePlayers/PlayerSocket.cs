@@ -105,7 +105,7 @@ namespace ThePlayers
                     state.sb = state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                     if (state.sb.ToString().IndexOf(ETB) < 0)
                     {
-                        socket.BeginReceive(state.buffer, /* bytesRead ? */0, StateObject.BufferSize, 0,
+                        socket.BeginReceive(state.buffer, bytesRead, StateObject.BufferSize, 0,
                             new AsyncCallback(ReceiveCallback), state);
                         return;
                     }
