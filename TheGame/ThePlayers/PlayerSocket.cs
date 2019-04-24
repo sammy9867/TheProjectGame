@@ -185,13 +185,33 @@ namespace ThePlayers
         private static void ReadStartGame(string json)
         {
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            string team = magic.team;
+            string role = magic.role;
             string x = magic.location.x;
             string y = magic.location.y;
             Player.Row = Int32.Parse(y);
             Player.Column = Int32.Parse(x);
+            Player.Team =
+                team.ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE;
+            Player.role = 
+                role.ToLower().Equals("member") ? Player.Role.MEMBER : Player.Role.LEADER;
+            Player.TeamSize = magic.teamSize;
+            Player.Mates = new List<string>();
+
+            string tmp = magic.teamGuids;
+            Player.Mates = 
+                Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(tmp);
+
+            Player.BoardWidth = magic.board.width;
+            Player.BoardTaskHeight = magic.board.tasksHeight;
+            Player.BoardGoalHeight = magic.board.goalsHeight;
+            Player.Board = new Player.BoardCell[Player.BoardHeight, Player.BoardWidth];
+
             Console.WriteLine("Player " + Player.ID + "  [row,col]");
             Console.WriteLine("" + Player.Row + " " + Player.Column);
-
+            foreach (string p in Player.Mates)
+                Console.WriteLine("+"+p);
+            Console.WriteLine();
         }
 
         private static void SendDiscover()

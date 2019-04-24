@@ -8,7 +8,7 @@ namespace ThePlayers
 {
     public class Player
     {
-        private const int SUCCESS =  0;
+        private const int SUCCESS = 0;
         private const int FAILURE = -1;
 
         public enum Role { MEMBER, LEADER }
@@ -25,10 +25,9 @@ namespace ThePlayers
             BLOCKED = 8,            // 1000
         }
         public enum BoardCell
-        {
-            TASK_CELL,
-            GOAL_CELL,
+        { 
             GOAL,
+            NONGOAL,
             PIECE,
             SHAM,
             PLAYER,
@@ -37,24 +36,28 @@ namespace ThePlayers
 
 
         public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
-        public BoardCell[,] Board { get; set; }
 
-        #region Board Fimensions
-        public int Width { get; set; }
-        public int TaskHeight { get; set; }
-        public int GoalHeight { get; set; }
-        public int Height { get { return TaskHeight + GoalHeight; } }
+        #region Board Dimensions
+        public BoardCell[,] Board { get; set; } // [row, column]
+        public int BoardWidth { get; set; }
+        public int BoardTaskHeight { get; set; }
+        public int BoardGoalHeight { get; set; }
+        public int BoardHeight { get { return BoardTaskHeight + 2*BoardGoalHeight; } }
         #endregion 
 
         public string ID { get; set; }
         public Role role { get; set; }
         public bool hasPiece { get; set; }
 
+        public int TeamSize { get; set; }
+        public List<string> Mates {get;set;}
+
+        #region coordinates
         public int Row { get; set; }
         public int Column { get; set; }
         public int X { get { return Column; } set { Column = X; } }
         public int Y { get { return Row; } set { Row = Y; } }
-
+        #endregion
 
         public TeamColor Team { get; set; }
 
