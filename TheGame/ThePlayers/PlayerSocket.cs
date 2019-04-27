@@ -238,11 +238,17 @@ namespace ThePlayers
             // Update coordinates 
             Player.X = magic.scope.x;   // shall we check for correctness first ?
             Player.Y = magic.scope.y;   // shall we check for correctness first ?
+            dynamic fields = magic.fields.Parent;
+            dynamic field = fields.First;
+            Console.WriteLine("\n\n"+fields+"\n\n");
 
-            for (int i = 0; i < magic.fields.Count; i++)
+            while (field != null)
             {
-                int col = magic.fields[i].x;
-                int row = magic.fields[i].y;
+                int col = field.x;
+                int row = field.y;
+                string contains = field.contains;
+                int a = 0;
+                field = field.Next;
             }
         }
 
@@ -254,4 +260,20 @@ namespace ThePlayers
             // Receive();  check Send() method, it calls Receive()
         }
     }
+
+        public class JField
+        {
+            public int x;
+            public int y;
+            public JValue value;
+        }
+
+        public class JValue
+        {
+            public int manhattanDistance;
+            public string contains;
+            public long timestamp;
+            public string userGuid;
+        }
+
 }

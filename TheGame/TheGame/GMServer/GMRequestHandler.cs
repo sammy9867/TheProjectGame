@@ -140,8 +140,9 @@ namespace TheGame.GMServer
             magic.board.width = "" + Board.Width;
             magic.board.tasksHeight = "" + Board.TaskHeight;
             magic.board.goalsHeight = "" + Board.GoalHeight;
-
-            return  (JsonConvert.SerializeObject(magic));
+            string result = (JsonConvert.SerializeObject(magic));
+            result = result.Replace("\"[", "[").Replace("]\"", "]");
+            return  result;  // TODO:
         }
 
         //TODO: 2nd Communication phase

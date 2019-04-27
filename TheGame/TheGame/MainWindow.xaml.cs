@@ -126,8 +126,6 @@ namespace TheGame
             {
                 // Received Message is analized by ConnectPlayer method
                 Receive(ConnectPlayer);
-                connectDone.WaitOne();  // wait untill ConnectPlayer completes
-                connectDone.Reset();    // reset handler
 
                 // ConsoleWrite[Line] and GUI are not working properly 
                 // be awere that the same objects cannot be used 
@@ -184,9 +182,15 @@ namespace TheGame
                 board.BlueTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.BLUE_PLAYER;
             }
+
+            // CONNECT PLAYER DELAY
+//            Thread.Sleep(10000);
+
             Send(GMSocket, GMRequestHandler.ConnectPlayerOK(player));
 
-            connectDone.Set();
+            if(board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers &&
+                  board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers )
+                connectDone.Set();
         }
         #endregion
         #region Begion Game
@@ -282,8 +286,16 @@ namespace TheGame
             {  
                 // Init Socket and register a game
                 StartSocket();
+
                 // Connect new players
                 ConnectPlayers();
+                connectDone.WaitOne();  // wait untill ConnectPlayer completes
+                connectDone.Reset();    // reset handler
+
+                Console.WriteLine("All players connected.... One sec to take a nap");
+                Thread.Sleep(1000);
+                Console.WriteLine("Oh, here we go again");
+
                 // Notify players about the game
                 BeginGame();
                 startgame = false;
@@ -321,7 +333,6 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForDiscover(player);
                         // fill json
                         PlayerDiscoversNeighboringCells(player, ref json);
-
                         // response
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
@@ -414,8 +425,8 @@ namespace TheGame
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
             magic.result = "ok";
-            magic.scope.x = player.X;
-            magic.scope.y = player.Y;
+            magic.scope.x =""+player.X;
+            magic.scope.y = "" + player.Y;
             List<JField> jfields = new List<JField>();
 
             for (int c = 0; c < 3; c++)
@@ -429,13 +440,13 @@ namespace TheGame
                     if (row >= Board.Height) continue;
                     JField jField = new JField
                     {
-                        x = column,
-                        y = row
+                        x = "" + column,
+                        y = "" + row
                     };
                     jField.value = new JValue();
                     jField.value.manhattanDistance =
-                        Math.Abs(player.X - column) + Math.Abs(player.Y - row);
-                    jField.value.timestamp = GetTimestamp();
+                        (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
+                    jField.value.timestamp = GetTimestamp().ToString();
                     jField.value.userGuid = "null";
 
                     switch (board.boardtable[column, row])
@@ -468,11 +479,13 @@ namespace TheGame
                     //board.GetPlayersNeighbor(player.Column - 1 + c,
                     // player.Row - 1 + r, player.Team);
                 }
-                
 
-            string ser = Newtonsoft.Json.JsonConvert.SerializeObject(jfields);
-            magic.fields = ser;
+
+            magic.fields = Newtonsoft.Json.JsonConvert.SerializeObject(jfields);
+            // TODO: Update such a horrible solution 
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+            json = json.Replace("\"[", "[").Replace("]\"", "]");
+
         }
 
         /** Player takes a  Piece **/
@@ -871,6 +884,7 @@ namespace TheGame
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+                receiveDone.Set();
             }
         }
 

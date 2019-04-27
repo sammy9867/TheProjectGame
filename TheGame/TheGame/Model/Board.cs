@@ -12,7 +12,7 @@ namespace TheGame.Model
         /**Changing "Status" during Communication phase **/
         public enum Status
         {
-            TASK_CELL,
+            TASK_CELL,   // ALWAYS THE FIRST ELEMENT 
             PIECE,
             SHAM,
             RED_GOALS_CELL,  // red above !!!
