@@ -89,12 +89,16 @@ namespace TheGameUnitTest
             };
 
             t.leader = p;
+
             int col = 1;
             int row = 0;
             Team.TeamCell expected = Team.TeamCell.FREE;
+            int ex = 2;
 
+            int actual0 = t.NumOfPlayers;           
             Team.TeamCell actual = t.isTaken(col, row);
             Team.TeamCell actual2 = t.isDiscovered(col, row);
+            Assert.AreEqual(ex, actual0);
             Assert.AreEqual(expected, actual);
             Assert.AreEqual(expected, actual2);
 
