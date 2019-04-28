@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Threading;
 using TheGame.Model;
+using Newtonsoft.Json.Linq;
 
 namespace TheGame.GMServer
 {
@@ -16,8 +17,8 @@ namespace TheGame.GMServer
         public static string Response { get; set; }
         public static ManualResetEvent allDone
             = new ManualResetEvent(false);
-                
-        
+
+
         /** 
          * README
          * Ok, before you start screaming, since running too many threads causes too many problems,
@@ -25,6 +26,7 @@ namespace TheGame.GMServer
          * So, we may call Send() Receive() and have GUI, access to Board object,
          * and methods to write report file, and do the actual GM job, soooooo
          * METHODS JUST RETURN DUMMY JSON TO SEND
+         * https://www.newtonsoft.com/json/help/html/ModifyJson.htm
          */
 
         public static string SendSetUpGame()
@@ -116,33 +118,37 @@ namespace TheGame.GMServer
             {
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
-            dynamic magic = JsonConvert.DeserializeObject(json);
-            magic.userGuid = player.playerID;
-            magic.team = player.Team == Team.TeamColor.RED ? "red" : "blue";
-            magic.role = player.role == Player.Role.LEADER ? "leader" : "member";
-            magic.teamSize = "" + members.Count;
+//            dynamic magic = JsonConvert.DeserializeObject(json);
+            JObject jObject = JObject.Parse(json);
 
-            string[] ids = new string[members.Count];
-            ids[0] = leader.playerID;
+            jObject["userGuid"] = player.playerID;
+            jObject["team"] = player.Team == Team.TeamColor.RED ? "red" : "blue";
+            jObject["role"] =  player.role == Player.Role.LEADER ? "leader" : "member";
+            jObject["teamSize"] = "" + members.Count;
+
+            JArray teamGuids = (JArray)jObject["teamGuids"];
+            teamGuids.Clear();
+            teamGuids.Add(leader.playerID);
+
             int i = 1;
             foreach (var p in members)
             {
                 if (p.playerID != leader.playerID)
-                    ids[i++] = p.playerID;
+                    teamGuids.Add(p.playerID);
             }
 
-            magic.teamGuids = JsonConvert.SerializeObject(ids) ;
+            JObject location = (JObject)jObject["location"];
+            location["x"] = "" + player.Column;
+            location["y"] = "" + player.Row;
 
-            
-            magic.location.x = "" + player.Column;
-            magic.location.y = "" + player.Row;
+            JObject board = (JObject)jObject["board"];
+            board["width"] = "" + Board.Width;
+            board["tasksHeight"] = "" + Board.TaskHeight;
+            board["goalsHeight"] = "" + Board.GoalHeight;
 
-            magic.board.width = "" + Board.Width;
-            magic.board.tasksHeight = "" + Board.TaskHeight;
-            magic.board.goalsHeight = "" + Board.GoalHeight;
-            string result = (JsonConvert.SerializeObject(magic));
-            result = result.Replace("\"[", "[").Replace("]\"", "]");
-            return  result;  // TODO:
+            string result = jObject.ToString();
+            Console.WriteLine(result);
+            return  result;  // TODO?
         }
 
         //TODO: 2nd Communication phase
