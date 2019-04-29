@@ -486,6 +486,7 @@ namespace TheGame
             jArray.Clear();
             foreach (JField jf in jfields)
                 jArray.Add(jf);
+               
             json = magic.ToString();
             Console.WriteLine(json);
         }
