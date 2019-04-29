@@ -31,24 +31,6 @@ C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debu
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
 C:\Users\samue\Downloads\Semester 6\SE 2\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.pdb
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\bin\Debug\TheGame.exe.config
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\bin\Debug\TheGame.exe
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\bin\Debug\TheGame.pdb
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.dll
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.pdb
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\MainWindow.g.cs
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\App.g.cs
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame_MarkupCompile.cache
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame_MarkupCompile.lref
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\MainWindow.baml
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.g.resources
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.Properties.Resources.resources
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.GenerateResource.cache
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CoreCompileInputs.cache
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.exe
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.pdb
 C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.dll
 C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.pdb
 C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\bin\Debug\Newtonsoft.Json.xml
@@ -73,4 +55,3 @@ C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\TheGame\obj\Deb
 C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csproj.CopyComplete
 C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.exe
 C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.pdb
-C:\Users\Asus\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\TheGame.csprojAssemblyReference.cache
