@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -197,11 +198,10 @@ namespace ThePlayers
                 role.ToLower().Equals("member") ? Player.Role.MEMBER : Player.Role.LEADER;
             Player.TeamSize = magic.teamSize;
             Player.Mates = new List<string>();
-
-            string tmp = magic.teamGuids;
-            Player.Mates = 
-                Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(tmp);
-
+            for (int i = 0; i < magic.teamGuids.Count; i++)
+            {
+                Player.Mates.Add( (string) magic.teamGuids[i]);
+            }
             Player.BoardWidth = magic.board.width;
             Player.BoardTaskHeight = magic.board.tasksHeight;
             Player.BoardGoalHeight = magic.board.goalsHeight;
