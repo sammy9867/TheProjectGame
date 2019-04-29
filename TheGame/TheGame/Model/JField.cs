@@ -10,10 +10,10 @@ namespace TheGame.Model
     {
         public string x;
         public string y;
-        public JValue value;
+        public JFieldValue value;
     }
 
-    public class JValue
+    public class JFieldValue
     {
         public string manhattanDistance;
         public string contains;

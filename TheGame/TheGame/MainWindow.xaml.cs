@@ -20,6 +20,7 @@ using TheGame.GMServer;
 using System.Net.Sockets;
 using System.Net;
 using System.Diagnostics;
+using Newtonsoft.Json.Linq;
 
 namespace TheGame
 {
@@ -422,11 +423,12 @@ namespace TheGame
         /* Player Discovers its 8 neighbors */
         private void PlayerDiscoversNeighboringCells(Player player, ref string json)
         {
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            magic.userGuid = player.playerID;
-            magic.result = "ok";
-            magic.scope.x =""+player.X;
-            magic.scope.y = "" + player.Y;
+            JObject magic = JObject.Parse(json);
+            magic["userGuid"] = player.playerID;
+            magic["result"] = "ok";
+            JObject scope = (JObject) magic["scope"];
+            scope["x"] =""+player.X;
+            scope["y"] = "" + player.Y;
             List<JField> jfields = new List<JField>();
 
             for (int c = 0; c < 3; c++)
@@ -443,7 +445,7 @@ namespace TheGame
                         x = "" + column,
                         y = "" + row
                     };
-                    jField.value = new JValue();
+                    jField.value = new JFieldValue();
                     jField.value.manhattanDistance =
                         (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
                     jField.value.timestamp = GetTimestamp().ToString();
@@ -480,12 +482,12 @@ namespace TheGame
                     // player.Row - 1 + r, player.Team);
                 }
 
-
-            magic.fields = Newtonsoft.Json.JsonConvert.SerializeObject(jfields);
-            // TODO: Update such a horrible solution 
-            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
-            json = json.Replace("\"[", "[").Replace("]\"", "]");
-
+            JArray jArray = (JArray)magic["fields"];
+            jArray.Clear();
+            foreach (JField jf in jfields)
+                jArray.Add(jf);
+            json = magic.ToString();
+            Console.WriteLine(json);
         }
 
         /** Player takes a  Piece **/
