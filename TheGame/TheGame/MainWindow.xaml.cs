@@ -449,7 +449,7 @@ namespace TheGame
                     jField.value.manhattanDistance =
                         (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
                     jField.value.timestamp = GetTimestamp().ToString();
-                    jField.value.userGuid = "null";
+                    jField.value.userGuid = null;
 
                     switch (board.boardtable[column, row])
                     {
@@ -485,7 +485,7 @@ namespace TheGame
             JArray jArray = (JArray)magic["fields"];
             jArray.Clear();
             foreach (JField jf in jfields)
-                jArray.Add(jf);
+                jArray.Add(Newtonsoft.Json.JsonConvert.SerializeObject(jf));
             json = magic.ToString();
             Console.WriteLine(json);
         }
