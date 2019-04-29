@@ -2,11 +2,43 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TheGame.Model;
 using System.Collections.Generic;
+using TheGame.GMServer;
+using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Threading;
+using System.Text;
+
 namespace TheGameUnitTest
 {
     [TestClass]
     public class UnitTest
     {
+        [TestMethod]
+        public void TestMethod_ForGMRequestHandler()
+        {
+            string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\JSONs\SetUpGame.json";
+
+            //'C:\Users\julia\source\repos\theprojectgame\
+            //TheGame\TheGameUnitTest\JSONs\SetUpGame.json'.
+
+            string expected = File.ReadAllText(file, Encoding.ASCII); ;
+            string actual = GMRequestHandler.SendSetUpGame();
+
+            Assert.AreNotEqual(expected, actual);
+            //Assert.AreEqual(expected, actual);
+        }
+
+        /* TODO */
+        //[TestMethod]
+        //public void TestMethod_ForServer()
+        //{
+        //    string[] args = { "fdg", "dfdskjb" };
+        //    int expected = 0;
+        //    int actual = CommunicationServer.Server.Main(args);
+
+        //    Assert.AreEqual(expected, actual);
+        //}
         [TestMethod]
         public void TestMethod_ForPiece() /* COMPLETE */
         {
@@ -89,12 +121,16 @@ namespace TheGameUnitTest
             };
 
             t.leader = p;
+
             int col = 1;
             int row = 0;
             Team.TeamCell expected = Team.TeamCell.FREE;
+            int ex = 2;
 
+            int actual0 = t.NumOfPlayers;           
             Team.TeamCell actual = t.isTaken(col, row);
             Team.TeamCell actual2 = t.isDiscovered(col, row);
+            Assert.AreEqual(ex, actual0);
             Assert.AreEqual(expected, actual);
             Assert.AreEqual(expected, actual2);
 

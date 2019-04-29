@@ -9,6 +9,11 @@
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+TheGame/ThePlayers/bin/
+TheGame/TheGameUnitTest/bin/
+TheGame/TheGameUnitTest/bin/
+TheGame/UnitTestProject_ForExceptions/bin/
+TheGame/UnitTestProject_ForExceptions/bin/
 
 # Build results
 [Dd]ebug/
