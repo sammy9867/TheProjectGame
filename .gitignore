@@ -18,6 +18,8 @@ TheGame/TheGame/bin/
 TheGame/TheGameUnitTest/bin/Debug/TheGame.exe
 TheGame/TheGameUnitTest/bin/Debug/TheGameUnitTest.dll
 
+TheGame/TheGame/obj/Debug/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
