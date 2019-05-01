@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Text;
+//using Microsoft.CSharp.RuntimeBinder.CSharp.ArgumentInfo.Create;
 
 namespace TheGameUnitTest
 {
@@ -26,10 +27,54 @@ namespace TheGameUnitTest
             Assert.AreNotEqual(expected, actual);
 
             /*for ConnectPlayerOK */
+            Player pl = new Player()
+            {
+                role = Player.Role.LEADER,
+                //playerID = 0,
+                Row = 0,
+                Column = 0,
+                //toCheck = true,
+                Team = Team.TeamColor.BLUE
+            };
+            //string file0 = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\ConfirmJoiningGame.json";
+            //string json = File.ReadAllText(file0, Encoding.ASCII); ;
+            //dynamic expected0 = JsonConvert.DeserializeObject(json);
+            //expected0.userGuid = pl.playerID;
+
+            //dynamic actual0 = GMRequestHandler.ConnectPlayerOK(pl);
+            //Assert.AreEqual(expected0, actual0);
 
             /* for ConnectPlayerDeny */
 
+
             /* for BeginGame */
+            Player p1 = new Player()
+            {
+                role = Player.Role.LEADER,
+                //playerID = 0,
+                Row = 0,
+                Column = 0,
+                //toCheck = true,
+                Team = Team.TeamColor.RED
+            };
+
+            Player p2 = new Player()
+            {
+                role = Player.Role.MEMBER,
+                //playerID = 1,
+                Row = 1,
+                Column = 10,
+                //toCheck = true,
+                Team = Team.TeamColor.RED
+            };
+
+            List<Player> listp = new List<Player>()
+            {
+                p1,p2
+            };
+
+            string res = GMRequestHandler.BeginGame(p2, listp, p1);
+            
 
             /* for ResponseForDiscover */
         }
