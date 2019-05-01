@@ -17,16 +17,21 @@ namespace TheGameUnitTest
         [TestMethod]
         public void TestMethod_ForGMRequestHandler()
         {
-            string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\JSONs\SetUpGame.json";
-
-            //'C:\Users\julia\source\repos\theprojectgame\
-            //TheGame\TheGameUnitTest\JSONs\SetUpGame.json'.
+            /* for SendSetUpGame */
+            string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\SetUpGame.json";
 
             string expected = File.ReadAllText(file, Encoding.ASCII); ;
             string actual = GMRequestHandler.SendSetUpGame();
 
             Assert.AreNotEqual(expected, actual);
-            //Assert.AreEqual(expected, actual);
+
+            /*for ConnectPlayerOK */
+
+            /* for ConnectPlayerDeny */
+
+            /* for BeginGame */
+
+            /* for ResponseForDiscover */
         }
 
         /* TODO */

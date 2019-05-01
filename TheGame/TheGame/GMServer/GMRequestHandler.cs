@@ -67,7 +67,7 @@ namespace TheGame.GMServer
         //}
 
         /* Returns JSON for Successfull Joining Notification */
-        internal static string ConnectPlayerOK(Player player)
+        public static string ConnectPlayerOK(Player player)
         {
             string file = @"..\..\JSONs\ConfirmJoiningGame.json";
             string json = "";
@@ -86,7 +86,7 @@ namespace TheGame.GMServer
 //          
         }
         /* Returns JSON for Failure Joining Notification */
-        internal static string ConnectPlayerDeny(Player player)
+        public static string ConnectPlayerDeny(Player player)
         {
             string file = @"..\..\JSONs\RejectJoiningGame.json";
             string json = "";
@@ -105,7 +105,7 @@ namespace TheGame.GMServer
         }
 
         /* Returns JSON for Begin Game Notification */
-        internal static string BeginGame( 
+        public static string BeginGame( 
             Player player, List<Player> members, Player leader)
         {
             string file = @"..\..\JSONs\BeginGame.json";
@@ -172,7 +172,7 @@ namespace TheGame.GMServer
         }
 
         /* Returns JSON for Discovery Response */
-        internal static string ResponseForDiscover(Player player)
+        public static string ResponseForDiscover(Player player)
         {
             string file = @"..\..\JSONs\Response\DiscoverResponse.json";
             string json = "";
