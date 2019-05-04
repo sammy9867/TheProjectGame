@@ -47,7 +47,10 @@ namespace TheGame
         // Boolean to indicate if the game is over
         private bool endgame;
         private bool startgame;
-        
+
+        // TODO: timestamp
+        // long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+
         public MainWindow()
         {
 
