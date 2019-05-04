@@ -449,7 +449,7 @@ namespace TheGame
                     jField.value = new JFieldValue();
                     jField.value.manhattanDistance =
                         (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
-                    jField.value.timestamp = GetTimestamp().ToString();
+                    jField.value.timestamp = GetTimestamp(DateTime.Now).ToString();
                     jField.value.userGuid = null;
 
                     switch (board.boardtable[column, row])
@@ -512,11 +512,10 @@ namespace TheGame
             insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
-        private long GetTimestamp()
+        private string GetTimestamp(DateTime value)
         {
             // TODO: Get proper Timestamp
-            long timestamp = 777;
-            return timestamp;
+            return value.ToString("MM/dd/yyyy HH:mm:ss");
         }
 
         #endregion

@@ -276,7 +276,7 @@ namespace ThePlayers
                 JObject value = (JObject)jfield["value"];
                 int manhattanDistance = (int)value["manhattanDistance"];
                 string contains = (string) value["contains"];
-                long timestamp = (long) value["timestamp"];
+                string timestamp = (string) value["timestamp"];
                 string userGuid = (string) value["userGuid"];
                 Player.NeighborStatus status;
                 Player.BoardCell curr = Player.Board[y,x];  // row col
@@ -337,6 +337,23 @@ namespace ThePlayers
             // Receive Move Reponse
             // Receive();  check Send() method, it calls Receive()
         }
+
+        private static void ReceiveMove(string json)
+        {
+            Console.WriteLine("MoveResponse:");
+            Console.WriteLine(json);
+
+            JObject jobject = JObject.Parse(json);
+            string result = (string)jobject["result"];
+            if (result.ToLower().Equals("denied"))
+            {
+                SendMove(); // Repeat Move ??
+                return;
+            }
+
+
+        }
+
     }
 
         public class JField
