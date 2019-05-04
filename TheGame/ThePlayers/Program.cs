@@ -42,7 +42,8 @@ namespace ThePlayers
             player = new Player
             {
                 ID = "" + (new Random()).Next(),
-                Team = args[0].ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE
+                Team = args[0].ToLower().Equals("red") ? Player.TeamColor.RED : Player.TeamColor.BLUE,
+                Neighbors = new Player.NeighborStatus[3, 3]
             };
 
             // Initialize player 

@@ -21,6 +21,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace TheGame
 {
@@ -482,12 +483,9 @@ namespace TheGame
                     // player.Row - 1 + r, player.Team);
                 }
 
-            JArray jArray = (JArray)magic["fields"];
-            jArray.Clear();
-            foreach (JField jf in jfields)
-                jArray.Add(jf);
-               // jArray.Add(Newtonsoft.Json.JsonConvert.SerializeObject(jf));
-                        json = magic.ToString();
+
+            magic["fields"] = (JArray) JToken.FromObject(jfields);
+            json = magic.ToString();
             Console.WriteLine(json);
         }
 
@@ -893,7 +891,11 @@ namespace TheGame
 
         public void Send(Socket handler, String data)
         {
+            // Remove useless white spaces 
+            data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Create bytes 
             byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            // Sending
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
            

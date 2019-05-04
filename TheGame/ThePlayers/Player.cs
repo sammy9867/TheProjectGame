@@ -15,27 +15,29 @@ namespace ThePlayers
         public enum TeamColor { BLUE, RED };
         public enum NeighborStatus
         {
-            FREE = 0,               // 0000
-            PIECE = 1,              // 0001
+            FR = 0, // 0000
+            PC = 1, // 0001
 
-            GOAL_AREA = 4,          // 0100
-            DISCOVERED_NONGOAL = 6, // 0110
-            DISCOVERED_GOAL = 7,    // 0111
+            GA = 4, // 0100
+            NG = 6, // 0110
+            DG = 7, // 0111
 
-            BLOCKED = 8,            // 1000
+            BL = 8, // 1000
         }
         public enum BoardCell
         { 
-            GOAL,
-            NONGOAL,
-            PIECE,
-            SHAM,
-            PLAYER,
-            ME
+            EC,         // Empty Cell
+            GC,         // Empty Goal Cell
+            GL,         // Goal
+            NG,         // NonGoal
+            PC,         // Piece
+            SH,         // SHam
+            PL,         // Player
+            ME          // ME
         }
 
 
-        public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
+        public NeighborStatus[,] Neighbors { get; set; }  // [row, col]
 
         #region Board Dimensions
         public BoardCell[,] Board { get; set; } // [row, column]
@@ -70,32 +72,32 @@ namespace ThePlayers
         #region MOVES
        public int goUp()
         {
-            // [column , row]
-            if (Neighbors[1, 0] == NeighborStatus.BLOCKED)
+            // [row , col]
+            if (Neighbors[0, 1] == NeighborStatus.BL)
                 return FAILURE; 
             Row--;
             return SUCCESS;
         }
         public int goDown()
         {
-            // [column , row]
-            if (Neighbors[1, 2] == NeighborStatus.BLOCKED)
+            // [row , col]
+            if (Neighbors[2, 1] == NeighborStatus.BL)
                 return FAILURE;
             Row++;
             return SUCCESS;
         }
         public int goLeft()
         {
-            // [column , row]
-            if (Neighbors[0, 1] == NeighborStatus.BLOCKED)
+            // [row , col]
+            if (Neighbors[1, 0] == NeighborStatus.BL)
                 return FAILURE;
             Column--;
             return SUCCESS;
         }
         public int goRight()
         {
-            // [column , row]
-            if (Neighbors[2, 1] == NeighborStatus.BLOCKED)
+            // [row col]
+            if (Neighbors[1, 2] == NeighborStatus.BL)
                 return FAILURE;
             Column++;
             return SUCCESS;
@@ -124,16 +126,16 @@ namespace ThePlayers
             {
                 if (Team == TeamColor.RED)
                 {
-                    if (Neighbors[1, 0] != NeighborStatus.BLOCKED &&
-                        (Neighbors[1, 1] & NeighborStatus.GOAL_AREA) != NeighborStatus.GOAL_AREA)
+                    if (Neighbors[1, 0] != NeighborStatus.BL &&
+                        (Neighbors[1, 1] & NeighborStatus.GA) != NeighborStatus.GA)
                         return goUp();
                     return goForGoalAlternative(TeamColor.RED);
 
                 }
                 else
                 {
-                    if (Neighbors[1, 2] != NeighborStatus.BLOCKED &&
-                        (Neighbors[1, 1] & NeighborStatus.GOAL_AREA) != NeighborStatus.GOAL_AREA)
+                    if (Neighbors[1, 2] != NeighborStatus.BL &&
+                        (Neighbors[1, 1] & NeighborStatus.GA) != NeighborStatus.GA)
                         return goDown();
                     return goForGoalAlternative(TeamColor.BLUE);
                 }
@@ -141,16 +143,16 @@ namespace ThePlayers
             #endregion
 
             #region Go Back to the Task Area
-            if ((Neighbors[1, 1] & NeighborStatus.GOAL_AREA) == NeighborStatus.GOAL_AREA)
+            if ((Neighbors[1, 1] & NeighborStatus.GA) == NeighborStatus.GA)
             {
-                if (Team == TeamColor.RED && Neighbors[1, 2] != NeighborStatus.BLOCKED)
+                if (Team == TeamColor.RED && Neighbors[1, 2] != NeighborStatus.BL)
                 {
                     if (goDown() == SUCCESS) return SUCCESS;
                     if (goRight() == SUCCESS) return SUCCESS;
                     if (goLeft() == SUCCESS) return SUCCESS;
                     if (goUp() == SUCCESS) return SUCCESS;
                 }
-                else if (Neighbors[1, 0] != NeighborStatus.BLOCKED)
+                else if (Neighbors[1, 0] != NeighborStatus.BL)
                 {
                     if (goUp() == SUCCESS) return SUCCESS;
                     if (goRight() == SUCCESS) return SUCCESS;
@@ -161,15 +163,15 @@ namespace ThePlayers
             #endregion
 
             #region To Neighbouring piece
-            if (Neighbors[0, 1] == NeighborStatus.PIECE) return goLeft();
-            if (Neighbors[1, 0] == NeighborStatus.PIECE) return goUp();
-            if (Neighbors[2, 1] == NeighborStatus.PIECE) return goRight();
-            if (Neighbors[1, 2] == NeighborStatus.PIECE) return goDown();
+            if (Neighbors[0, 1] == NeighborStatus.PC) return goLeft();
+            if (Neighbors[1, 0] == NeighborStatus.PC) return goUp();
+            if (Neighbors[2, 1] == NeighborStatus.PC) return goRight();
+            if (Neighbors[1, 2] == NeighborStatus.PC) return goDown();
 
-            if (Neighbors[0, 0] == NeighborStatus.PIECE) return goLeft();
-            if (Neighbors[2, 0] == NeighborStatus.PIECE) return goUp();
-            if (Neighbors[2, 2] == NeighborStatus.PIECE) return goRight();
-            if (Neighbors[0, 2] == NeighborStatus.PIECE) return goDown();
+            if (Neighbors[0, 0] == NeighborStatus.PC) return goLeft();
+            if (Neighbors[2, 0] == NeighborStatus.PC) return goUp();
+            if (Neighbors[2, 2] == NeighborStatus.PC) return goRight();
+            if (Neighbors[0, 2] == NeighborStatus.PC) return goDown();
             #endregion
 
             #region Go Random
@@ -195,13 +197,13 @@ namespace ThePlayers
                 switch (GoalStep)
                 {
                     case AlternativeStep.LEFT:
-                        if (Neighbors[0, 1] != NeighborStatus.BLOCKED)
+                        if (Neighbors[0, 1] != NeighborStatus.BL)
                             return goLeft();
                         GoalStep = AlternativeStep.RIGHT;
                         break;
 
                     case AlternativeStep.RIGHT:
-                        if (Neighbors[2, 1] != NeighborStatus.BLOCKED)
+                        if (Neighbors[2, 1] != NeighborStatus.BL)
                             return goRight();
 
                         if (color == TeamColor.RED)

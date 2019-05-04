@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -91,6 +93,7 @@ namespace ThePlayers
             }
             catch (Exception e)
             {
+                Console.WriteLine("ThePlayers exception Receive():");
                 Console.WriteLine(e.ToString());
             }
         }
@@ -106,7 +109,9 @@ namespace ThePlayers
                     state.sb = state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                     if (state.sb.ToString().IndexOf(ETB) < 0)
                     {
-                        socket.BeginReceive(state.buffer, bytesRead, StateObject.BufferSize, 0,
+                        var str = state.sb.ToString();
+                        Console.WriteLine("Read {0} bytes from socket. \nData : {1}", str.Length, str);
+                        socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                             new AsyncCallback(ReceiveCallback), state);
                         return;
                     }
@@ -128,7 +133,11 @@ namespace ThePlayers
 
         public static void Send(Socket handler, String data, Action<string> cb = null)
         {
+            // Remove useless white spaces 
+            data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Create bytes
             byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            // Sending
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
             
@@ -206,9 +215,22 @@ namespace ThePlayers
             Player.BoardTaskHeight = magic.board.tasksHeight;
             Player.BoardGoalHeight = magic.board.goalsHeight;
             Player.Board = new Player.BoardCell[Player.BoardHeight, Player.BoardWidth];
-
+            for (int i = 0; i < Player.BoardGoalHeight; i++)
+                for (int j = 0; j < Player.BoardWidth; j++)
+                {
+                    Player.Board[i, j] = Player.BoardCell.GC;
+                    Player.Board[Player.BoardHeight - 1 - i, j] = Player.BoardCell.GC;
+                }
+            Player.Board[Player.Y, Player.X] = Player.BoardCell.ME;  // row col
+            
             Console.WriteLine("Player " + Player.ID + "  [row,col]");
-            Console.WriteLine("" + Player.Row + " " + Player.Column);
+            for (int i = 0; i < Player.BoardHeight; i++) // row
+            {
+                for (int j = 0; j < Player.BoardWidth; j++) // col
+                    Console.Write("" + Player.Board[i, j] + " ");
+                Console.WriteLine("");
+            }
+
             foreach (string p in Player.Mates)
                 Console.WriteLine("+"+p);
             Console.WriteLine();
@@ -225,10 +247,10 @@ namespace ThePlayers
         }
         private static void ReadDiscover(string json)
         {
-            Console.WriteLine("DiscoverResponce:");
+            Console.WriteLine("DiscoverResponse:");
             Console.WriteLine(json);
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            string result = magic.result;
+            JObject jobject = JObject.Parse(json);
+            string result = (string) jobject["result"];
             if (result.ToLower().Equals("denied"))
             {
                 SendDiscover(); // Repeat Discover ??
@@ -236,20 +258,76 @@ namespace ThePlayers
             }
 
             // Update coordinates 
-            Player.X = magic.scope.x;   // shall we check for correctness first ?
-            Player.Y = magic.scope.y;   // shall we check for correctness first ?
-            dynamic fields = magic.fields.Parent;
-            dynamic field = fields.First;
-            Console.WriteLine("\n\n"+fields+"\n\n");
+            JObject jscope = (JObject)jobject["scope"];
+            Player.X = (int)jscope["x"];   // shall we check for correctness first ?
+            Player.Y = (int)jscope["y"];   // shall we check for correctness first ?
 
-            while (field != null)
+            JArray jfields = (JArray)(jobject["fields"]);
+            // Initialy Neighbors blocked
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    Player.Neighbors[i, j] = Player.NeighborStatus.BL;
+
+            for (int i = 0; i < jfields.Count; i++)
             {
-                int col = field.x;
-                int row = field.y;
-                string contains = field.contains;
-                int a = 0;
-                field = field.Next;
+                JObject jfield = (JObject)jfields[i];
+                int  x = (int) jfield["x"];
+                int  y = (int) jfield["y"];
+                JObject value = (JObject)jfield["value"];
+                int manhattanDistance = (int)value["manhattanDistance"];
+                string contains = (string) value["contains"];
+                long timestamp = (long) value["timestamp"];
+                string userGuid = (string) value["userGuid"];
+                Player.NeighborStatus status;
+                Player.BoardCell curr = Player.Board[y,x];  // row col
+                //By [row, col]
+                int dx = Player.X - x;
+                int dy = Player.Y - y;
+                status = Player.Neighbors[1 - dy, 1 - dx] = Player.NeighborStatus.BL;  // row col.
+
+                switch (contains)
+                {
+                    case "goal":
+                        status = Player.NeighborStatus.DG;
+                        break;
+                    case "empty":
+                        if (userGuid == null)
+                            // Free cell
+                            status = curr == Player.BoardCell.NG ?  Player.NeighborStatus.NG : Player.NeighborStatus.FR;
+                        else
+                            // Player is staying
+                            status = Player.NeighborStatus.BL;
+                        break;
+                    case "piece":
+                        // check if we know there is a sham
+                        if (Player.Board[y, x] == Player.BoardCell.SH)
+                            // if yes, set BLOCKED
+                            status = (Player.hasPiece) ? Player.NeighborStatus.BL : Player.NeighborStatus.FR;
+                        else
+                            // set PIECE otherwise
+                            status = Player.NeighborStatus.PC;
+                        break;
+                }
+                if (status == Player.NeighborStatus.FR && Player.Board[y, x] == Player.BoardCell.GC)
+                    status = Player.NeighborStatus.GA;
+                Player.Neighbors[1 - dy, 1 - dx] = status;  // row col.
             }
+
+            Console.WriteLine("After Discover:");
+            for (int i = 0; i < Player.BoardHeight; i++) // row
+            {
+                for (int j = 0; j < Player.BoardWidth; j++) // col
+                    Console.Write("" + Player.Board[i, j] + " ");
+                Console.WriteLine("");
+            }
+            Console.WriteLine("After Discover Neighboors:");
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                    Console.Write("" + Player.Neighbors[i, j] + " "); // row col
+                Console.WriteLine("");
+            }
+
         }
 
         private static void SendMove()
@@ -263,16 +341,16 @@ namespace ThePlayers
 
         public class JField
         {
-            public int x;
-            public int y;
+            public string x;
+            public string y;
             public JValue value;
         }
 
         public class JValue
         {
-            public int manhattanDistance;
+            public string manhattanDistance;
             public string contains;
-            public long timestamp;
+            public string timestamp;
             public string userGuid;
         }
 
