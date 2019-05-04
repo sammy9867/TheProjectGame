@@ -485,13 +485,9 @@ namespace TheGame
             JArray jArray = (JArray)magic["fields"];
             jArray.Clear();
             foreach (JField jf in jfields)
-<<<<<<< HEAD
-                jArray.Add(Newtonsoft.Json.JsonConvert.SerializeObject(jf));
-=======
                 jArray.Add(jf);
-               
->>>>>>> 2be6a8e782bc5c41b5335a0524c376ee7d2d99b9
-            json = magic.ToString();
+               // jArray.Add(Newtonsoft.Json.JsonConvert.SerializeObject(jf));
+                        json = magic.ToString();
             Console.WriteLine(json);
         }
 
