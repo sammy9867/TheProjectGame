@@ -237,25 +237,6 @@ namespace CommunicationServer
                         break;
                     }
                 case "move":
-                    {
-                        /*if (GMSocket == state.workSocket)
-                        {
-                            // Forward Message from GM to player
-                            Console.WriteLine("Forward " + action + " Message GM -> Player");
-                            Socket destPlayer = null;
-                            if (Clients.TryGetValue(userGuid, out destPlayer))
-                                Send(destPlayer, state.sb.ToString());
-                            else
-                                Console.WriteLine("404 Player not found\n" + userGuid);
-                        }
-                        else
-                        {
-                            // Forward Message from player to GM
-                            Console.WriteLine("Forward " + action + " Message Player -> GM");
-                            Send(GMSocket, state.sb.ToString());
-                        }*/
-                        break;
-                    }
                 case "state":
                     {
                         if (GMSocket == state.workSocket)

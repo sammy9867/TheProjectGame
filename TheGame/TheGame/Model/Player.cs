@@ -21,7 +21,6 @@ namespace TheGame.Model
             BLOCKED = 8,            // 1000
         }
 
-        public NeighborStatus[,] Neighbors { get; set; }  // [column, row]
         public string playerID { get; set; }
 
         public int Row { get; set; }
@@ -33,12 +32,6 @@ namespace TheGame.Model
         public Piece Piece { get; set; }
 
         public Team.TeamColor Team { get; set; }
-
-        private enum AlternativeStep { UP, DOWN, LEFT, RIGHT }
-
-        private AlternativeStep GoalStep = AlternativeStep.LEFT;
-
-        private bool toCheck;
 
         #region MOVES
         /**
@@ -96,138 +89,10 @@ namespace TheGame.Model
         }
         #endregion
 
-        /**
-         *  Player moves Randomly
-         *  @return 0 on sucess, -1 otherwise
-         */
-        public int goRnd()
-        {
-            if (toCheck)
-            {
-                if (Piece.isSham)   // if a piece is a sham
-                    Piece = null;   // destroy it, by simply forgetting 
-                toCheck = false;
-                return 0;
-            }
-
-            // [column , row]
-
-            #region Go With a Piece
-            if (hasPiece())
-            {
-                if (Team == Model.Team.TeamColor.RED)
-                {
-                    if(Neighbors[1,0] != NeighborStatus.BLOCKED &&
-                        (Neighbors[1, 1] & NeighborStatus.GOAL_AREA) != NeighborStatus.GOAL_AREA)
-                        return goUp();
-                    return goForGoalAlternative(Model.Team.TeamColor.RED);
-
-                }
-                else
-                {
-                    if (Neighbors[1, 2] != NeighborStatus.BLOCKED &&
-                        (Neighbors[1,1]&NeighborStatus.GOAL_AREA) != NeighborStatus.GOAL_AREA)
-                        return goDown();
-                    return goForGoalAlternative(Model.Team.TeamColor.BLUE);
-                }
-            }
-            #endregion
-            
-            #region Go Back to the Task Area
-            if ((Neighbors[1, 1] & NeighborStatus.GOAL_AREA) == NeighborStatus.GOAL_AREA)
-            {
-                if (Team == Model.Team.TeamColor.RED && Neighbors[1,2] != NeighborStatus.BLOCKED)
-                {
-                    if (Neighbors[1, 2] != NeighborStatus.BLOCKED)
-                        return goDown();
-                    if (Neighbors[2, 1] != NeighborStatus.BLOCKED)
-                        return goRight();
-                    if (Neighbors[0, 1] != NeighborStatus.BLOCKED)
-                        return goLeft();
-                    if (Neighbors[1, 0] != NeighborStatus.BLOCKED)
-                        return goUp();
-                }
-                else if (Neighbors[1,0] != NeighborStatus.BLOCKED)
-                {
-                    if (Neighbors[1, 0] != NeighborStatus.BLOCKED)
-                        return goUp();
-
-                    if (Neighbors[2, 1] != NeighborStatus.BLOCKED)
-                        return goRight();
-                    if (Neighbors[0, 1] != NeighborStatus.BLOCKED)
-                        return goLeft();
-                    if (Neighbors[1, 2] != NeighborStatus.BLOCKED)
-                        return goDown(); ;
-                }
-            }
-            #endregion
-          
-            #region To Neighbouring piece
-            if (Neighbors[0, 1] == NeighborStatus.PIECE) return goLeft();
-            if (Neighbors[1, 0] == NeighborStatus.PIECE) return goUp();
-            if (Neighbors[2, 1] == NeighborStatus.PIECE) return goRight();
-            if (Neighbors[1, 2] == NeighborStatus.PIECE) return goDown();
-            
-            if (Neighbors[0, 0] == NeighborStatus.PIECE) return goLeft();
-            if (Neighbors[2, 0] == NeighborStatus.PIECE) return goUp();
-            if (Neighbors[2, 2] == NeighborStatus.PIECE) return goRight();
-            if (Neighbors[0, 2] == NeighborStatus.PIECE) return goDown();
-            #endregion
-         
-            #region Go Random
-            /* Go Random */
-            Random r = new Random(Guid.NewGuid().GetHashCode());
-            while (true)
-            {
-                switch (r.Next() % 4)
-                {
-                    case 0: if (Neighbors[1, 0] != NeighborStatus.BLOCKED) return goUp(); else break;
-                    case 1: if (Neighbors[1, 2] != NeighborStatus.BLOCKED) return goDown(); else break;
-                    case 2: if (Neighbors[0, 1] != NeighborStatus.BLOCKED) return goLeft(); else break;
-                    case 3: if (Neighbors[2, 1] != NeighborStatus.BLOCKED) return goRight(); else break;
-                }
-            }
-#endregion
-        }
-
-        private int goForGoalAlternative(Team.TeamColor color)
-        {
-
-            while(true)
-            switch (GoalStep)
-            {
-            case AlternativeStep.LEFT:
-                if (Neighbors[0, 1] != NeighborStatus.BLOCKED)
-                    return goLeft();
-                GoalStep = AlternativeStep.RIGHT;
-                break;
-
-            case AlternativeStep.RIGHT:
-                if (Neighbors[2, 1] != NeighborStatus.BLOCKED)
-                    return goRight();
-
-                if (color == Model.Team.TeamColor.RED)
-                    GoalStep = AlternativeStep.UP;
-                else
-                    GoalStep = AlternativeStep.DOWN;
-                break;
-
-            case AlternativeStep.UP:
-                goUp();
-                GoalStep = AlternativeStep.LEFT;
-                return 0;
-
-            case AlternativeStep.DOWN:
-                goDown();
-                GoalStep = AlternativeStep.LEFT;
-                return 0;
-            }
-        }
-
-        internal void checkPiece()
+   
+        public void checkPiece()
         {
             if (Piece == null) return;
-            toCheck = true;
         }
 
         public bool hasPiece()

@@ -35,7 +35,11 @@ namespace ThePlayers
             PL,         // Player
             ME          // ME
         }
-
+        public enum Decision
+        {
+            MOVE_NORTH, MOVE_SOUTH, MOVE_EAST, MOVE_WEST, DISCOVER, PICKUP_PIECE,
+            TEST_PIECE, DESTROY_PIECE, PLACE_PIECE, KNOWLEDGE_EXCHANGE
+        }
 
         public NeighborStatus[,] Neighbors { get; set; }  // [row, col]
 
@@ -63,43 +67,41 @@ namespace ThePlayers
 
         public TeamColor Team { get; set; }
 
-        private enum AlternativeStep { UP, DOWN, LEFT, RIGHT }
+        private enum AlternativeStep { NORTH, SOUTH, WEST, EAST }
 
-        private AlternativeStep GoalStep = AlternativeStep.LEFT;
-
-        private bool toCheck;
+        public bool SendDiscover = false;
 
         #region MOVES
-       public int goUp()
+        public int TryMoveNorth()
         {
             // [row , col]
             if (Neighbors[0, 1] == NeighborStatus.BL)
                 return FAILURE; 
-            Row--;
+//            Row--;
             return SUCCESS;
         }
-        public int goDown()
+        public int TryMoveSouth()
         {
             // [row , col]
             if (Neighbors[2, 1] == NeighborStatus.BL)
                 return FAILURE;
-            Row++;
+//            Row++;
             return SUCCESS;
         }
-        public int goLeft()
+        public int TryMoveWest()
         {
             // [row , col]
             if (Neighbors[1, 0] == NeighborStatus.BL)
                 return FAILURE;
-            Column--;
+//            Column--;
             return SUCCESS;
         }
-        public int goRight()
+        public int TryMoveEast()
         {
             // [row col]
             if (Neighbors[1, 2] == NeighborStatus.BL)
                 return FAILURE;
-            Column++;
+//            Column++;
             return SUCCESS;
         }
         #endregion
@@ -108,70 +110,84 @@ namespace ThePlayers
          *  Player moves Randomly
          *  @return 0 on sucess, -1 otherwise
          */
-        public int makeMove()
+        public Decision MakeMove()
         {
-            if (toCheck)
+            if (SendDiscover == true)
             {
-                // TODO: Check if piece is a sham one
-//                if (Piece.isSham)   // if a piece is a sham
-//                    Piece = null;   // destroy it, by simply forgetting 
-                toCheck = false;
-                return SUCCESS;
+                SendDiscover = false;
+                return Decision.DISCOVER;
             }
 
-            // [column , row]
+            // Nowhere to go 
+            if (Neighbors[1, 0] == NeighborStatus.BL && Neighbors[1, 2] == NeighborStatus.BL &&
+                Neighbors[0, 1] == NeighborStatus.BL && Neighbors[2, 1] == NeighborStatus.BL)
+                return Decision.DISCOVER;
 
+            // row, col
             #region Go With a Piece
             if (hasPiece)
             {
                 if (Team == TeamColor.RED)
                 {
-                    if (Neighbors[1, 0] != NeighborStatus.BL &&
-                        (Neighbors[1, 1] & NeighborStatus.GA) != NeighborStatus.GA)
-                        return goUp();
+                    if (TryMoveNorth() == SUCCESS)
+                        return Decision.MOVE_NORTH;
                     return goForGoalAlternative(TeamColor.RED);
 
                 }
                 else
                 {
-                    if (Neighbors[1, 2] != NeighborStatus.BL &&
-                        (Neighbors[1, 1] & NeighborStatus.GA) != NeighborStatus.GA)
-                        return goDown();
+                    if (TryMoveSouth() == SUCCESS)
+                        return Decision.MOVE_SOUTH;
                     return goForGoalAlternative(TeamColor.BLUE);
                 }
             }
             #endregion
 
-            #region Go Back to the Task Area
+            #region Go Back to the Task Area No Piece
             if ((Neighbors[1, 1] & NeighborStatus.GA) == NeighborStatus.GA)
             {
-                if (Team == TeamColor.RED && Neighbors[1, 2] != NeighborStatus.BL)
+                if (Team == TeamColor.RED)
                 {
-                    if (goDown() == SUCCESS) return SUCCESS;
-                    if (goRight() == SUCCESS) return SUCCESS;
-                    if (goLeft() == SUCCESS) return SUCCESS;
-                    if (goUp() == SUCCESS) return SUCCESS;
+                    if (TryMoveSouth() == SUCCESS) return Decision.MOVE_SOUTH;
+                    if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST;
+                    if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST;
+                    if (TryMoveNorth() == SUCCESS) return Decision.MOVE_NORTH;
+                    return Decision.DISCOVER;
                 }
-                else if (Neighbors[1, 0] != NeighborStatus.BL)
+                else 
                 {
-                    if (goUp() == SUCCESS) return SUCCESS;
-                    if (goRight() == SUCCESS) return SUCCESS;
-                    if (goLeft() == SUCCESS) return SUCCESS;
-                    if (goDown() == SUCCESS) return SUCCESS;
+                    if (TryMoveNorth() == SUCCESS) return Decision.MOVE_NORTH;
+                    if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST;
+                    if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST;
+                    if (TryMoveSouth() == SUCCESS) return Decision.MOVE_SOUTH;
+                    return Decision.DISCOVER;
                 }
             }
             #endregion
 
-            #region To Neighbouring piece
-            if (Neighbors[0, 1] == NeighborStatus.PC) return goLeft();
-            if (Neighbors[1, 0] == NeighborStatus.PC) return goUp();
-            if (Neighbors[2, 1] == NeighborStatus.PC) return goRight();
-            if (Neighbors[1, 2] == NeighborStatus.PC) return goDown();
+            // TODO: Manhattan Distance  !!!!
+            #region To Neighbouring piece  ROW COLUMN
+            if (Neighbors[0, 1] == NeighborStatus.PC) return Decision.MOVE_NORTH;
+            if (Neighbors[1, 0] == NeighborStatus.PC) return Decision.MOVE_WEST;
+            if (Neighbors[2, 1] == NeighborStatus.PC) return Decision.MOVE_SOUTH;
+            if (Neighbors[1, 2] == NeighborStatus.PC) return Decision.MOVE_EAST;
 
-            if (Neighbors[0, 0] == NeighborStatus.PC) return goLeft();
-            if (Neighbors[2, 0] == NeighborStatus.PC) return goUp();
-            if (Neighbors[2, 2] == NeighborStatus.PC) return goRight();
-            if (Neighbors[0, 2] == NeighborStatus.PC) return goDown();
+            if (Neighbors[0, 0] == NeighborStatus.PC)
+            {
+                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST; else return Decision.MOVE_NORTH;
+            }
+            if (Neighbors[2, 0] == NeighborStatus.PC)
+            {
+                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST; else return Decision.MOVE_SOUTH;
+            }
+            if (Neighbors[2, 2] == NeighborStatus.PC)
+            {
+                if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST; else return Decision.MOVE_SOUTH;
+            }
+            if (Neighbors[0, 2] == NeighborStatus.PC)
+            {
+                if (TryMoveNorth() == SUCCESS) return Decision.MOVE_NORTH; else return Decision.MOVE_EAST;
+            } 
             #endregion
 
             #region Go Random
@@ -181,47 +197,56 @@ namespace ThePlayers
             {
                 switch (r.Next() % 4)
                 {
-                    case 0: if (goUp()    == SUCCESS) return SUCCESS; else break;
-                    case 1: if (goDown()  == SUCCESS) return SUCCESS; else break;
-                    case 2: if (goLeft()  == SUCCESS) return SUCCESS; else break;
-                    case 3: if (goRight() == SUCCESS) return SUCCESS; else break;
+                    case 0: if (TryMoveNorth()    == SUCCESS) return Decision.MOVE_NORTH; else break;
+                    case 1: if (TryMoveSouth()  == SUCCESS) return Decision.MOVE_SOUTH; else break;
+                    case 2: if (TryMoveWest()  == SUCCESS) return Decision.MOVE_WEST; else break;
+                    case 3: if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST; else break;
                 }
             }
             #endregion
         }
 
-        private int goForGoalAlternative(TeamColor color)
+        private Decision goForGoalAlternative(TeamColor color)
         {
-
+            AlternativeStep GoalStep = AlternativeStep.WEST;
+            int counter = 4;
             while (true)
+            {
+                counter--;
                 switch (GoalStep)
                 {
-                    case AlternativeStep.LEFT:
-                        if (Neighbors[0, 1] != NeighborStatus.BL)
-                            return goLeft();
-                        GoalStep = AlternativeStep.RIGHT;
+                    case AlternativeStep.WEST:
+                        if (TryMoveWest() == SUCCESS)
+                            return Decision.MOVE_WEST;
+                        GoalStep = AlternativeStep.EAST;
                         break;
 
-                    case AlternativeStep.RIGHT:
-                        if (Neighbors[2, 1] != NeighborStatus.BL)
-                            return goRight();
+                    case AlternativeStep.EAST:
+                        if (TryMoveEast() == SUCCESS)
+                            return Decision.MOVE_EAST;
 
                         if (color == TeamColor.RED)
-                            GoalStep = AlternativeStep.UP;
+                            GoalStep = AlternativeStep.NORTH;
                         else
-                            GoalStep = AlternativeStep.DOWN;
+                            GoalStep = AlternativeStep.SOUTH;
                         break;
 
-                    case AlternativeStep.UP:
-                        goUp();
-                        GoalStep = AlternativeStep.LEFT;
-                        return 0;
+                    case AlternativeStep.NORTH:
+                        if (TryMoveNorth() == SUCCESS)
+                            return Decision.MOVE_NORTH;
+                        GoalStep = AlternativeStep.SOUTH;
+                        break;
 
-                    case AlternativeStep.DOWN:
-                        goDown();
-                        GoalStep = AlternativeStep.LEFT;
-                        return 0;
+                    case AlternativeStep.SOUTH:
+                        if (TryMoveSouth() == SUCCESS)
+                            return Decision.MOVE_SOUTH;
+
+                        GoalStep = AlternativeStep.NORTH;
+                        break;
                 }
+                if (counter == 0)
+                    return Decision.DISCOVER;
+            }
         }
 
     }

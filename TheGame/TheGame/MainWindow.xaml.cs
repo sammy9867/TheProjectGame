@@ -346,14 +346,27 @@ namespace TheGame
                         break;
                     }
                 case "move":
-                    break; 
+                    {
+                        // find player
+                        Player player = FindPlayerById(playerId);
+                        if (player == null) return;
+                        // get json to response
+                        string json = GMRequestHandler.ResponseForMove(player);
+                        // fill json
+                        PlayerMove(player, magic.direction,  ref json);
+                        // response
+                        Send(GMSocket, json);
+                        // TODO: WRITE REPORT IN REPORT FILE
+                        // Sammy, please check how to use one obj in multiple threads
+                        // so we can write to the same file from different threads
+                        break;
+                    } 
                 // and so on ....
                 default:
                     break;
             }
         }
 
-    
         #region Add A New Piece During The Game
         private void addPiece()
         {
@@ -385,8 +398,31 @@ namespace TheGame
         #endregion
 
         #region Player Routine
+        public void PlayerMove(Player player, string direction, ref string json)
+        {
+            JObject jobject = JObject.Parse(json);
+            switch (direction)
+            {
+                case "N":
+                    if (player.X == 0)
+                    {
+                        jobject["result"] = "denied";
+                        jobject["timestamp"] = null;
+                        jobject["manhattanDistance"] = null;
+                        json = jobject.ToString();
+                        return;
+                    }
+                    break;
+                case "W":
+                case "E":
+                case "S":
+                    break;
+            }
+        }
+
+
         /* PLayer places a piece */
-        private void PlacesPiece(Player player)
+        public void PlacesPiece(Player player)
         {
             List<Goal> UndiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.UndiscoveredRedGoals : board.UndiscoveredBlueGoals;
             List<Goal> DiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.DiscoveredRedGoals : board.DiscoveredBlueGoals;
@@ -425,7 +461,7 @@ namespace TheGame
         }
 
         /* Player Discovers its 8 neighbors */
-        private void PlayerDiscoversNeighboringCells(Player player, ref string json)
+        public void PlayerDiscoversNeighboringCells(Player player, ref string json)
         {
             JObject magic = JObject.Parse(json);
             magic["userGuid"] = player.playerID;
@@ -493,7 +529,7 @@ namespace TheGame
         }
 
         /** Player takes a  Piece **/
-        private void TakePiece(Player player)
+        public void TakePiece(Player player)
         {
             int c = player.Column;
             int r = player.Row;
@@ -515,7 +551,7 @@ namespace TheGame
             insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
-        private string GetTimestamp(DateTime value)
+        public string GetTimestamp(DateTime value)
         {
             // TODO: Get proper Timestamp
             return value.ToString("MM/dd/yyyy HH:mm:ss");

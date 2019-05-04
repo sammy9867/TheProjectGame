@@ -152,7 +152,7 @@ namespace TheGame.GMServer
         }
 
         //TODO: 2nd Communication phase
-        internal static void ResponseForMove(Player player)
+        internal static string ResponseForMove(Player player)
         {
 
             string file = @"..\..\JSONs\Response\MoveResponseAcceptance.json";
@@ -167,8 +167,8 @@ namespace TheGame.GMServer
             }
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
-            magic.manhattanDistance = player.Team == Team.TeamColor.RED ? player.goDown() : player.goUp();
 
+            return JsonConvert.SerializeObject(magic);
         }
 
         /* Returns JSON for Discovery Response */

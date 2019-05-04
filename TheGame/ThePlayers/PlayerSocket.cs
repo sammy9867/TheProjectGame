@@ -179,6 +179,7 @@ namespace ThePlayers
                 case "state":
                     {
                         ReadDiscover(json);
+                        SendDecision(Player.MakeMove());
                         break;
                     }
                 case "move":
@@ -192,6 +193,27 @@ namespace ThePlayers
             }
 
         }
+
+        private static void SendDecision(Player.Decision decision)
+        {
+            switch (decision)
+            {
+                case Player.Decision.MOVE_NORTH:  SendMove("N"); return;
+                case Player.Decision.MOVE_SOUTH:  SendMove("S"); return;
+                case Player.Decision.MOVE_WEST:   SendMove("W"); return;
+                case Player.Decision.MOVE_EAST:   SendMove("E"); return;
+
+                //case Player.Decision.PICKUP_PIECE:
+                //case Player.Decision.TEST_PIECE:
+                //case Player.Decision.PLACE_PIECE:
+                //case Player.Decision.DESTROY_PIECE:
+
+                case Player.Decision.DISCOVER: SendDiscover(); return;
+//                case Player.Decision.KNOWLEDGE_EXCHANGE:
+
+            }
+        }
+
         private static void ReadStartGame(string json)
         {
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
@@ -253,7 +275,7 @@ namespace ThePlayers
             string result = (string) jobject["result"];
             if (result.ToLower().Equals("denied"))
             {
-                SendDiscover(); // Repeat Discover ??
+                Player.SendDiscover = true;
                 return;
             }
 
@@ -330,12 +352,13 @@ namespace ThePlayers
 
         }
 
-        private static void SendMove()
+        private static void SendMove(string direction)
         {
             // Send Move action
-            PlayerRequestHandler.sendMove(socket);
+            PlayerRequestHandler.sendMove(socket, direction);
             // Receive Move Reponse
             // Receive();  check Send() method, it calls Receive()
+            // use ctrl+F to find lable RSP_LBL
         }
 
         private static void ReceiveMove(string json)
@@ -347,7 +370,8 @@ namespace ThePlayers
             string result = (string)jobject["result"];
             if (result.ToLower().Equals("denied"))
             {
-                SendMove(); // Repeat Move ??
+                // TODO: Maaaan
+//                SendMove(); // Repeat Move ??
                 return;
             }
 

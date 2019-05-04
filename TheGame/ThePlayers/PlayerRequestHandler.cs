@@ -38,7 +38,7 @@ namespace ThePlayers
 
         }
 
-        public static void sendMove(Socket handler)
+        public static void sendMove(Socket handler, string direction)
         {
             string file = @"..\..\JSONs\Move.json";
             string json = "";
@@ -56,7 +56,7 @@ namespace ThePlayers
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = PlayerSocket.Player.ID;
             //CHANGE follow:
-            magic.direction = PlayerSocket.Player.Team == Player.TeamColor.RED ? "S" : "N";
+            magic.direction = direction;
 
             Console.WriteLine("Sending Move.json....\n");
             PlayerSocket.Send(handler,
