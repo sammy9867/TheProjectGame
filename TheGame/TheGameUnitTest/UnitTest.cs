@@ -272,9 +272,26 @@ namespace TheGameUnitTest
             int col = 0, row = 0;
 
             int actual = b.getCellStatus(col, row);
-            int expected = 12;
+            int expected = 17;
 
             Assert.AreEqual(expected, actual);
+
+            bool actual2 = b.IsUndiscoveredGoal(col, row);
+            bool expected2 = false;
+
+            Assert.AreEqual(expected2, actual2);
+
+            Team.TeamColor col_blue = Team.TeamColor.BLUE;
+            Player.NeighborStatus actual3 = b.GetPlayersNeighbor(col, row, col_blue);
+            Player.NeighborStatus expected3 = Player.NeighborStatus.BLOCKED;
+
+            Assert.AreEqual(expected3, actual3);
+
+            int col1 = 1, row1 = 1;
+            Team.TeamColor col_red = Team.TeamColor.RED;
+            Player.NeighborStatus actual4 = b.GetPlayersNeighbor(col1, row1, col_red);
+            Player.NeighborStatus expected4 = Player.NeighborStatus.BLOCKED;
+            Assert.AreEqual(expected4, actual4);
             //Assert.IsFalse(b.IsUndiscoveredGoal(col, row));
         }
 
@@ -332,7 +349,7 @@ namespace TheGameUnitTest
             Assert.AreEqual(p.goDown(), -1);
 
             //p.toCheck = true;
-            Assert.AreEqual(p.goRnd(), -1);
+            //Assert.AreEqual(p.goRnd(), -1);
 
             //Assert.AreEqual(p.goForGoalAlternative(p.Team), 0);
             Assert.IsTrue(p.hasPiece());
