@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using Moq;
 //using Microsoft.CSharp.RuntimeBinder.CSharp.ArgumentInfo.Create;
 
 namespace TheGameUnitTest
@@ -15,6 +18,29 @@ namespace TheGameUnitTest
     [TestClass]
     public class UnitTest
     {
+        [TestMethod]
+        public void TestMethod_ForServer_StartListeningTest()
+        {
+            //Mock<Socket> ss = new Mock<Socket>();
+            //Socket s = new Socket();
+            //IAsyncResult asRes = new
+            //Mock<CommunicationServer.Server> ser = new Mock<CommunicationServer.Server>();
+            
+            //ss.Setup(x => x.BeginAccept(null, null)).Returns(asRes);
+            CommunicationServer.Server myServer = new CommunicationServer.Server();
+
+            IPAddress ipAddress = IPAddress.Loopback;
+            Socket listener = null;
+            //Socket listener = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
+
+            CommunicationServer.Server.Send(listener, "this is data");
+
+            CommunicationServer.Server.StartListening();
+
+            
+            //CommunicationServer.CSRequestHandler.SendConfirmGame(listener);
+            
+        }
         [TestMethod]
         public void TestMethod_ForGMRequestHandler()
         {
