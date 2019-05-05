@@ -267,7 +267,7 @@ namespace TheGame
             {
                 // Call our onTick function.
                 onTick?.Invoke();
-
+                
                 // Wait to repeat again.
                 if (interval > TimeSpan.Zero)
                     await Task.Delay(interval, token);
@@ -317,7 +317,9 @@ namespace TheGame
             }
 
             // Update the board, strange behaviour :(
-            UpdateBoard();
+            Application.Current.Dispatcher.Invoke((Action)delegate {
+                UpdateBoard();
+            });
 
         }
         #endregion
@@ -367,6 +369,11 @@ namespace TheGame
                 default:
                     break;
             }
+
+
+            //Application.Current.Dispatcher.Invoke((Action)delegate {
+            //    UpdateBoard();
+            //});
         }
 
         #region Add A New Piece During The Game
@@ -402,33 +409,54 @@ namespace TheGame
         #region Player Routine
         public void PlayerMove(Player player, string direction, ref string json)
         {
-//            JObject jobject = JObject.Parse(json);
+            JObject jobject = JObject.Parse(json);
+            bool denied = false;
+            Console.WriteLine(player.playerID + "["+player.Team+"] goes "+direction);
             switch (direction)
             {
                 case "N":
-                    //if (player.X == 0 || board.boardtable[player.X + 1, player.Y])
-                    //{ // getCellStatus
-                    //    jobject["result"] = "denied";
-                    //    jobject["timestamp"] = null;
-                    //    jobject["manhattanDistance"] = null;
-                    //    jobject["manhattanDistance"] = null;
-                    //    json = jobject.ToString();
-                    //    return;
-                    //}
-                    //TODO: Never updates position [Where to call UpdateBoard()?]
+                    if ((board.getCellStatus(player.X, player.Y - 1) & Board.Status.BLOCKED) != 0)
+                    {
+                        denied = true;
+                        break;
+                    }
                     player.goUp();
                     break;
                 case "W":
+                    if ((board.getCellStatus(player.X - 1, player.Y) & Board.Status.BLOCKED) != 0)
+                    { // getCellStatus
+                        denied = true;
+                        break;
+                    }
                     player.goLeft();
                     break;
                 case "E":
+                    if ((board.getCellStatus(player.X + 1, player.Y) & Board.Status.BLOCKED) != 0)
+                    { // getCellStatus
+                        denied = true;
+                        break;
+                    }
                     player.goRight();
                     break;
                 case "S":
+                    if ((board.getCellStatus(player.X - 1, player.Y) & Board.Status.BLOCKED) != 0)
+                    { // getCellStatus
+                        denied = true;
+                        break;
+                    }
                     player.goDown();
                     break;
             }
-
+            if (denied)
+            {
+                // getCellStatus
+                jobject["result"] = "denied";
+                jobject["timestamp"] = null;
+                jobject["manhattanDistance"] = null;
+                json = jobject.ToString();
+                return;
+            }
+            jobject["timestamp"] = GetTimestamp();
         }
 
 
@@ -499,10 +527,10 @@ namespace TheGame
                     jField.value = new JFieldValue();
                     jField.value.manhattanDistance =
                         (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
-                    jField.value.timestamp = GetTimestamp(DateTime.Now).ToString();
+                    jField.value.timestamp = GetTimestamp().ToString();
                     jField.value.userGuid = null;
 
-                    switch (board.boardtable[column, row])
+                    switch (board.getCellStatus(column, row))
                     {
                         case Board.Status.TASK_CELL:
                         case Board.Status.RED_GOALS_CELL:
@@ -562,10 +590,10 @@ namespace TheGame
             insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
-        public string GetTimestamp(DateTime value)
+        public long GetTimestamp()
         {
             // TODO: Get proper Timestamp
-            return value.ToString("MM/dd/yyyy HH:mm:ss");
+            return 777;
         }
 
         #endregion
@@ -738,8 +766,8 @@ namespace TheGame
                         Margin = new Thickness(2)
                     };
 
-                    switch (board.boardtable[col, row]) 
-                  //switch (board.getCellStatus(col, row))
+//                    switch (board.boardtable[col, row]) 
+                  switch (board.getCellStatus(col, row))
                     {
                         case Board.Status.RED_GOALS_CELL:
                         case Board.Status.BLUE_GOALS_CELL:
@@ -795,14 +823,15 @@ namespace TheGame
 
                     playgroundDockPanel.Children.Add(img);
                 }
-
+            Console.WriteLine("\nThe Board:");
             // please keep it as separate loops for now
             for (int row = 0; row < Board.Height; row++)
             {
                 string line = "";
                 for (int col = 0; col < Board.Width; col++)
                 {
-                    switch (board.boardtable[col, row])
+//                    switch (board.boardtable[col, row])
+                     switch(board.getCellStatus(col, row))
                     {
                         case Board.Status.TASK_CELL: line += "TC"; break;
                         case Board.Status.PIECE: line += "PC"; break;

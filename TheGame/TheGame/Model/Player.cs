@@ -40,11 +40,6 @@ namespace TheGame.Model
          */
         public int goUp()
         {
-            if (Team == Model.Team.TeamColor.RED && Row == 0)
-                return -1;
-            if (Team == Model.Team.TeamColor.BLUE && Row == Board.GoalHeight)
-                return -1;
-
             Row--;
             return 0;
         }
@@ -55,11 +50,6 @@ namespace TheGame.Model
          */
         public int goDown()
         {
-            if (Team == Model.Team.TeamColor.BLUE && Row == Board.Height - 1)
-                return -1;
-            if (Team == Model.Team.TeamColor.RED && Row == Board.Height - Board.GoalHeight - 1)
-                return -1;
-
             Row++;
             return 0;
         }
@@ -70,8 +60,6 @@ namespace TheGame.Model
          */
         public int goLeft()
         {
-            if (Column == 0)
-                return -1;
             Column--;
             return 0;
         }
@@ -82,8 +70,6 @@ namespace TheGame.Model
          */
         public int goRight()
         {
-            if (Board.Width - 1 == Column)
-                return -1;
             Column++;
             return 0;
         }
