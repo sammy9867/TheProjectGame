@@ -73,7 +73,7 @@ namespace TheGameUnitTest
                 p1,p2
             };
 
-            string res = GMRequestHandler.BeginGame(p2, listp, p1);
+            //string res = GMRequestHandler.BeginGame(p2, listp, p1);
             
 
             /* for ResponseForDiscover */
@@ -294,10 +294,20 @@ namespace TheGameUnitTest
         }
 
         [TestMethod]
+        public void TestMethod_ForPlayerInThePlayers()/* COMPLETE */
+        {
+            ThePlayers.Player pl = new ThePlayers.Player()
+            {
+                role = ThePlayers.Player.Role.LEADER,
+                hasPiece = false,
+                
+            };
+        }
+        [TestMethod]
         public void TestMethod_ForPlayer()/* COMPLETE */
         {
             Player p = new Player();
-            p.Neighbors = new Player.NeighborStatus[2, 2];
+            //p.Neighbors = new Player.NeighborStatus[2, 2];
 
             Piece pi = new Piece()
             {

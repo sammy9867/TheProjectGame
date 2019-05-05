@@ -161,7 +161,7 @@ namespace TheGame.Model
             return (int)Board.Status.TASK_CELL;
         }
 
-        internal bool IsUndiscoveredGoal(int c, int r)
+        public bool IsUndiscoveredGoal(int c, int r)
         {
             foreach (Goal goal in UndiscoveredRedGoals)
                 if (goal.column == c && goal.row == r)
@@ -174,7 +174,7 @@ namespace TheGame.Model
             return false;
         }
 
-        internal Player.NeighborStatus GetPlayersNeighbor(int column, int row, Team.TeamColor team)
+        public Player.NeighborStatus GetPlayersNeighbor(int column, int row, Team.TeamColor team)
         {
             /* End of the board */
             if ((column < 0) || (row < 0) || (row >= Height) || (column >= Width))
