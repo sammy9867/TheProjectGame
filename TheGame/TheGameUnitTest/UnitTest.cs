@@ -352,7 +352,8 @@ namespace TheGameUnitTest
             //Assert.AreEqual(p.goRnd(), -1);
 
             //Assert.AreEqual(p.goForGoalAlternative(p.Team), 0);
-            Assert.IsTrue(p.hasPiece());
+            bool ex = true;
+            Assert.AreEqual(ex,p.hasPiece());
         }
     }
 
