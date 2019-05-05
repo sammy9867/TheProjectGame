@@ -25,8 +25,8 @@ namespace TheGame.Model
 
         public int Row { get; set; }
         public int Column { get; set; }
-        public int X { get { return Column; } }
-        public int Y { get { return Row; } }
+        public int X { get { return Column; } set { Column = X; } }
+        public int Y { get { return Row; }  set { Row = Y; } }
 
         public Role role { get; set; }
         public Piece Piece { get; set; }

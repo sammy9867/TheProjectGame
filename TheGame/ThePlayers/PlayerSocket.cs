@@ -184,8 +184,7 @@ namespace ThePlayers
                     }
                 case "move":
                     {   // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
-                        string direction = magic.direction;
-                        Console.WriteLine("Direction: " + direction);
+                        ReceiveMove(json);
                         break;
                     }
                 default: break;
@@ -216,7 +215,7 @@ namespace ThePlayers
 
         private static void ReadStartGame(string json)
         {
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            dynamic magic = JsonConvert.DeserializeObject(json);
             string team = magic.team;
             string role = magic.role;
             string x = magic.location.x;
@@ -370,9 +369,20 @@ namespace ThePlayers
             string result = (string)jobject["result"];
             if (result.ToLower().Equals("denied"))
             {
+                jobject["timestamp"] = null;
+                jobject["manhattanDistance"] = null;
                 // TODO: Maaaan
-//                SendMove(); // Repeat Move ??
+                // SendMove(); // Repeat Move ??
                 return;
+            }
+
+            //    SendDecision(Player.MakeMove());
+            Console.WriteLine("After Move:");
+            for (int i = 0; i < Player.BoardHeight; i++) // row
+            {
+                for (int j = 0; j < Player.BoardWidth; j++) // col
+                    Console.Write("" + Player.Board[i, j] + " ");
+                Console.WriteLine("");
             }
 
 

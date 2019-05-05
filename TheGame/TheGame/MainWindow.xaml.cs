@@ -158,7 +158,7 @@ namespace TheGame
             player.playerID = magic.userGuid;
             player.Team = team.ToLower().Equals("red") ?
                 Team.TeamColor.RED : Team.TeamColor.BLUE;
-            player.Neighbors = new Player.NeighborStatus[3, 3];
+           // player.Neighbors = new Player.NeighborStatus[3, 3];
             if (player.Team == Team.TeamColor.RED)
             {
                 if (board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers)
@@ -272,6 +272,8 @@ namespace TheGame
                 if (interval > TimeSpan.Zero)
                     await Task.Delay(interval, token);
             }
+
+
         }
 
 
@@ -311,7 +313,7 @@ namespace TheGame
                 // Receive message from players while game is on
                 // received messages will be passed to the method
                 // AnalizeMessage
-                Receive(AnalizeMessage);
+                Receive(AnalyzeMessage);
             }
 
             // Update the board, strange behaviour :(
@@ -321,8 +323,8 @@ namespace TheGame
         #endregion
 
 
-        /* Analize received message from a player */
-        private void AnalizeMessage(string obj)
+        /* Analyze received message from a player */
+        private void AnalyzeMessage(string obj)
         {
             dynamic magic = JsonConvert.DeserializeObject(obj);
             string action = magic.action;
@@ -353,7 +355,7 @@ namespace TheGame
                         // get json to response
                         string json = GMRequestHandler.ResponseForMove(player);
                         // fill json
-                        PlayerMove(player, magic.direction,  ref json);
+                        PlayerMove(player,(string) magic.direction,  ref json);
                         // response
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
@@ -400,24 +402,33 @@ namespace TheGame
         #region Player Routine
         public void PlayerMove(Player player, string direction, ref string json)
         {
-            JObject jobject = JObject.Parse(json);
+//            JObject jobject = JObject.Parse(json);
             switch (direction)
             {
                 case "N":
-                    if (player.X == 0)
-                    {
-                        jobject["result"] = "denied";
-                        jobject["timestamp"] = null;
-                        jobject["manhattanDistance"] = null;
-                        json = jobject.ToString();
-                        return;
-                    }
+                    //if (player.X == 0 || board.boardtable[player.X + 1, player.Y])
+                    //{ // getCellStatus
+                    //    jobject["result"] = "denied";
+                    //    jobject["timestamp"] = null;
+                    //    jobject["manhattanDistance"] = null;
+                    //    jobject["manhattanDistance"] = null;
+                    //    json = jobject.ToString();
+                    //    return;
+                    //}
+                    //TODO: Never updates position [Where to call UpdateBoard()?]
+                    player.goUp();
                     break;
                 case "W":
+                    player.goLeft();
+                    break;
                 case "E":
+                    player.goRight();
+                    break;
                 case "S":
+                    player.goDown();
                     break;
             }
+
         }
 
 

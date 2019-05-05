@@ -12,22 +12,26 @@ namespace TheGame.Model
         /**Changing "Status" during Communication phase **/
         public enum Status
         {
-            TASK_CELL,   // ALWAYS THE FIRST ELEMENT 
-            PIECE,
-            SHAM,
-            RED_GOALS_CELL,  // red above !!!
-            BLUE_GOALS_CELL, // blue below!!!
-            RED_PLAYER,
-            BLUE_PLAYER,
-            UNDISCOVERED_GOAL,
-            DISCOVERED_GOAL,
-            DISCOVERED_NON_GOAL,
-            RED_PLAYER_WITH_PIECE,
-            BLUE_PLAYER_WITH_PIECE,
-            END_OF_BOARD
-            // RED_PLAYER_AND_PIECE          for a player standing on the same 
-            // BLUE_PLAYER_AND_PIECE cell    as a piece, but the player has not
-            //                               picked it up yet. Do we need such ????
+            // 5th bit stays for BLOCKED, 4th bit stays for goal, 3 bit for goal cell
+ /*0000 0000*/  TASK_CELL,   // ALWAYS THE FIRST ELEMENT 
+ /*0000 0010*/  PIECE = 2,
+ /*0000 0011*/  SHAM = 3,
+ /*0000 0100*/  RED_GOALS_CELL,  // red above !!!
+ /*0000 0100*/  BLUE_GOALS_CELL, // blue below!!!
+ /*0001 0000*/  RED_PLAYER,
+ /*0001 0000*/  BLUE_PLAYER,
+ /*0000 1100*/  UNDISCOVERED_GOAL=8,
+ /*0000 1101*/  DISCOVERED_GOAL=9,
+ /*0000 0100*/  DISCOVERED_NON_GOAL,
+ /*0001 0000*/  RED_PLAYER_WITH_PIECE,
+ /*0001 0000*/  BLUE_PLAYER_WITH_PIECE,
+ /*0001 0000*/  RED_PLAYER_AND_PIECE,        
+ /*0001 0000*/  BLUE_PLAYER_AND_PIECE,
+ /*0001 0000*/  RED_PLAYER_AND_SHAM,
+ /*0001 0000*/  BLUE_PLAYER_AND_SHAM,
+ /*0001 0000*/  END_OF_BOARD,
+
+ /*0001 0000*/  BLOCKED = 16
         }
 
         public static int RedScore { get; set; }
