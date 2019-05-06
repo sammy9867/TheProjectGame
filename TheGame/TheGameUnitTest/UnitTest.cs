@@ -41,6 +41,13 @@ namespace TheGameUnitTest
             //CommunicationServer.CSRequestHandler.SendConfirmGame(listener);
             
         }
+        [TestMethod]
+        public void TestMethod_GMRequestHandler_GameOver()
+        {
+            string expected = "{\"action\":\"end\",\"result\":\"red|blue>\"}";
+            string actual = GMRequestHandler.sendGameOver();
+            Assert.AreEqual(expected, actual);
+        }
 
         [TestMethod]
         public void TestMethod_GMRequestHandler_ForResponses()

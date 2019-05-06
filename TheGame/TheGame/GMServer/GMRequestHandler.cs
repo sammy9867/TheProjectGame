@@ -270,7 +270,7 @@ namespace TheGame.GMServer
 
         public static string sendGameOver()
         {
-
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\GameOver.json";
             string file = @"..\..\JSONs\Response\GameOver.json";
             string json = "";
             if (!File.Exists(file))
