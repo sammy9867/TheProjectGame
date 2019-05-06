@@ -331,12 +331,13 @@ namespace TheGame
             dynamic magic = JsonConvert.DeserializeObject(obj);
             string action = magic.action;
             string playerId = magic.userGuid;
+            Player player;
             switch (action.ToLower())
             {
                 case "state":
                     {
                         // find player
-                        Player player = FindPlayerById(playerId);
+                        player = FindPlayerById(playerId);
                         if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForDiscover(player);
@@ -352,7 +353,7 @@ namespace TheGame
                 case "move":
                     {
                         // find player
-                        Player player = FindPlayerById(playerId);
+                        player = FindPlayerById(playerId);
                         if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForMove(player);
@@ -364,8 +365,40 @@ namespace TheGame
                         // Sammy, please check how to use one obj in multiple threads
                         // so we can write to the same file from different threads
                         break;
-                    } 
-                // and so on ....
+                    }
+                case "pickup":
+                    {
+                        // find player
+                        player = FindPlayerById(playerId);
+                        if (player == null) return;
+                        // get json to response
+                        string json = GMRequestHandler.ResponseForPickUp(player);
+                        // fill json
+                        PlayerPickupPiece(player, ref json);
+                        // response
+                        Send(GMSocket, json);
+                        // TODO: WRITE REPORT IN REPORT FILE
+                        // Sammy, please check how to use one obj in multiple threads
+                        // so we can write to the same file from different threads
+                        break;
+                    }
+                case "test":
+                    {
+                        // find player
+                        player = FindPlayerById(playerId);
+                        if (player == null) return;
+                        // get json to response
+               //         string json = GMRequestHandler.ResponseForTestPiece(player); // << ----- TODO
+                        // fill json
+               //         PlayerTestPiece(player, ref json);
+                        // response
+               //         Send(GMSocket, json);
+                        // TODO: WRITE REPORT IN REPORT FILE
+                        // Sammy, please check how to use one obj in multiple threads
+                        // so we can write to the same file from different threads
+                        break;
+                    }
+                    // and so on ....
                 default:
                     break;
             }
@@ -407,6 +440,7 @@ namespace TheGame
         #endregion
 
         #region Player Routine
+        /* Player Move */
         public void PlayerMove(Player player, string direction, ref string json)
         {
             JObject jobject = JObject.Parse(json);
@@ -458,7 +492,6 @@ namespace TheGame
             }
             jobject["timestamp"] = GetTimestamp();
         }
-
 
         /* PLayer places a piece */
         public void PlacesPiece(Player player)
@@ -568,26 +601,33 @@ namespace TheGame
         }
 
         /** Player takes a  Piece **/
-        public void TakePiece(Player player)
+        public void PlayerPickupPiece(Player player, ref string json)
         {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             int c = player.Column;
             int r = player.Row;
-
+            bool found = false;
             foreach (Piece p in board.Pieces)
             {
                 if (p.row == r && p.column == c)
                 {
                     player.Piece = p;
                     board.Pieces.Remove(p);
+                    found = true;
                     break;
                 }
             }
-
-            player.checkPiece();
+            magic.timestamp = GetTimestamp();
+            if (!found)
+            {
+                magic.result = "denied";
+                /// timestamp to null on denied ?????
+            }
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
             // write to file
             string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
             string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-            insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+            insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
         public long GetTimestamp()

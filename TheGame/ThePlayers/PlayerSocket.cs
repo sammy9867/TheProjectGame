@@ -186,9 +186,20 @@ namespace ThePlayers
                 case "move":
                     {
                         // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
-                        ReceiveMove(json);
+                        ReadMove(json);
                         Player.SendDiscover = true;
                         SendDecision(Player.MakeMove());
+                        break;
+                    }
+                case "pickup":
+                    {
+                        ReadPickup(json);
+
+                        break;
+                    }
+                case "test":
+                    {
+                        // ReadTestPiece();
                         break;
                     }
                 default: break;
@@ -209,7 +220,7 @@ namespace ThePlayers
                 case Player.Decision.MOVE_EAST:   SendMove("E"); return;
 
                 case Player.Decision.PICKUP_PIECE: SendPickup(); return;
-                //case Player.Decision.TEST_PIECE:
+                case Player.Decision.TEST_PIECE: SendTestPiece(); return;
                 //case Player.Decision.PLACE_PIECE:
                 //case Player.Decision.DESTROY_PIECE:
 
@@ -218,6 +229,7 @@ namespace ThePlayers
 
             }
         }
+
 
 
         private static void ReadStartGame(string json)
@@ -389,7 +401,7 @@ namespace ThePlayers
             // Receive();  check Send() method, it calls Receive()
             // use ctrl+F to find lable RSP_LBL
         }
-        private static void ReceiveMove(string json)
+        private static void ReadMove(string json)
         {
             string direction = Player.ApplyiedDirection;
             Player.ApplyiedDirection = null;
@@ -428,8 +440,7 @@ namespace ThePlayers
 
 
         }
-
-
+        
         private static void SendPickup()
         {
             // send Discover action
@@ -439,6 +450,30 @@ namespace ThePlayers
             // Receive() is called  at the end of Send() method 
             // use ctrl+F to find lable RSP_LBL
         }
+        private static void ReadPickup(string json)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            string result = magic.result;
+            if (result.ToLower().Equals("denied"))
+            {
+                // TODO:
+                return;
+            }
+            Player.hasPiece = true;
+            Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.EC;
+        }
+
+        private static void SendTestPiece()
+        {
+            // send Discover action
+            PlayerRequestHandler.sendTestPiece(socket);
+
+            // After every send command, player expect the response
+            // Receive() is called  at the end of Send() method 
+            // use ctrl+F to find lable RSP_LBL
+        }
+
+
     }
 
         public class JField

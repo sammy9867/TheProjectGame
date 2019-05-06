@@ -238,6 +238,8 @@ namespace CommunicationServer
                     }
                 case "move":
                 case "state":
+                case "pickup":
+                case "test":
                     {
                         if (GMSocket == state.workSocket)
                         {

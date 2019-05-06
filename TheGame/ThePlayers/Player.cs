@@ -123,6 +123,9 @@ namespace ThePlayers
             if (current == BoardCell.PC)
                 return Decision.PICKUP_PIECE;
 
+            if (hasPiece)
+                return Decision.TEST_PIECE; // always test piece once you have it
+
             // Nowhere to go 
             if (Neighbors[1, 0] == NeighborStatus.BL && Neighbors[1, 2] == NeighborStatus.BL &&
                 Neighbors[0, 1] == NeighborStatus.BL && Neighbors[2, 1] == NeighborStatus.BL)

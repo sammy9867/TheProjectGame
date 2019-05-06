@@ -190,25 +190,43 @@ namespace TheGame.GMServer
             return JsonConvert.SerializeObject(magic);
 
         }
-        internal static void ResponseForPickUp()
+        public static string ResponseForPickUp(Player player)
         {
+            string file = @"..\..\JSONs\Response\PickUpResponse.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            return JsonConvert.SerializeObject(magic);
 
         }
-        internal static void ResponseForTestPiece()
+        public static string ResponseForTestPiece()
         {
-
+            // be goof boy and load the json
+            return null;
         }
-        internal static void ResponseForDestroyPiece()
+        public static string ResponseForDestroyPiece()
         {
-
+            // be goof boy and load the json
+            return null;
         }
-        internal static void ResponseForPlacePiece()
+        public static string ResponseForPlacePiece()
         {
-
+            // be goof boy and load the json
+            return null;
         }
-        internal static void sendGameOver()
+        public static string sendGameOver()
         {
-
+            // be goof boy and load the json
+            return null;
         }
 
         //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
