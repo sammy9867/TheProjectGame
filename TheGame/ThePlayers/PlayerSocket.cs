@@ -163,7 +163,7 @@ namespace ThePlayers
 
         private static void AnalizeMessage(string json)
         {
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            dynamic magic = JsonConvert.DeserializeObject(json);
             string action = magic.action;
 
             switch (action.ToLower())
@@ -173,7 +173,8 @@ namespace ThePlayers
                         ReadStartGame(json);
                         // Send Discover as soon as the game begins, 
                         // so player knows something... could be move later somewhere else... 
-                        SendDiscover();
+                        Player.SendDiscover = true;
+                        SendDecision(Player.MakeMove());
                         break;
                     }
                 case "state":
@@ -183,8 +184,11 @@ namespace ThePlayers
                         break;
                     }
                 case "move":
-                    {   // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
+                    {
+                        // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
                         ReceiveMove(json);
+                        Player.SendDiscover = true;
+                        SendDecision(Player.MakeMove());
                         break;
                     }
                 default: break;
@@ -195,6 +199,8 @@ namespace ThePlayers
 
         private static void SendDecision(Player.Decision decision)
         {
+            Console.WriteLine("Player decided: " + decision);
+            Thread.Sleep(3000);
             switch (decision)
             {
                 case Player.Decision.MOVE_NORTH:  SendMove("N"); return;
@@ -202,7 +208,7 @@ namespace ThePlayers
                 case Player.Decision.MOVE_WEST:   SendMove("W"); return;
                 case Player.Decision.MOVE_EAST:   SendMove("E"); return;
 
-                //case Player.Decision.PICKUP_PIECE:
+                case Player.Decision.PICKUP_PIECE: SendPickup(); return;
                 //case Player.Decision.TEST_PIECE:
                 //case Player.Decision.PLACE_PIECE:
                 //case Player.Decision.DESTROY_PIECE:
@@ -212,6 +218,7 @@ namespace ThePlayers
 
             }
         }
+
 
         private static void ReadStartGame(string json)
         {
@@ -243,8 +250,9 @@ namespace ThePlayers
                     Player.Board[Player.BoardHeight - 1 - i, j] = Player.BoardCell.GC;
                 }
             Player.Board[Player.Y, Player.X] = Player.BoardCell.ME;  // row col
-            
-            Console.WriteLine("Player " + Player.ID + "  [row,col]");
+            Player.current = Player.Y < Player.BoardGoalHeight || Player.Y > Player.BoardHeight - Player.BoardGoalHeight ? Player.BoardCell.GC : Player.BoardCell.EC;
+
+            Console.WriteLine("Player " + Player.ID + "  [row,col] " + Player.current);
             for (int i = 0; i < Player.BoardHeight; i++) // row
             {
                 for (int j = 0; j < Player.BoardWidth; j++) // col
@@ -310,14 +318,32 @@ namespace ThePlayers
                 {
                     case "goal":
                         status = Player.NeighborStatus.DG;
+                        Player.Board[y, x] = Player.BoardCell.GL;
                         break;
                     case "empty":
                         if (userGuid == null)
+                        {
                             // Free cell
-                            status = curr == Player.BoardCell.NG ?  Player.NeighborStatus.NG : Player.NeighborStatus.FR;
+                            status = curr == Player.BoardCell.NG ? Player.NeighborStatus.NG : Player.NeighborStatus.FR;
+                            status = curr == Player.BoardCell.GL ? Player.NeighborStatus.DG : Player.NeighborStatus.FR;
+                            if ((Player.Board[y, x] & Player.BoardCell.PL) == Player.BoardCell.PL)
+                                Player.Board[y, x] = Player.Board[y, x] & (~Player.BoardCell.PL);
+                        }
                         else
-                            // Player is staying
+                        {
+                            if (Player.ID.ToLower().Equals(userGuid.ToLower()))
+                            { // the player itself
+                                status = curr == Player.BoardCell.NG ? Player.NeighborStatus.NG : Player.NeighborStatus.FR;
+                                status = curr == Player.BoardCell.GL ? Player.NeighborStatus.DG : Player.NeighborStatus.FR;
+                                status = curr == Player.BoardCell.PC ? Player.NeighborStatus.PC : Player.NeighborStatus.FR;
+                                if (curr == Player.BoardCell.SH)
+                                    status = Player.hasPiece ? Player.NeighborStatus.BL : Player.NeighborStatus.FR; 
+                                break;
+                            }
+                            // Player is staying 
                             status = Player.NeighborStatus.BL;
+                            Player.Board[y, x] = Player.Board[y, x] | Player.BoardCell.PL;
+                        }
                         break;
                     case "piece":
                         // check if we know there is a sham
@@ -325,11 +351,14 @@ namespace ThePlayers
                             // if yes, set BLOCKED
                             status = (Player.hasPiece) ? Player.NeighborStatus.BL : Player.NeighborStatus.FR;
                         else
+                        {
                             // set PIECE otherwise
                             status = Player.NeighborStatus.PC;
+                            Player.Board[y, x] = Player.BoardCell.PC;
+                        }
                         break;
                 }
-                if (status == Player.NeighborStatus.FR && Player.Board[y, x] == Player.BoardCell.GC)
+                if (status == Player.NeighborStatus.FR && (Player.Board[y, x] & Player.BoardCell.GC)==Player.BoardCell.GC)
                     status = Player.NeighborStatus.GA;
                 Player.Neighbors[1 - dy, 1 - dx] = status;  // row col.
             }
@@ -353,30 +382,42 @@ namespace ThePlayers
 
         private static void SendMove(string direction)
         {
+            Player.ApplyiedDirection = direction;
             // Send Move action
             PlayerRequestHandler.sendMove(socket, direction);
             // Receive Move Reponse
             // Receive();  check Send() method, it calls Receive()
             // use ctrl+F to find lable RSP_LBL
         }
-
         private static void ReceiveMove(string json)
         {
-            Console.WriteLine("MoveResponse:");
+            string direction = Player.ApplyiedDirection;
+            Player.ApplyiedDirection = null;
+
+            Console.WriteLine("MoveResponse: "+direction);
             Console.WriteLine(json);
 
             JObject jobject = JObject.Parse(json);
             string result = (string)jobject["result"];
             if (result.ToLower().Equals("denied"))
             {
-                jobject["timestamp"] = null;
-                jobject["manhattanDistance"] = null;
                 // TODO: Maaaan
                 // SendMove(); // Repeat Move ??
                 return;
             }
+            int old_x = Player.X;
+            int old_y = Player.Y;
+            Player.Board[old_y, old_x] = Player.current;
 
-            //    SendDecision(Player.MakeMove());
+
+            Player.DoMove(direction);
+
+            int new_x = Player.X;
+            int new_y = Player.Y;
+            Player.current = Player.Board[new_y, new_x];
+            Player.Board[new_y, new_x] = Player.BoardCell.ME;
+
+
             Console.WriteLine("After Move:");
             for (int i = 0; i < Player.BoardHeight; i++) // row
             {
@@ -388,6 +429,16 @@ namespace ThePlayers
 
         }
 
+
+        private static void SendPickup()
+        {
+            // send Discover action
+            PlayerRequestHandler.sendPickup(socket);
+
+            // After every send command, player expect the response
+            // Receive() is called  at the end of Send() method 
+            // use ctrl+F to find lable RSP_LBL
+        }
     }
 
         public class JField

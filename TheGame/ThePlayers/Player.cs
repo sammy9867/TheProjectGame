@@ -26,14 +26,14 @@ namespace ThePlayers
         }
         public enum BoardCell
         { 
-            EC,         // Empty Cell
-            GC,         // Empty Goal Cell
-            GL,         // Goal
-            NG,         // NonGoal
-            PC,         // Piece
-            SH,         // SHam
-            PL,         // Player
-            ME          // ME
+            EC = 0b0_0000_0000,  // Empty Cell       0000 0000
+            GC = 0b0_0000_0100,  // Empty Goal Cell  0000 0100
+            GL = 0b0_0000_0111,  // Goal             0000 0111
+            NG = 0b0_0000_0110,  // NonGoal          0000 0110
+            PC = 0b0_0010_0000,  // Piece            0010 0000
+            SH = 0b0_0011_0000,  // SHam             0011 0000
+            PL = 0b0_0100_0000,  // Player           0100 0000
+            ME = 0b0_1000_0000   // ME               1000 0000
         }
         public enum Decision
         {
@@ -43,8 +43,9 @@ namespace ThePlayers
 
         public NeighborStatus[,] Neighbors { get; set; }  // [row, col]
 
-        #region Board Dimensions
         public BoardCell[,] Board { get; set; } // [row, column]
+        public BoardCell    current;
+        #region Board Dimensions
         public int BoardWidth { get; set; }
         public int BoardTaskHeight { get; set; }
         public int BoardGoalHeight { get; set; }
@@ -70,6 +71,7 @@ namespace ThePlayers
         private enum AlternativeStep { NORTH, SOUTH, WEST, EAST }
 
         public bool SendDiscover = false;
+        public string ApplyiedDirection;
 
         #region MOVES
         public int TryMoveNorth()
@@ -117,6 +119,9 @@ namespace ThePlayers
                 SendDiscover = false;
                 return Decision.DISCOVER;
             }
+
+            if (current == BoardCell.PC)
+                return Decision.PICKUP_PIECE;
 
             // Nowhere to go 
             if (Neighbors[1, 0] == NeighborStatus.BL && Neighbors[1, 2] == NeighborStatus.BL &&
@@ -248,6 +253,23 @@ namespace ThePlayers
                     return Decision.DISCOVER;
             }
         }
+
+
+        //* Execute Movement on Successful responce */
+        public void DoMove(string direction)
+        {
+            switch (direction.ToUpper())
+            {
+                case "N": MoveNorth(); break;
+                case "S": MoveSouth(); break;
+                case "E": MoveEast(); break;
+                case "W": MoveWest(); break;
+            }
+        }
+        private void MoveNorth() => Row--;
+        private void MoveSouth() => Row++;
+        private void MoveWest()  => Column--;
+        private void MoveEast()  => Column++;
 
     }
 }
