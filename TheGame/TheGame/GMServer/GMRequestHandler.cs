@@ -130,7 +130,6 @@ namespace TheGame.GMServer
             teamGuids.Clear();
             teamGuids.Add(leader.playerID);
 
-            int i = 1;
             foreach (var p in members)
             {
                 if (p.playerID != leader.playerID)
@@ -146,9 +145,7 @@ namespace TheGame.GMServer
             board["tasksHeight"] = "" + Board.TaskHeight;
             board["goalsHeight"] = "" + Board.GoalHeight;
 
-            string result = jObject.ToString();
-            Console.WriteLine(result);
-            return  result;  // TODO?
+            return jObject.ToString();
         }
 
         //TODO: 2nd Communication phase
