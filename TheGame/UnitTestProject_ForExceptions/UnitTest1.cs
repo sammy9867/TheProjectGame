@@ -24,7 +24,6 @@ namespace UnitTestProject_ForExceptions
 
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException), "")]
         public void TestMethod_PlayerSocket_StartClient()
         {
             Player player = new Player
@@ -37,8 +36,8 @@ namespace UnitTestProject_ForExceptions
 
             // Initialize player 
             PlayerSocket.Player = player;
-
-
+            //CommunicationServer.Server.Main(null);
+            //System.Threading.Thread.Sleep(1000);
             // Start Communication with CS
             PlayerSocket.StartClient();
 
