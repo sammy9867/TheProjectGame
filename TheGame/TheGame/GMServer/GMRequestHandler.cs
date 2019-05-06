@@ -111,6 +111,7 @@ namespace TheGame.GMServer
             Player player, List<Player> members, Player leader)
         {
             string file = @"..\..\JSONs\BeginGame.json";
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\BeginGame.json";
             string json = "";
             if (!File.Exists(file))
             {

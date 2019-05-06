@@ -42,6 +42,39 @@ namespace TheGameUnitTest
             
         }
         [TestMethod]
+        public void TestMethod_GMRequestHandler_BeginGame()
+        {
+            Player p1 = new Player()
+            {
+                role = Player.Role.LEADER,
+                playerID = "0",
+                Row = 0,
+                Column = 0,
+                //toCheck = true,
+                Team = Team.TeamColor.RED
+            };
+
+            Player p2 = new Player()
+            {
+                role = Player.Role.MEMBER,
+                playerID = "1",
+                Row = 1,
+                Column = 10,
+                //toCheck = true,
+                Team = Team.TeamColor.RED
+            };
+
+            List<Player> listp = new List<Player>()
+            {
+                p1,p2
+            };
+
+            string actual = GMRequestHandler.BeginGame(p2, listp, p1);
+            string expected = "{\r\n  \"action\": \"begin\",\r\n  \"userGuid\": \"1\",\r\n  \"team\": \"red\",\r\n  \"role\": \"member\",\r\n  \"teamSize\": \"2\",\r\n  \"teamGuids\": [\r\n    \"0\",\r\n    \"1\"\r\n  ],\r\n  \"location\": {\r\n    \"x\": \"10\",\r\n    \"y\": \"1\"\r\n  },\r\n  \"board\": {\r\n    \"width\": \"0\",\r\n    \"tasksHeight\": \"0\",\r\n    \"goalsHeight\": \"0\"\r\n  }\r\n}";
+            Assert.AreEqual(expected, actual);
+
+        }
+        [TestMethod]
         public void TestMethod_GMRequestHandler_ConnectPlayerDeny()
         {
             Player pl = new Player()
@@ -118,30 +151,6 @@ namespace TheGameUnitTest
 
 
             /* for BeginGame */
-            Player p1 = new Player()
-            {
-                role = Player.Role.LEADER,
-                //playerID = 0,
-                Row = 0,
-                Column = 0,
-                //toCheck = true,
-                Team = Team.TeamColor.RED
-            };
-
-            Player p2 = new Player()
-            {
-                role = Player.Role.MEMBER,
-                //playerID = 1,
-                Row = 1,
-                Column = 10,
-                //toCheck = true,
-                Team = Team.TeamColor.RED
-            };
-
-            List<Player> listp = new List<Player>()
-            {
-                p1,p2
-            };
 
             //string res = GMRequestHandler.BeginGame(p2, listp, p1);
             
