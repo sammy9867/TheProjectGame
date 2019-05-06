@@ -4,24 +4,14 @@ using ThePlayers;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-
+using System.Diagnostics;
+using Newtonsoft.Json;
 namespace UnitTestProject_ForExceptions
 {
     [TestClass]
     public class UnitTest1
     {
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException), "Something went wrong :(")]
-        public void TestMethod_PlayerSocket_Receive()
-        {
-            //Action<string> st = null;
-            //ThePlayers.PlayerSocket.Receive(st);
-
-        }
-
-
-
-
+      
 
         [TestMethod]
         public void TestMethod_PlayerSocket_StartClient()
@@ -36,13 +26,33 @@ namespace UnitTestProject_ForExceptions
 
             // Initialize player 
             PlayerSocket.Player = player;
-            //CommunicationServer.Server.Main(null);
-            //System.Threading.Thread.Sleep(1000);
+            Process.Start(@"C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\CommunicationServer\bin\Debug\CommunicationServer");
             // Start Communication with CS
             PlayerSocket.StartClient();
-
-
         }
+
+
+
+
+        [TestMethod]
+        public void TestMethod_PlayerSocket_Send()
+        {
+            Player player = new Player
+            {
+                ID = "" + (new Random()).Next(),
+                Team = Player.TeamColor.BLUE,
+                Neighbors = new Player.NeighborStatus[3, 3],
+                Piece = null
+            };
+
+            // Initialize player 
+            PlayerSocket.Player = player;
+            Process.Start(@"C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\CommunicationServer\bin\Debug\CommunicationServer");
+            // Start Communication with CS
+            PlayerSocket.StartClient();
+            PlayerSocket.Send(PlayerSocket.socket, JsonConvert.SerializeObject("start"));
+        }
+
 
     }
 
