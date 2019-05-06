@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ThePlayers;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 
 namespace UnitTestProject_ForExceptions
 {
@@ -10,11 +12,42 @@ namespace UnitTestProject_ForExceptions
     {
         [TestMethod]
         [ExpectedException(typeof(ArgumentException), "Something went wrong :(")]
-        public void TestMethod_PlayerSocket()
+        public void TestMethod_PlayerSocket_Receive()
         {
-            Action<string> st = null;
-            ThePlayers.PlayerSocket.Receive(st);
-            
+            //Action<string> st = null;
+            //ThePlayers.PlayerSocket.Receive(st);
+
         }
+
+
+
+
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "")]
+        public void TestMethod_PlayerSocket_StartClient()
+        {
+            Player player = new Player
+            {
+                ID = "" + (new Random()).Next(),
+                Team = Player.TeamColor.BLUE,
+                Neighbors = new Player.NeighborStatus[3, 3],
+                Piece = null
+            };
+
+            // Initialize player 
+            PlayerSocket.Player = player;
+
+
+            // Start Communication with CS
+            PlayerSocket.StartClient();
+
+
+        }
+
     }
+
+
+
+
 }

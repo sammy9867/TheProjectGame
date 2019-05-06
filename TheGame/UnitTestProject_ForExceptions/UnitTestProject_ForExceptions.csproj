@@ -70,6 +70,18 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommunicationServer\CommunicationServer.csproj">
+      <Project>{1262f2ec-61b7-41b0-8561-4dc9af3a083c}</Project>
+      <Name>CommunicationServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TheGameUnitTest\TheGameUnitTest.csproj">
+      <Project>{fae7a462-7e13-470b-ab01-4101b1928df1}</Project>
+      <Name>TheGameUnitTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TheGame\TheGame.csproj">
+      <Project>{736f35b7-1e77-4ce7-963f-82cbf9d771be}</Project>
+      <Name>TheGame</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ThePlayers\ThePlayers.csproj">
       <Project>{519a450b-96da-4d08-92ce-6ad2142d6891}</Project>
       <Name>ThePlayers</Name>
