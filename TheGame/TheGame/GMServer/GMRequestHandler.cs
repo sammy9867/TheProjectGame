@@ -70,6 +70,7 @@ namespace TheGame.GMServer
         public static string ConnectPlayerOK(Player player)
         {
             string file = @"..\..\JSONs\ConfirmJoiningGame.json";
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\ConfirmJoiningGame.json";
             string json = "";
             if (!File.Exists(file))
             {

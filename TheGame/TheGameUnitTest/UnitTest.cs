@@ -42,6 +42,28 @@ namespace TheGameUnitTest
             
         }
         [TestMethod]
+        public void TestMethod_GMRequestHandler_ConnectPlayerOK()
+        {
+            Player pl = new Player()
+            {
+                playerID = "1",
+                role = Player.Role.LEADER,
+                Row = 0,
+                Column = 0,
+                //toCheck = true,
+                Team = Team.TeamColor.BLUE
+            };
+
+            string file0 = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\ConfirmJoiningGame.json";
+            string json = File.ReadAllText(file0, Encoding.ASCII); ;
+            //dynamic expected = JsonConvert.DeserializeObject(json);
+            dynamic expected = "{\"action\":\"connect\",\"userGuid\":\"1\",\"result\":\"OK\",\"type\":\"player\"}";
+            //expected.userGuid = pl.playerID;
+
+            dynamic actual = GMRequestHandler.ConnectPlayerOK(pl);
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod]
         public void TestMethod_ForGMRequestHandler()
         {
             /* for SendSetUpGame */
