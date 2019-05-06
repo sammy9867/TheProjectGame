@@ -241,6 +241,7 @@ namespace CommunicationServer
                 case "pickup":
                 case "test":
                 case "destroy":
+                case "place":
                     {
                         if (GMSocket == state.workSocket)
                         {

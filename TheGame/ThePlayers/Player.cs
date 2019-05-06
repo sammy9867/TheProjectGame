@@ -11,6 +11,8 @@ namespace ThePlayers
         private const int SUCCESS = 0;
         private const int FAILURE = -1;
 
+        public Piece Piece;
+
         public enum Role { MEMBER, LEADER }
         public enum TeamColor { BLUE, RED };
         public enum NeighborStatus
@@ -54,8 +56,10 @@ namespace ThePlayers
 
         public string ID { get; set; }
         public Role role { get; set; }
-        public bool hasPiece { get; set; }
-        public bool isSham { get; set; } //CREATED A VARIABLE FOR SHAM FOR NOW.
+        public bool hasPiece
+        {
+            get { if (Piece == null) return false; else return true; }
+        }
 
         public int TeamSize { get; set; }
         public List<string> Mates {get;set;}
@@ -115,20 +119,29 @@ namespace ThePlayers
          */
         public Decision MakeMove()
         {
+            /* Forced Discover */
             if (SendDiscover == true)
             {
                 SendDiscover = false;
                 return Decision.DISCOVER;
             }
 
-            if (current == BoardCell.PC)
+            /* Pickup a piece */
+            if (!hasPiece && current == BoardCell.PC)
+            {
+                // Whenever we pickup unchecked piece we assume it is not a sham
                 return Decision.PICKUP_PIECE;
+            }
 
-            if (hasPiece && !isSham)
+            /* Player has a piece that never was tested */
+            if (hasPiece && !Piece.isTested)
                 return Decision.TEST_PIECE; // always test piece once you have it
 
-            if (hasPiece && isSham)
+            /* Player has a sham */
+            if (hasPiece && Piece.isSham)
                 return Decision.DESTROY_PIECE;
+
+            /* if a Player has a piece => the pieece is tested and it is not sham */
 
             // Nowhere to go 
             if (Neighbors[1, 0] == NeighborStatus.BL && Neighbors[1, 2] == NeighborStatus.BL &&
@@ -143,6 +156,7 @@ namespace ThePlayers
                 {
                     if (TryMoveNorth() == SUCCESS)
                         return Decision.MOVE_NORTH;
+                    if (current == BoardCell.GC) return Decision.PLACE_PIECE;
                     return goForGoalAlternative(TeamColor.RED);
 
                 }
@@ -150,13 +164,15 @@ namespace ThePlayers
                 {
                     if (TryMoveSouth() == SUCCESS)
                         return Decision.MOVE_SOUTH;
+                    if (current == BoardCell.GC) return Decision.PLACE_PIECE;
                     return goForGoalAlternative(TeamColor.BLUE);
                 }
             }
             #endregion
 
             #region Go Back to the Task Area No Piece
-            if ((Neighbors[1, 1] & NeighborStatus.GA) == NeighborStatus.GA)
+//            if ((Neighbors[1, 1] & NeighborStatus.GA) == NeighborStatus.GA)
+            if((current & BoardCell.GC) == BoardCell.GC)
             {
                 if (Team == TeamColor.RED)
                 {
@@ -246,14 +262,14 @@ namespace ThePlayers
                     case AlternativeStep.NORTH:
                         if (TryMoveNorth() == SUCCESS)
                             return Decision.MOVE_NORTH;
-                        GoalStep = AlternativeStep.SOUTH;
+                        GoalStep = AlternativeStep.EAST;
                         break;
 
                     case AlternativeStep.SOUTH:
                         if (TryMoveSouth() == SUCCESS)
                             return Decision.MOVE_SOUTH;
 
-                        GoalStep = AlternativeStep.NORTH;
+                        GoalStep = AlternativeStep.WEST;
                         break;
                 }
                 if (counter == 0)
@@ -278,5 +294,15 @@ namespace ThePlayers
         private void MoveWest()  => Column--;
         private void MoveEast()  => Column++;
 
+    }
+
+
+    public class Piece
+    {
+        public bool isTested;
+        public bool isSham;
+
+        public Piece()
+        { isTested = false; isSham = false; }
     }
 }

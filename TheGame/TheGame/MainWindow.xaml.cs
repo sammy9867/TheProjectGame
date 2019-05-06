@@ -388,7 +388,7 @@ namespace TheGame
                         player = FindPlayerById(playerId);
                         if (player == null) return;
                         // get json to response
-                        string json = GMRequestHandler.ResponseForTestPiece(player); // << ----- TODO
+                        string json = GMRequestHandler.ResponseForTestPiece(player); 
                         // fill json
                         PlayerTestPiece(player, ref json);
                         // response
@@ -414,7 +414,23 @@ namespace TheGame
                         // so we can write to the same file from different threads
                         break;
                     }
+                case "place":
+                    {                        
+                        // find player
+                        player = FindPlayerById(playerId);
+                        if (player == null) return;
+                        // get json to response
+                        string json = GMRequestHandler.ResponseForPlacePiece(player); 
+                        // fill json
+                        PlayerPlacesPiece(player, ref json);
+                        // response
+                        Send(GMSocket, json);
+                        // TODO: WRITE REPORT IN REPORT FILE
+                        // Sammy, please check how to use one obj in multiple threads
+                        // so we can write to the same file from different threads
 
+                        break;
+                    }
                 // and so on ....
                 default:
                     break;
@@ -425,6 +441,7 @@ namespace TheGame
             //    UpdateBoard();
             //});
         }
+
 
         #region Add A New Piece During The Game
         private void addPiece()
@@ -490,7 +507,7 @@ namespace TheGame
                     player.goRight();
                     break;
                 case "S":
-                    if ((board.getCellStatus(player.X - 1, player.Y) & Board.Status.BLOCKED) != 0)
+                    if ((board.getCellStatus(player.X , player.Y+1) & Board.Status.BLOCKED) != 0)
                     { // getCellStatus
                         denied = true;
                         break;
@@ -511,11 +528,26 @@ namespace TheGame
         }
 
         /* PLayer places a piece */
-        public void PlacesPiece(Player player)
+        public void PlayerPlacesPiece(Player player, ref string json)
         {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+
             List<Goal> UndiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.UndiscoveredRedGoals : board.UndiscoveredBlueGoals;
             List<Goal> DiscoveredGoals = (player.Team == Team.TeamColor.RED) ? board.DiscoveredRedGoals : board.DiscoveredBlueGoals;
 
+            /* Check if we place on already discoverd goal */
+            foreach (Goal goalDiscoverdByPlayer in DiscoveredGoals)
+            {
+                if (goalDiscoverdByPlayer.row == player.Row && goalDiscoverdByPlayer.column == player.Column)
+                {
+                    magic.result = "denied";  // since it is OK by default
+                    magic.consequence = null;
+                    magic.timestamp = null;
+                    json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+                    /* Player is not placing a piece, it keeps holding it */
+                    return;
+                }
+            }
             /* Discover a goal */
             foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
             {
@@ -535,6 +567,10 @@ namespace TheGame
                     else
                         RedTeam.DiscoveredGoals.Add(new Goal { row = player.Row, column = player.Column });
 
+                    magic.consequence = "correct";
+                    magic.timestamp = GetTimestamp();
+                    json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+
                     return;
                 }
             }
@@ -546,7 +582,12 @@ namespace TheGame
                 RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.Row, column = player.Column });
 
             player.Piece = null; //Player no longer has the piece.
-            checkVictory(player);
+
+            magic.consequence = "meaningless";
+            magic.timestamp = GetTimestamp();
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+
+//            checkVictory(player);
         }
 
         /* Player Discovers its 8 neighbors */
@@ -654,27 +695,24 @@ namespace TheGame
             int c = player.Column;
             int r = player.Row;
 
-
-            /** HOW TO CHECK FOR SHAM MIKE?**/
-            if (player.hasPiece() && board.getCellStatus(c, r) == Board.Status.SHAM)
-            {
-                magic.result = "OK";
-                magic.test = "true";
-
-            }else if(player.hasPiece())
-            {
-                magic.result = "OK";
-                magic.test = "false";
-            }
-
-            magic.timestamp = GetTimestamp();
             if (!player.hasPiece())
             {
                 magic.result = "denied";
                 magic.test = null;
-                /// timestamp to null on denied ?????
+                json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+                return;
             }
+            if (player.Piece.isSham)
+            {
+                magic.result = "OK";
+                magic.test = "true";
+                json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+                return;
+            }
+
+            // JSON's "test": "false" is default
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+ 
             // write to file
    //         string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
      //       string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
@@ -688,18 +726,21 @@ namespace TheGame
             int c = player.Column;
             int r = player.Row;
 
-            //DESTROY PIECE LIKE THIS MIKE?
+            if (!player.hasPiece())
+            {
+                magic.result = "denied";
+                json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+                return;
+            }
+
+            //DESTROY PIECE LIKE THIS MIKE? YES, SAM. JULIA, WHAT YOU THINK?
             player.Piece = null;
-          
-
-            magic.timestamp = GetTimestamp();
-
-            //HOW TO CHECK FOR MESSAGE DENIAL?
 
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+
             // write to file
-            //         string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-            //       string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            //   string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            //   string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
             //   insertIntoConfig("DestroyPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
@@ -721,8 +762,8 @@ namespace TheGame
             for (int i = 0; i < Board.NumberOfGoals; i++)
             {
                 Goal redgoal = new Goal();
-                redgoal.row = rnd.Next(0, Board.GoalHeight);
-                redgoal.column = rnd.Next(0, Board.Width);
+                redgoal.row = rnd.Next(0, Board.GoalHeight-1);
+                redgoal.column = rnd.Next(0, Board.Width-1);
                 board.UndiscoveredRedGoals.Add(redgoal);
                 board.boardtable[redgoal.column, redgoal.row] = Board.Status.UNDISCOVERED_GOAL;
             

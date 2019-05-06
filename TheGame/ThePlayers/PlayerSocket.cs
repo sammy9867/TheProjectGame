@@ -209,6 +209,13 @@ namespace ThePlayers
                 case "destroy":
                     {
                         ReadDestroyPiece(json);
+                        SendDecision(Player.MakeMove());
+                        break;
+                    }
+                case "place":
+                    {
+                        ReadPlacePiece(json);
+                        SendDecision(Player.MakeMove());
                         break;
                     }
                 default: break;
@@ -231,7 +238,7 @@ namespace ThePlayers
                 case Player.Decision.PICKUP_PIECE: SendPickup(); return;
                 case Player.Decision.TEST_PIECE: SendTestPiece(); return;
                 case Player.Decision.DESTROY_PIECE: SendDestroyPiece(); return;
-
+                case Player.Decision.PLACE_PIECE: SendPlacePiece(); return;
                 case Player.Decision.DISCOVER: SendDiscover(); return;
 //                case Player.Decision.KNOWLEDGE_EXCHANGE:
 
@@ -390,7 +397,7 @@ namespace ThePlayers
                     Console.Write("" + Player.Board[i, j] + " ");
                 Console.WriteLine("");
             }
-            Console.WriteLine("After Discover Neighboors:");
+            Console.WriteLine("After Discover Neighboors:" + Player.current);
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
@@ -464,10 +471,12 @@ namespace ThePlayers
             string result = magic.result;
             if (result.ToLower().Equals("denied"))
             {
+                Player.Piece = null;
                 // TODO:
                 return;
             }
-            Player.hasPiece = true;
+            /* Whenever we pickup an unchecked piece we assume it is not a sham */
+            Player.Piece = new Piece();
             Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.EC;
         }
 
@@ -480,11 +489,11 @@ namespace ThePlayers
             // Receive() is called  at the end of Send() method 
             // use ctrl+F to find lable RSP_LBL
         }
-
         private static void ReadTestPiece(string json)
         {
             dynamic magic = JsonConvert.DeserializeObject(json);
             string result = magic.result;
+            
             if (result.ToLower().Equals("denied"))
             {
                 // TODO:
@@ -492,13 +501,15 @@ namespace ThePlayers
             }
             if(magic.test == "true") //iF a SHAM
             {
-                Player.isSham = true;
+                Player.Piece.isSham = true;
+                Player.Piece.isTested = true;
                 Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.SH;
             }
-            else if(magic.test == "false")
+            else 
             {
-                //Player with piece? 
-                //How to go towards goal area to place piece?
+                Player.Piece.isSham = false;
+                Player.Piece.isTested = true;
+                Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.EC;
             }
         }
 
@@ -511,18 +522,19 @@ namespace ThePlayers
             // Receive() is called  at the end of Send() method 
             // use ctrl+F to find lable RSP_LBL
         }
-
-
         private static void ReadDestroyPiece(string json)
         {
+            Console.WriteLine("Reading Destroy Piece");
             dynamic magic = JsonConvert.DeserializeObject(json);
             string result = magic.result;
             if (result.ToLower().Equals("denied"))
             {
-                // TODO:
+                // TODO: 
                 return;
             }
-            Console.WriteLine("Reading Destroy Piece\n");
+            /* piece is destroyed */
+            Player.Piece = null;
+            Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.EC;
         }
 
 
@@ -535,10 +547,9 @@ namespace ThePlayers
             // Receive() is called  at the end of Send() method 
             // use ctrl+F to find lable RSP_LBL
         }
-
-
         private static void ReadPlacePiece(string json)
         {
+            Console.WriteLine("Reading Place Piece\n");
             dynamic magic = JsonConvert.DeserializeObject(json);
             string result = magic.result;
             if (result.ToLower().Equals("denied"))
@@ -546,25 +557,39 @@ namespace ThePlayers
                 // TODO:
                 return;
             }
-            Console.WriteLine("Reading Place Piece\n");
+            string consequence = magic.consequence;
+            if (consequence.ToLower().Equals("correct"))
+            {
+                // placed on a goal. 
+                Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
+                Player.Piece = null;
+                // Knowledge exchange 
+            }
+            if (consequence.ToLower().Equals("meaningless"))
+            {
+                // placed on a goal. 
+                Player.Board[Player.Y, Player.X] = Player.BoardCell.NG;
+                Player.Piece = null;
+                // Knowledge exchange 
+            }
         }
 
 
     }
 
     public class JField
-        {
-            public string x;
-            public string y;
-            public JValue value;
-        }
+    {
+        public string x;
+        public string y;
+        public JValue value;
+    }
 
-        public class JValue
-        {
-            public string manhattanDistance;
-            public string contains;
-            public string timestamp;
-            public string userGuid;
-        }
+    public class JValue
+    {
+        public string manhattanDistance;
+        public string contains;
+        public string timestamp;
+        public string userGuid;
+    }
 
 }

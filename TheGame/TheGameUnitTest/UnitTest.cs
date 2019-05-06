@@ -297,7 +297,7 @@ namespace TheGameUnitTest
 
             int col = 0, row = 0;
 
-            int actual = b.getCellStatus(col, row);
+            int actual = (int) b.getCellStatus(col, row);
             int expected = 17;
 
             Assert.AreEqual(expected, actual);
@@ -342,7 +342,7 @@ namespace TheGameUnitTest
             ThePlayers.Player pl = new ThePlayers.Player()
             {
                 role = ThePlayers.Player.Role.LEADER,
-                hasPiece = false,
+             //   hasPiece = false,
                 
             };
         }
