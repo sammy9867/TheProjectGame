@@ -55,6 +55,7 @@ namespace ThePlayers
         public string ID { get; set; }
         public Role role { get; set; }
         public bool hasPiece { get; set; }
+        public bool isSham { get; set; } //CREATED A VARIABLE FOR SHAM FOR NOW.
 
         public int TeamSize { get; set; }
         public List<string> Mates {get;set;}
@@ -123,8 +124,11 @@ namespace ThePlayers
             if (current == BoardCell.PC)
                 return Decision.PICKUP_PIECE;
 
-            if (hasPiece)
+            if (hasPiece && !isSham)
                 return Decision.TEST_PIECE; // always test piece once you have it
+
+            if (hasPiece && isSham)
+                return Decision.DESTROY_PIECE;
 
             // Nowhere to go 
             if (Neighbors[1, 0] == NeighborStatus.BL && Neighbors[1, 2] == NeighborStatus.BL &&

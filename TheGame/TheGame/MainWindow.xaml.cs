@@ -388,17 +388,34 @@ namespace TheGame
                         player = FindPlayerById(playerId);
                         if (player == null) return;
                         // get json to response
-               //         string json = GMRequestHandler.ResponseForTestPiece(player); // << ----- TODO
+                        string json = GMRequestHandler.ResponseForTestPiece(player); // << ----- TODO
                         // fill json
-               //         PlayerTestPiece(player, ref json);
+                        PlayerTestPiece(player, ref json);
                         // response
-               //         Send(GMSocket, json);
+                        Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
                         // so we can write to the same file from different threads
                         break;
                     }
-                    // and so on ....
+                case "destroy":
+                    {
+                        // find player
+                        player = FindPlayerById(playerId);
+                        if (player == null) return;
+                        // get json to response
+                        string json = GMRequestHandler.ResponseForDestroyPiece(player); // << ----- TODO
+                        // fill json
+                        PlayerDestroyPiece(player, ref json);
+                        // response
+                        Send(GMSocket, json);
+                        // TODO: WRITE REPORT IN REPORT FILE
+                        // Sammy, please check how to use one obj in multiple threads
+                        // so we can write to the same file from different threads
+                        break;
+                    }
+
+                // and so on ....
                 default:
                     break;
             }
@@ -600,7 +617,7 @@ namespace TheGame
             Console.WriteLine(json);
         }
 
-        /** Player takes a  Piece **/
+        /** Player takes a Piece **/
         public void PlayerPickupPiece(Player player, ref string json)
         {
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
@@ -627,7 +644,63 @@ namespace TheGame
             // write to file
             string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
             string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-            insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+         //   insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+        }
+
+        /** Player tests a Piece **/
+        public void PlayerTestPiece(Player player, ref string json)
+        {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            int c = player.Column;
+            int r = player.Row;
+
+
+            /** HOW TO CHECK FOR SHAM MIKE?**/
+            if (player.hasPiece() && board.getCellStatus(c, r) == Board.Status.SHAM)
+            {
+                magic.result = "OK";
+                magic.test = "true";
+
+            }else if(player.hasPiece())
+            {
+                magic.result = "OK";
+                magic.test = "false";
+            }
+
+            magic.timestamp = GetTimestamp();
+            if (!player.hasPiece())
+            {
+                magic.result = "denied";
+                magic.test = null;
+                /// timestamp to null on denied ?????
+            }
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+            // write to file
+   //         string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+     //       string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+         //   insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+        }
+
+        /** Player destroys a Piece **/
+        public void PlayerDestroyPiece(Player player, ref string json)
+        {
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            int c = player.Column;
+            int r = player.Row;
+
+            //DESTROY PIECE LIKE THIS MIKE?
+            player.Piece = null;
+          
+
+            magic.timestamp = GetTimestamp();
+
+            //HOW TO CHECK FOR MESSAGE DENIAL?
+
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+            // write to file
+            //         string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            //       string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            //   insertIntoConfig("DestroyPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
         public long GetTimestamp()

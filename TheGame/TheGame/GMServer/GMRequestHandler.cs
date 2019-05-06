@@ -208,25 +208,77 @@ namespace TheGame.GMServer
             return JsonConvert.SerializeObject(magic);
 
         }
-        public static string ResponseForTestPiece()
+        public static string ResponseForTestPiece(Player player)
         {
-            // be goof boy and load the json
-            return null;
+            string file = @"..\..\JSONs\Response\TestPieceResponse.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            return JsonConvert.SerializeObject(magic);
         }
-        public static string ResponseForDestroyPiece()
+
+        public static string ResponseForDestroyPiece(Player player)
         {
-            // be goof boy and load the json
-            return null;
+            string file = @"..\..\JSONs\Response\DestroyPieceResponse.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            return JsonConvert.SerializeObject(magic);
         }
-        public static string ResponseForPlacePiece()
+
+        public static string ResponseForPlacePiece(Player player)
         {
-            // be goof boy and load the json
-            return null;
+            string file = @"..\..\JSONs\Response\PlacePieceResponse.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.playerID;
+
+            return JsonConvert.SerializeObject(magic);
         }
+
+
         public static string sendGameOver()
         {
-            // be goof boy and load the json
-            return null;
+
+            string file = @"..\..\JSONs\Response\GameOver.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("DONE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+
+            return JsonConvert.SerializeObject(magic);
         }
 
         //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange

@@ -194,12 +194,21 @@ namespace ThePlayers
                 case "pickup":
                     {
                         ReadPickup(json);
-
+                        SendDecision(Player.MakeMove());
                         break;
                     }
                 case "test":
                     {
-                        // ReadTestPiece();
+
+                        //Whenever ReadTestPiece reads false from test response, it resends TestPiece again
+                        //Dont know for now if it will ever receive true [that is if that shit is a sham or not]
+                        ReadTestPiece(json);
+                        SendDecision(Player.MakeMove());
+                        break;
+                    }
+                case "destroy":
+                    {
+                        ReadDestroyPiece(json);
                         break;
                     }
                 default: break;
@@ -221,8 +230,7 @@ namespace ThePlayers
 
                 case Player.Decision.PICKUP_PIECE: SendPickup(); return;
                 case Player.Decision.TEST_PIECE: SendTestPiece(); return;
-                //case Player.Decision.PLACE_PIECE:
-                //case Player.Decision.DESTROY_PIECE:
+                case Player.Decision.DESTROY_PIECE: SendDestroyPiece(); return;
 
                 case Player.Decision.DISCOVER: SendDiscover(); return;
 //                case Player.Decision.KNOWLEDGE_EXCHANGE:
@@ -443,7 +451,7 @@ namespace ThePlayers
         
         private static void SendPickup()
         {
-            // send Discover action
+            // send Pickup action
             PlayerRequestHandler.sendPickup(socket);
 
             // After every send command, player expect the response
@@ -465,7 +473,7 @@ namespace ThePlayers
 
         private static void SendTestPiece()
         {
-            // send Discover action
+            // send TestPiece action
             PlayerRequestHandler.sendTestPiece(socket);
 
             // After every send command, player expect the response
@@ -473,10 +481,78 @@ namespace ThePlayers
             // use ctrl+F to find lable RSP_LBL
         }
 
+        private static void ReadTestPiece(string json)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            string result = magic.result;
+            if (result.ToLower().Equals("denied"))
+            {
+                // TODO:
+                return;
+            }
+            if(magic.test == "true") //iF a SHAM
+            {
+                Player.isSham = true;
+                Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.SH;
+            }
+            else if(magic.test == "false")
+            {
+                //Player with piece? 
+                //How to go towards goal area to place piece?
+            }
+        }
+
+        private static void SendDestroyPiece()
+        {
+            // send DestroyPiece action
+            PlayerRequestHandler.sendDestroyPiece(socket);
+
+            // After every send command, player expect the response
+            // Receive() is called  at the end of Send() method 
+            // use ctrl+F to find lable RSP_LBL
+        }
+
+
+        private static void ReadDestroyPiece(string json)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            string result = magic.result;
+            if (result.ToLower().Equals("denied"))
+            {
+                // TODO:
+                return;
+            }
+            Console.WriteLine("Reading Destroy Piece\n");
+        }
+
+
+        private static void SendPlacePiece()
+        {
+            // send DestroyPiece action
+            PlayerRequestHandler.sendPlacePiece(socket);
+
+            // After every send command, player expect the response
+            // Receive() is called  at the end of Send() method 
+            // use ctrl+F to find lable RSP_LBL
+        }
+
+
+        private static void ReadPlacePiece(string json)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            string result = magic.result;
+            if (result.ToLower().Equals("denied"))
+            {
+                // TODO:
+                return;
+            }
+            Console.WriteLine("Reading Place Piece\n");
+        }
+
 
     }
 
-        public class JField
+    public class JField
         {
             public string x;
             public string y;

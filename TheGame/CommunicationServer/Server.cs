@@ -240,6 +240,7 @@ namespace CommunicationServer
                 case "state":
                 case "pickup":
                 case "test":
+                case "destroy":
                     {
                         if (GMSocket == state.workSocket)
                         {
