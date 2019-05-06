@@ -41,6 +41,51 @@ namespace TheGameUnitTest
             //CommunicationServer.CSRequestHandler.SendConfirmGame(listener);
             
         }
+
+        [TestMethod]
+        public void TestMethod_GMRequestHandler_ForResponses()
+        {
+            /*Response for move */
+            Player pl = new Player()
+            {
+                playerID = "1",
+                role = Player.Role.LEADER,
+                Row = 0,
+                Column = 0,
+                //toCheck = true,
+                Team = Team.TeamColor.BLUE
+            };
+
+            string expected_move = "{\"action\":\"move\",\"userGuid\":\"1\",\"result\":\"OK\",\"timestamp\":69,\"manhattanDistance\":7}";
+            string actual_move = GMRequestHandler.ResponseForMove(pl);
+            Assert.AreEqual(expected_move, actual_move);
+
+            /*Response for discover */
+            string expected_discover = "{\"action\":\"state\",\"userGuid\":\"1\",\"result\":\"OKdenied\",\"scope\":{\"x\":\"01234...board\",\"y\":\"01234...board\"},\"fields\":[{\"x\":\"01234...board\",\"y\":\"01234...board\",\"value\":{\"manhattanDistance\":\"null012...Nearest\",\"contains\":\"goalpieceempty\",\"timestamp\":\"2137\",\"userGuid\":\"fa3f3cb5-742d-478f-9e02-230679032777\"}}]}";
+            string actual_discover = GMRequestHandler.ResponseForDiscover(pl);
+            Assert.AreEqual(expected_discover, actual_discover);
+
+            /* Response for pick up */
+            string expected_pickup = "{\"action\":\"pickup\",\"userGuid\":\"1\",\"result\":\"OK\",\"timestamp\":\"420\"}";
+            string actual_pickup = GMRequestHandler.ResponseForPickUp(pl);
+            Assert.AreEqual(expected_pickup, actual_pickup);
+
+            /* Response for test piece */
+            string expected_test = "{\"action\":\"test\",\"userGuid\":\"1\",\"result\":\"OK\",\"test\":\"false\"}";
+            string actual_test = GMRequestHandler.ResponseForTestPiece(pl);
+            Assert.AreEqual(expected_test, actual_test);
+
+            /* Response for destroy player*/
+            string expected_dest = "{\"action\":\"destroy\",\"userGuid\":\"1\",\"result\":\"OK\"}";
+            string actual_dest = GMRequestHandler.ResponseForDestroyPiece(pl);
+            Assert.AreEqual(expected_dest, actual_dest);
+
+            /* Response for place piece*/
+            string expected_place = "{\"action\":\"place\",\"userGuid\":\"1\",\"result\":\"OK\",\"consequence\":\"correct meaningless null\",\"timestamp\":\"null\"}";
+            string actual_place = GMRequestHandler.ResponseForPlacePiece(pl);
+            Assert.AreEqual(expected_place, actual_place);
+
+        }
         [TestMethod]
         public void TestMethod_GMRequestHandler_BeginGame()
         {

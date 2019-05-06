@@ -152,9 +152,9 @@ namespace TheGame.GMServer
         }
 
         //TODO: 2nd Communication phase
-        internal static string ResponseForMove(Player player)
+        public static string ResponseForMove(Player player)
         {
-
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\MoveResponseAcceptance.json";
             string file = @"..\..\JSONs\Response\MoveResponseAcceptance.json";
             string json = "";
             if (!File.Exists(file))
@@ -174,6 +174,7 @@ namespace TheGame.GMServer
         /* Returns JSON for Discovery Response */
         public static string ResponseForDiscover(Player player)
         {
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\DiscoverResponse.json";
             string file = @"..\..\JSONs\Response\DiscoverResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -192,6 +193,7 @@ namespace TheGame.GMServer
         }
         public static string ResponseForPickUp(Player player)
         {
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\PickUpResponse.json";
             string file = @"..\..\JSONs\Response\PickUpResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -210,6 +212,7 @@ namespace TheGame.GMServer
         }
         public static string ResponseForTestPiece(Player player)
         {
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\TestPieceResponse.json";
             string file = @"..\..\JSONs\Response\TestPieceResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -228,6 +231,7 @@ namespace TheGame.GMServer
 
         public static string ResponseForDestroyPiece(Player player)
         {
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\DestroyPieceResponse.json";
             string file = @"..\..\JSONs\Response\DestroyPieceResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -246,6 +250,7 @@ namespace TheGame.GMServer
 
         public static string ResponseForPlacePiece(Player player)
         {
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\PlacePieceResponse.json";
             string file = @"..\..\JSONs\Response\PlacePieceResponse.json";
             string json = "";
             if (!File.Exists(file))
