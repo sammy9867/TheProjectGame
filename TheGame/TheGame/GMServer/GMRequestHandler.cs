@@ -90,6 +90,7 @@ namespace TheGame.GMServer
         public static string ConnectPlayerDeny(Player player)
         {
             string file = @"..\..\JSONs\RejectJoiningGame.json";
+            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\RejectJoiningGame.json";
             string json = "";
             if (!File.Exists(file))
             {
