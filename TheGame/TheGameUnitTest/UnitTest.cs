@@ -182,7 +182,7 @@ namespace TheGameUnitTest
                 g1,g2
             };
 
-            Team t = new Team();
+            Team t = new Team(Team.TeamColor.BLUE);
             t.members = listp;
             t.DiscoveredGoals = listg;
             t.DiscoveredNonGoals = listg;
@@ -280,13 +280,13 @@ namespace TheGameUnitTest
             b.DiscoveredRedGoals = listg;
             b.UndiscoveredBlueGoals = listg;
             b.UndiscoveredRedGoals = listg;
-            Team t_blue = new Team()
+            Team t_blue = new Team(Team.TeamColor.BLUE)
             {
                 leader = p_blue
             };
             b.BlueTeam = t_blue;
 
-            Team t_red = new Team()
+            Team t_red = new Team(Team.TeamColor.RED)
             {
                 leader = p_red
             };

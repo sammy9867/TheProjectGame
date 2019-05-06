@@ -127,8 +127,8 @@ namespace CommunicationServer
                     {
                         /* Actual Work on Received message */
                         content = content.Remove(content.IndexOf(ETB));
-                        Console.WriteLine("Read {0} bytes from socket. \nData:\n{1}",
-                            content.Length, content);
+                        //Console.WriteLine("Read {0} bytes from socket. \nData:\n{1}",
+                        //    content.Length, content);
 
                         AnalizeTheMessage(content, state);
 
@@ -154,7 +154,7 @@ namespace CommunicationServer
         public static void Send(Socket handler, String data)
         {
             byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
-            Console.WriteLine("Send data : " + data);
+//            Console.WriteLine("Send data : " + data);
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
         }
@@ -165,7 +165,7 @@ namespace CommunicationServer
                 Socket handler = (Socket)ar.AsyncState;
 
                 int bytesSent = handler.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to client.", bytesSent);
+//                Console.WriteLine("Sent {0} bytes to client.", bytesSent);
                 //handler.Shutdown(SocketShutdown.Both);
                 //handler.Close();
 
@@ -249,14 +249,19 @@ namespace CommunicationServer
                             Console.WriteLine("Forward "+action+" Message GM -> Player");
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
+                            {
                                 Send(destPlayer, state.sb.ToString());
+                                Console.WriteLine(" "+action + "  "+ userGuid);
+                            }
                             else
-                                Console.WriteLine("404 Player not found\n"+userGuid);
+                                Console.WriteLine("404 Player not found\n" + userGuid);
+                            Console.WriteLine();
                         }
                         else
                         {
                             // Forward Message from player to GM
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
+                            Console.WriteLine(" " + action + "  " + userGuid+"\n");
                             Send(GMSocket, state.sb.ToString());
                         }
                         break;

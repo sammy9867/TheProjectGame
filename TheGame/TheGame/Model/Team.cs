@@ -27,6 +27,15 @@ namespace TheGame.Model
             }
         }
 
+        public Team(TeamColor teamColor)
+        {
+            this.members = new List<Player>();
+            this.DiscoveredGoals = new List<Goal>();
+            this.DiscoveredNonGoals = new List<Goal>();
+            this.teamColor = teamColor;
+        }
+
+
         public TeamCell isTaken(int col, int row)
         {
             //if (leader.column == col && leader.row == row)

@@ -4,17 +4,17 @@
 exe
 C#
 .cs
-h:\Windows7\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\
+C:\Users\urmichm\Software Engineering\source\theprojectgame\TheGame\TheGame\obj\Debug\
 TheGame
 none
 false
 DEBUG;TRACE
-h:\Windows7\Desktop\Software Engineering\source\theprojectgame\TheGame\TheGame\App.xaml
+C:\Users\urmichm\Software Engineering\source\theprojectgame\TheGame\TheGame\App.xaml
 11151548125
 
 16-1742611978
-1251345911952
+125-156717824
 MainWindow.xaml;
 
-True
+False
 

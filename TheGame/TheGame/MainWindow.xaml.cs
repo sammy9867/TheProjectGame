@@ -332,18 +332,20 @@ namespace TheGame
             string action = magic.action;
             string playerId = magic.userGuid;
             Player player;
+            // find player
+            player = FindPlayerById(playerId);
+            if (player == null) return;
+
             switch (action.ToLower())
             {
                 case "state":
                     {
-                        // find player
-                        player = FindPlayerById(playerId);
-                        if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForDiscover(player);
                         // fill json
                         PlayerDiscoversNeighboringCells(player, ref json);
                         // response
+
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -352,9 +354,6 @@ namespace TheGame
                     }
                 case "move":
                     {
-                        // find player
-                        player = FindPlayerById(playerId);
-                        if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForMove(player);
                         // fill json
@@ -368,9 +367,6 @@ namespace TheGame
                     }
                 case "pickup":
                     {
-                        // find player
-                        player = FindPlayerById(playerId);
-                        if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForPickUp(player);
                         // fill json
@@ -384,9 +380,6 @@ namespace TheGame
                     }
                 case "test":
                     {
-                        // find player
-                        player = FindPlayerById(playerId);
-                        if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForTestPiece(player); 
                         // fill json
@@ -400,9 +393,6 @@ namespace TheGame
                     }
                 case "destroy":
                     {
-                        // find player
-                        player = FindPlayerById(playerId);
-                        if (player == null) return;
                         // get json to response
                         string json = GMRequestHandler.ResponseForDestroyPiece(player); // << ----- TODO
                         // fill json
@@ -415,10 +405,7 @@ namespace TheGame
                         break;
                     }
                 case "place":
-                    {                        
-                        // find player
-                        player = FindPlayerById(playerId);
-                        if (player == null) return;
+                    {
                         // get json to response
                         string json = GMRequestHandler.ResponseForPlacePiece(player); 
                         // fill json
@@ -435,7 +422,7 @@ namespace TheGame
                 default:
                     break;
             }
-
+            Console.WriteLine(action + " -->  " + player.playerID);
 
             //Application.Current.Dispatcher.Invoke((Action)delegate {
             //    UpdateBoard();
@@ -655,7 +642,6 @@ namespace TheGame
 
             magic["fields"] = (JArray) JToken.FromObject(jfields);
             json = magic.ToString();
-            Console.WriteLine(json);
         }
 
         /** Player takes a Piece **/
@@ -803,6 +789,11 @@ namespace TheGame
             Board.NumberOfGoals = magic.NumberOfGoals;
             Board.ShamProbability = magic.ShamProbability; // 50%
 
+            Console.WriteLine("Initialization: ");
+            Console.WriteLine(" Board.MaxNumOfPlayers: " + Board.MaxNumOfPlayers);
+            Console.WriteLine(" Board.NumberOfGoals: " + Board.NumberOfGoals);
+            Console.WriteLine(" Board.ShamProbability: " + Board.ShamProbability);
+
             board.boardtable = new Board.Status[Board.Width, Board.Height];
             for (int r = 0; r < Board.GoalHeight; r++)
                 for (int c = 0; c < Board.Width; c++)
@@ -811,10 +802,10 @@ namespace TheGame
                     board.boardtable[c, Board.Height - 1 - r] = Board.Status.BLUE_GOALS_CELL;
                 }
 
-            RedTeam = loadTeam(Team.TeamColor.RED);
+            RedTeam = new Team(Team.TeamColor.RED);
             board.RedTeam = RedTeam;
 
-            BlueTeam = loadTeam(Team.TeamColor.BLUE);
+            BlueTeam = new Team(Team.TeamColor.BLUE);
             board.BlueTeam = BlueTeam;
 
             //Init list of goals
@@ -894,17 +885,6 @@ namespace TheGame
 
         }
 
-        private Team loadTeam(Team.TeamColor teamColor)
-        {
-            Team team = new Team();
-
-            team.members = new List<Player>();
-            team.DiscoveredGoals = new List<Goal>();
-            team.DiscoveredNonGoals = new List<Goal>();
-            team.teamColor = teamColor;
-
-            return team;
-        }
         #endregion
 
         private void UpdateBoard()
