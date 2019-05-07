@@ -403,7 +403,7 @@ namespace TheGameUnitTest
             int col = 0, row = 0;
 
             int actual = (int) b.getCellStatus(col, row);
-            int expected = 17;
+            int expected = 16;
 
             Assert.AreEqual(expected, actual);
 
@@ -466,7 +466,7 @@ namespace TheGameUnitTest
             };
             p.Piece = pi;
             p.Row = 0;
-            Assert.AreEqual(p.goUp(), -1);
+            Assert.AreEqual(p.goUp(), 0);
 
             p.Column = 1;
             p.Team = Team.TeamColor.RED;
@@ -477,7 +477,7 @@ namespace TheGameUnitTest
 
             Board.Height = 3;
             Board.GoalHeight = 2;
-            Assert.AreEqual(p.goDown(), -1);
+            Assert.AreEqual(p.goDown(), 0);
 
             //p.toCheck = true;
             //Assert.AreEqual(p.goRnd(), -1);
