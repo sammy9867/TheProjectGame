@@ -25,7 +25,7 @@ namespace ThePlayers
             #region Arguments
             foreach (Object ibj in args)
                 Console.WriteLine(ibj);
-            if (args.Length != 1)
+            if (args.Length != 3)
             {
                 Usage();
                 return -1;
@@ -50,9 +50,9 @@ namespace ThePlayers
             // Initialize player 
             PlayerSocket.Player = player;
        
-
+            
             // Start Communication with CS
-            PlayerSocket.StartClient();
+            PlayerSocket.StartClient(args[1], Convert.ToInt32(args[2]));
 
             // Once Communication established 
             // Player start playing
@@ -73,7 +73,7 @@ namespace ThePlayers
         private static void Usage()
         {
             Console.WriteLine("Invalid arguments");
-            Console.WriteLine("Only one arg to indicate the Team");
+            Console.WriteLine("Arguments: Team_Color IP_Address Port");
             Console.ReadKey();
         }
     }

@@ -33,6 +33,8 @@ namespace TheGame
 
         private const int port = 11000;
         private const char ETB = (char)23;
+        string IP_ADDRESS = "";
+        string PORT = "";
 
         // ManualResetEvent instances signal completion.
         public ManualResetEvent connectDone =
@@ -84,7 +86,7 @@ namespace TheGame
         {
             Console.WriteLine("GM Socket started.");
             // Start client sync
-            StartClient();
+            StartClient(IP_ADDRESS, Convert.ToInt32(PORT));
 
             // Sending SetUp reuest and getting response
             string json = GMRequestHandler.SendSetUpGame();
@@ -1128,12 +1130,14 @@ namespace TheGame
         #region Socket Code
 
         #region Start Client and Connect 
-        public void StartClient()
+        public void StartClient(string ipAddress, int port)
         {
             try
             {
-                IPAddress ipAddress = IPAddress.Loopback;
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
+              //  IPAddress ipAddress = IPAddress.Loopback;
+                Console.WriteLine("Game Master IP: " + ipAddress.ToString());
+                Console.WriteLine("Game Master PORT: " + port);
+                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Parse(ipAddress), port);
 
                 GMSocket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Stream, ProtocolType.Tcp);
@@ -1303,10 +1307,10 @@ namespace TheGame
             var args = e.Args;
             if (args != null && args.Count() > 0)
             {
-                foreach (var arg in args)
-                {
-                    // write code to use the command line arg value 
-                }
+                IP_ADDRESS = args[1];
+                PORT = args[2];
+
+                Console.WriteLine(IP_ADDRESS + " " + PORT);
             }
         }
         #endregion

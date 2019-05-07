@@ -31,13 +31,16 @@ namespace ThePlayers
         public static Player Player;
         public static Socket socket;
 
-        public static void StartClient()
+        public static void StartClient(string ipAddress, int port)
         {
             try
             {
-                IPAddress ipAddress = IPAddress.Loopback;
-                IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
+                //IPAddress ipAddress = IPAddress.Loopback;
+                Console.WriteLine("Player IP: " + ipAddress.ToString());
+                Console.WriteLine("Player PORT: " + port);
 
+
+                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Parse(ipAddress), port); 
                 socket = new Socket(AddressFamily.InterNetwork,
                     SocketType.Stream, ProtocolType.Tcp);
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, 1000);

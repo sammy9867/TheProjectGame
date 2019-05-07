@@ -34,8 +34,9 @@ namespace CommunicationServer
         {
             // Establish the local endpoint for the socket
             IPAddress ipAddress = IPAddress.Loopback;
+            Console.WriteLine("Communication Server IP: " + ipAddress.ToString());
+            Console.WriteLine("Communication Server PORT: " + PORT);
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PORT);
-            Console.WriteLine("> IP: " + ipAddress.ToString());
 
             // Create TCP/IP socket.
             Socket listener = new Socket(ipAddress.AddressFamily,

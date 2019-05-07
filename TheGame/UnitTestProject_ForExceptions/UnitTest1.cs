@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 namespace UnitTestProject_ForExceptions
 {
     [TestClass]
@@ -18,7 +18,7 @@ namespace UnitTestProject_ForExceptions
         {
             Player player = new Player
             {
-                ID = "" + (new Random()).Next(),
+          //      ID = "" + (new Random()).Next(),
                 Team = Player.TeamColor.BLUE,
                 Neighbors = new Player.NeighborStatus[3, 3],
                 Piece = null
@@ -28,7 +28,7 @@ namespace UnitTestProject_ForExceptions
             PlayerSocket.Player = player;
             Process.Start(@"C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\CommunicationServer\bin\Debug\CommunicationServer");
             // Start Communication with CS
-            PlayerSocket.StartClient();
+       //     PlayerSocket.StartClient();
         }
 
 
@@ -39,7 +39,7 @@ namespace UnitTestProject_ForExceptions
         {
             Player player = new Player
             {
-                ID = "" + (new Random()).Next(),
+             //   ID = "" + (new Random()).Next(),
                 Team = Player.TeamColor.BLUE,
                 Neighbors = new Player.NeighborStatus[3, 3],
                 Piece = null
@@ -49,8 +49,8 @@ namespace UnitTestProject_ForExceptions
             PlayerSocket.Player = player;
             Process.Start(@"C:\Users\M.Abouelsaadat\Desktop\SEProject\theprojectgame\TheGame\CommunicationServer\bin\Debug\CommunicationServer");
             // Start Communication with CS
-            PlayerSocket.StartClient();
-            PlayerSocket.Send(PlayerSocket.socket, JsonConvert.SerializeObject("start"));
+     //       PlayerSocket.StartClient();
+       //     PlayerSocket.Send(PlayerSocket.socket, JsonConvert.SerializeObject("start"));
         }
 
 
