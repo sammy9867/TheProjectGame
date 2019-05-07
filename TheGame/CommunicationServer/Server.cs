@@ -34,9 +34,14 @@ namespace CommunicationServer
         {
             // Establish the local endpoint for the socket
             IPAddress ipAddress = IPAddress.Loopback;
-            Console.WriteLine("Communication Server IP: " + ipAddress.ToString());
-            Console.WriteLine("Communication Server PORT: " + PORT);
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PORT);
+
+            //Console.WriteLine("Communication Server IP: " + ipAddress.ToString());
+            //Console.WriteLine("Communication Server PORT: " + PORT);
+            //            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PORT);
+
+            Console.WriteLine("Communication Server IP: " + aIP_ADDRESS);
+            Console.WriteLine("Communication Server PORT: " + aPORT);
+            IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(aIP_ADDRESS), Int32.Parse(aPORT));
 
             // Create TCP/IP socket.
             Socket listener = new Socket(ipAddress.AddressFamily,
@@ -177,9 +182,16 @@ namespace CommunicationServer
             }
         }
 
+        public static string aIP_ADDRESS = null;
+        public static string aPORT = null;
         public static int Main(string[] args)
         {
             Console.WriteLine("Communication Server has started");
+
+            Console.WriteLine("0 " + args[0]);
+            Console.WriteLine("1 " + args[1]);
+            aIP_ADDRESS = args[0];
+            aPORT = args[1];
             Console.WriteLine("Start Listening...");
             Clients = new Dictionary<string, Socket>();
             StartListening();

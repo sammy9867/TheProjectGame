@@ -31,7 +31,7 @@ namespace TheGame
         private Team RedTeam;
         private Team BlueTeam;
 
-        private const int port = 11000;
+//        private const int port = 11000;
         private const char ETB = (char)23;
         string IP_ADDRESS = "";
         string PORT = "";
@@ -58,6 +58,31 @@ namespace TheGame
 
             InitializeComponent();
             Console.WriteLine("Game master has started.");
+
+            String[] args = App.Args;
+
+            if (args.Length == 2)
+            {
+                try
+                {
+                    for (int i = 0; i < args.Length; i++)
+                    {
+                        Console.WriteLine("" + i + " : " + args[i]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("The file could not be read:");
+                    Console.WriteLine("\n");
+                    Console.WriteLine(e.Message);
+                }
+
+                IP_ADDRESS = args[0];
+                PORT = args[1];
+            }
+            Console.WriteLine("IP_ADDRESS :    " + IP_ADDRESS);
+            Console.WriteLine("PORT :    " + PORT);
+
             RedTeam = BlueTeam = null;
             endgame = false;
             startgame = true;
@@ -89,6 +114,7 @@ namespace TheGame
             StartClient(IP_ADDRESS, Convert.ToInt32(PORT));
 
             // Sending SetUp reuest and getting response
+            Console.WriteLine("Sending SetUp reuest and getting response.");
             string json = GMRequestHandler.SendSetUpGame();
             Send(GMSocket, json);
             sendDone.WaitOne();
@@ -1304,6 +1330,7 @@ namespace TheGame
         #region Command Line Parameters
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            Console.WriteLine("AAAAAAAAAAAAArg:");
             var args = e.Args;
             if (args != null && args.Count() > 0)
             {
