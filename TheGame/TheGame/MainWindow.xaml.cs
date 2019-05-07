@@ -418,6 +418,15 @@ namespace TheGame
 
                         break;
                     }
+                case "send":
+                case "exchange":
+                    {
+                        // find player
+                        Player receiver = FindPlayerById((string)magic.receiverGuid);
+                        if (receiver == null) return;
+                        Send(GMSocket, Newtonsoft.Json.JsonConvert.SerializeObject(magic));
+                        break;
+                    }
                 // and so on ....
                 default:
                     break;

@@ -266,6 +266,34 @@ namespace CommunicationServer
                         }
                         break;
                     }
+                case "send":
+                case "exchange":
+                    {
+                        if (GMSocket == state.workSocket)
+                        {
+                            // Forward Message from GM to player
+                            Console.WriteLine("Forward " + action + " Message GM -> Receiver-Player");
+                            Socket destPlayer = null;
+                            string receiverGuid = magic.receiverGuid;
+                            if (Clients.TryGetValue(receiverGuid, out destPlayer))
+                            {
+                                Send(destPlayer, state.sb.ToString());
+                                Console.WriteLine(" " + action + "  " + receiverGuid);
+                            }
+                            else
+                                Console.WriteLine("404 Player not found\n" + receiverGuid);
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            // Forward Message from player to GM
+                            Console.WriteLine("Forward " + action + " Message Player -> GM");
+                            Console.WriteLine(" " + action + "  " + userGuid + "\n");
+                            Send(GMSocket, state.sb.ToString());
+                        }
+                        break;
+                    }
+
                 default:
                     Console.WriteLine("Error");
                     Console.WriteLine("Unexpected action in the message");

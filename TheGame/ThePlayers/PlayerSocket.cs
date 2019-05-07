@@ -144,6 +144,18 @@ namespace ThePlayers
             // After every sent command the player expect the response
             Receive(cb);    // RSP_LBL
         }
+        public static void Broadcast(Socket handler, String data, Action<string> cb = null)
+        {
+            // Remove useless white spaces 
+            data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Create bytes
+            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            // Sending
+            handler.BeginSend(byteData, 0, byteData.Length, 0,
+                new AsyncCallback(SendCallback), handler);
+
+            // After every sent command the player does not expect the response
+        }
         private static void SendCallback(IAsyncResult ar)
         {
             try
@@ -218,10 +230,41 @@ namespace ThePlayers
                         SendDecision(Player.MakeMove());
                         break;
                     }
+                case "exchange":
+                    {
+                        // Receive Authorize Knowledege Exchange
+                        // Accept it
+                        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
+                        break;
+                    }
+                case "send":
+                    {
+                        // Read KE data
+                        ReadKnowledgeExchangeSend(json);
+                        SendDecision(Player.MakeMove());
+                        break;
+                    }
+
                 default: break;
                 
             }
 
+        }
+
+        private static void ReadKnowledgeExchangeSend(string json)
+        {
+            JObject magic = JObject.Parse(json);
+            JArray fields = (JArray)magic["fields"];
+            JObject field = (JObject)fields[0];
+            int x = (int) field["x"];
+            int y = (int) field["y"];
+            JObject val = (JObject)field["value"];
+            string contains = (string)val["contains"];
+            if (contains.ToLower().Equals("goal"))
+            {
+                Player.Board[y, x] = Player.BoardCell.GL;
+            }
+            Console.WriteLine("Player got to know about "+Player.Board[y,x] + " on row="+y+" col="+x);
         }
 
         private static void SendDecision(Player.Decision decision)
@@ -240,12 +283,10 @@ namespace ThePlayers
                 case Player.Decision.DESTROY_PIECE: SendDestroyPiece(); return;
                 case Player.Decision.PLACE_PIECE: SendPlacePiece(); return;
                 case Player.Decision.DISCOVER: SendDiscover(); return;
-//                case Player.Decision.KNOWLEDGE_EXCHANGE:
+                case Player.Decision.KNOWLEDGE_EXCHANGE: SendKnowledgeExchange(); return;
 
             }
         }
-
-
 
         private static void ReadStartGame(string json)
         {
@@ -312,7 +353,7 @@ namespace ThePlayers
                 Player.SendDiscover = true;
                 return;
             }
-
+            int knowledgeexchange = 0;
             // Update coordinates 
             JObject jscope = (JObject)jobject["scope"];
             Player.X = (int)jscope["x"];   // shall we check for correctness first ?
@@ -388,7 +429,12 @@ namespace ThePlayers
                 if (status == Player.NeighborStatus.FR && (Player.Board[y, x] & Player.BoardCell.GC)==Player.BoardCell.GC)
                     status = Player.NeighborStatus.GA;
                 Player.Neighbors[1 - dy, 1 - dx] = status;  // row col.
+                if (status == Player.NeighborStatus.PC)
+                    knowledgeexchange++;
             }
+
+            if(knowledgeexchange > 1)
+                
 
             Console.WriteLine("After Discover:");
             for (int i = 0; i < Player.BoardHeight; i++) // row
@@ -430,6 +476,7 @@ namespace ThePlayers
             {
                 // TODO: Maaaan
                 // SendMove(); // Repeat Move ??
+                Player.SendDiscover = true; // Re-Discover 
                 return;
             }
             int old_x = Player.X;
@@ -472,7 +519,7 @@ namespace ThePlayers
             if (result.ToLower().Equals("denied"))
             {
                 Player.Piece = null;
-                // TODO:
+                /* Doing nothing force a player to re-try pickup */ 
                 return;
             }
             /* Whenever we pickup an unchecked piece we assume it is not a sham */
@@ -496,7 +543,7 @@ namespace ThePlayers
             
             if (result.ToLower().Equals("denied"))
             {
-                // TODO:
+                // TODO: re-try [?]
                 return;
             }
             if(magic.test == "true") //iF a SHAM
@@ -537,7 +584,6 @@ namespace ThePlayers
             Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.EC;
         }
 
-
         private static void SendPlacePiece()
         {
             // send DestroyPiece action
@@ -560,20 +606,74 @@ namespace ThePlayers
             string consequence = magic.consequence;
             if (consequence.ToLower().Equals("correct"))
             {
-                // placed on a goal. 
+                // placed on a goal.  discover goal
                 Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
                 Player.Piece = null;
                 // Knowledge exchange 
+                Player.KnowledgeExchange = true;
             }
             if (consequence.ToLower().Equals("meaningless"))
             {
-                // placed on a goal. 
+                // placed on a goal.  discover non-goal
                 Player.Board[Player.Y, Player.X] = Player.BoardCell.NG;
                 Player.Piece = null;
                 // Knowledge exchange 
+                Player.KnowledgeExchange = true;
             }
         }
 
+        /* *
+         * Player sends KE after placing a piece on the Goal Area notifying others about discoverd goal/non-goal
+         */
+        private static void SendKnowledgeExchange()
+        {
+            /* sends authorise */
+            foreach (string p in Player.Mates)
+                PlayerRequestHandler.sendAuthorizeKnowledgeExchange(socket, Player.ID, p);
+
+            /* sends data */
+            foreach (string p in Player.Mates)
+            {
+                string json = PlayerRequestHandler.stringKnowledgeExchangeSend(socket, Player, p);
+                JObject magic = JObject.Parse(json);
+                JField jField = new JField
+                {
+                    x = "" + Player.X,
+                    y = "" + Player.Y
+                };
+                jField.value = new JFieldValue();
+                jField.value.manhattanDistance = null;
+                jField.value.contains = "goal";
+                jField.value.timestamp = GetTimestamp().ToString();
+                jField.value.userGuid = null;
+                var jArray = new List<JField>();
+                jArray.Clear();
+                jArray.Add(jField);
+                magic["fields"] = (JArray)JToken.FromObject(jArray);
+
+                Broadcast(socket, 
+                    JsonConvert.SerializeObject(magic));
+
+            }
+            // Neighbors[row, col]
+            //for (int r = 0; r < 3; r++)
+            //    for (int c = 0; c < 3; c++)
+            //    {
+            //        if (c == 1 && r == 1) continue;
+            //        if (Player.Neighbors[r, c] == Player.NeighborStatus.PC)
+            //        {
+
+            //        }
+            //    }
+
+            return;
+        }
+
+        public static long GetTimestamp()
+        {
+            // TODO:
+            return 777;
+        }
 
     }
 
@@ -581,10 +681,10 @@ namespace ThePlayers
     {
         public string x;
         public string y;
-        public JValue value;
+        public JFieldValue value;
     }
 
-    public class JValue
+    public class JFieldValue
     {
         public string manhattanDistance;
         public string contains;

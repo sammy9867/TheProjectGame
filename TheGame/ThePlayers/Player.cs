@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -54,7 +55,8 @@ namespace ThePlayers
         public int BoardHeight { get { return BoardTaskHeight + 2*BoardGoalHeight; } }
         #endregion 
 
-        public string ID { get; set; }
+        public string private_id { set; get; }
+        public string ID { get { return ComputeSha256Hash(); } }
         public Role role { get; set; }
         public bool hasPiece
         {
@@ -75,6 +77,7 @@ namespace ThePlayers
 
         private enum AlternativeStep { NORTH, SOUTH, WEST, EAST }
 
+        public bool KnowledgeExchange = false;
         public bool SendDiscover = false;
         public string ApplyiedDirection;
 
@@ -119,6 +122,13 @@ namespace ThePlayers
          */
         public Decision MakeMove()
         {
+            /* Knowledge Exchange */
+            if (KnowledgeExchange == true)
+            {
+                KnowledgeExchange = false;
+                return Decision.KNOWLEDGE_EXCHANGE;
+            }
+
             /* Forced Discover */
             if (SendDiscover == true)
             {
@@ -293,6 +303,26 @@ namespace ThePlayers
         private void MoveSouth() => Row++;
         private void MoveWest()  => Column--;
         private void MoveEast()  => Column++;
+
+
+        private string ComputeSha256Hash()
+        {
+            string rawData = private_id;
+            // Create a SHA256   
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                // ComputeHash - returns byte array  
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+
+                // Convert byte array to a string   
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
 
     }
 

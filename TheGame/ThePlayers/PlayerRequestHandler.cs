@@ -185,10 +185,96 @@ namespace ThePlayers
 
 
         //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
-        public static void sendAuthorizeKnowledgeExchange() { }
-        public static void sendRejectKnowledgeExchange() { }
-        public static void sendAcceptKnowledgeExchange() { }
-        public static void ResponseForKnowledgeExchange() { }
+        public static void sendAuthorizeKnowledgeExchange(Socket handler, string player, string receiver)
+        {
+            string file = @"..\..\JSONs\AuthorizeKnowledgeExchange.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("File does not exist: ");
+                Console.WriteLine(">" + file);
+                Console.WriteLine("DNE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = player;
+            magic.receiverGuid = receiver;
+
+            Console.WriteLine("Sending AuthorizeKnowledgeExchange.json....\n");
+            PlayerSocket.Broadcast(handler,
+                JsonConvert.SerializeObject(magic));
+
+        }
+        public static void sendRejectKnowledgeExchange(Socket handler, string player) {
+            string file = @"..\..\JSONs\RejectKnowledgeExchange.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("File does not exist: ");
+                Console.WriteLine(">" + file);
+                Console.WriteLine("DNE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = player;
+            // "rejectDuration":  "<single|permanent>"
+            Console.WriteLine("Sending RejectKnowledgeExchange.json....\n");
+            PlayerSocket.Broadcast(handler, // rejecting knowledge exchange - no responce expected
+                JsonConvert.SerializeObject(magic));
+
+        }
+        public static void sendAcceptKnowledgeExchange(Socket handler, string player) {
+            string file = @"..\..\JSONs\AcceptKnowledgeExchange.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("File does not exist: ");
+                Console.WriteLine(">" + file);
+                Console.WriteLine("DNE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = player;
+
+            Console.WriteLine("Sending sendAcceptKnowledgeExchange.json....\n");
+            PlayerSocket.Send(handler, // expecting the data with knowledge 
+                JsonConvert.SerializeObject(magic));
+        }
+        public static string stringKnowledgeExchangeSend(Socket handler, Player player, string receiver) {
+            string file = @"..\..\JSONs\KnowledfeExchangeSend.json";
+            string json = "";
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("File does not exist: ");
+                Console.WriteLine(">" + file);
+                Console.WriteLine("DNE\n");
+            }
+            else
+            {
+                json = File.ReadAllText(file, Encoding.ASCII);
+            }
+
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            magic.userGuid = player.ID;
+            magic.receiverGuid = receiver;
+
+            return Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+
+            //PlayerSocket.Send(handler, // expecting the data with knowledge 
+            //    JsonConvert.SerializeObject(magic));
+        }
 
     }
 }

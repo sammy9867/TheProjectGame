@@ -12,16 +12,6 @@
         "timestamp": 1337,
         "userGuid": "fa3f3cb5-742d-478f-9e02-230679032777"
       }
-    },
-    {
-      "x": "<0|1|2|3|4|...|board",
-      "y": "<0|1|2|3|4|...|board",
-      "value": {
-        "manhattanDistance": "<null|0|1|2|...|Nearest",
-        "contains": "<goal|sham|valid|piece|empty|unknown>",
-        "timestamp": 1337,
-        "userGuid": null
-      }
     }
   ]
 }
