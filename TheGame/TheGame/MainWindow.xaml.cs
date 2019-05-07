@@ -222,7 +222,8 @@ namespace TheGame
         {
             // create a file object
             // create file itself if it does not exist
-            string newFileName = "Configfile/report.csv";
+            string newFileName = @"..\..\Configfile\reportlog.csv";
+            
 
             if (!File.Exists(newFileName))
             {
@@ -242,7 +243,7 @@ namespace TheGame
             try
             {
                 string line = $"\"{type}\",\"{dateTime}\",\"{playerID}\",\"{colour}\",\"{role}\"{Environment.NewLine}";
-                File.AppendAllText("Configfile/report.csv", line);
+                File.AppendAllText(@"..\..\Configfile\reportlog.csv", line);
                 return true;
             }
             catch (Exception ee)
@@ -251,6 +252,7 @@ namespace TheGame
                 return false;
             }
         }
+
         #endregion
         #region Async and Communication Routine
         private static async Task RunPeriodicAsync(Action onTick,
@@ -275,8 +277,7 @@ namespace TheGame
 
 
         }
-
-
+     
         /* The `action` method will be called in the sep thread. */
         private static async Task RunAsync(Action action, TimeSpan dueTime, CancellationToken token)
         {
@@ -285,8 +286,9 @@ namespace TheGame
                 await Task.Delay(dueTime, token);
 
             action?.Invoke();
-            
+
         }
+        private int counter_tmp = 0;
         private void CommunicationRoutine()
         {
             if (startgame)
@@ -306,6 +308,11 @@ namespace TheGame
                 // Notify players about the game
                 BeginGame();
                 startgame = false;
+
+                /*where to add addPieces mid game*/
+                counter_tmp++;
+                if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
+                    addPiece();
             }
 
             if (!endgame)
@@ -432,10 +439,6 @@ namespace TheGame
                     break;
             }
             Console.WriteLine(action + " -->  " + player.playerID);
-
-            //Application.Current.Dispatcher.Invoke((Action)delegate {
-            //    UpdateBoard();
-            //});
         }
 
 
@@ -476,6 +479,8 @@ namespace TheGame
             JObject jobject = JObject.Parse(json);
             bool denied = false;
             Console.WriteLine(player.playerID + "["+player.Team+"] goes "+direction);
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
             switch (direction)
             {
                 case "N":
@@ -485,6 +490,8 @@ namespace TheGame
                         break;
                     }
                     player.goUp();
+                   
+                    insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
                 case "W":
                     if ((board.getCellStatus(player.X - 1, player.Y) & Board.Status.BLOCKED) != 0)
@@ -493,6 +500,7 @@ namespace TheGame
                         break;
                     }
                     player.goLeft();
+                    insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
                 case "E":
                     if ((board.getCellStatus(player.X + 1, player.Y) & Board.Status.BLOCKED) != 0)
@@ -501,6 +509,7 @@ namespace TheGame
                         break;
                     }
                     player.goRight();
+                    insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
                 case "S":
                     if ((board.getCellStatus(player.X , player.Y+1) & Board.Status.BLOCKED) != 0)
@@ -509,6 +518,7 @@ namespace TheGame
                         break;
                     }
                     player.goDown();
+                    insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
             }
             if (denied)
@@ -522,6 +532,7 @@ namespace TheGame
             }
             jobject["timestamp"] = GetTimestamp();
         }
+
 
         /* PLayer places a piece */
         public void PlayerPlacesPiece(Player player, ref string json)
@@ -559,13 +570,76 @@ namespace TheGame
                         Board.BlueScore++;
 
                     if (player.Team == Team.TeamColor.BLUE)
+                    {
                         BlueTeam.DiscoveredGoals.Add(new Goal { row = player.Row, column = player.Column });
+                        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                        insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "blue", pr);
+                    }
                     else
+                    {
                         RedTeam.DiscoveredGoals.Add(new Goal { row = player.Row, column = player.Column });
+                        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                        insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "red", pr);
 
+                    }
+                       
+
+                    Console.WriteLine("Blue :" + Board.BlueScore);
+                    Console.WriteLine("Red :" + Board.RedScore);
                     magic.consequence = "correct";
                     magic.timestamp = GetTimestamp();
                     json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
+
+
+                    if (Board.BlueScore >= Board.NumberOfGoals)
+                    {
+                        // Blue WINS
+                        endgame = true;
+                      //  magic.result = "blue";
+                        string message = "Congratulations, Blue team wins!";
+                        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+
+                        string gameover_json = GMRequestHandler.sendGameOver();
+                        dynamic gameover_magic =JsonConvert.DeserializeObject(gameover_json);
+                        Console.WriteLine(gameover_json);
+                        gameover_magic.result = "blue";
+                        // response
+
+                    
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            Send(GMSocket, gameover_json);
+                        });
+
+                        //int pId = Player.playerID;
+
+                        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+
+                        Console.WriteLine(message);
+                    }
+                    if (Board.RedScore >= Board.NumberOfGoals)
+                    {
+                        // Red WINS
+                        endgame = true;
+                   //     magic.result = "red";
+                        string message = "Congratulations, Red team wins!";
+                        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+
+                        string gameover_json = GMRequestHandler.sendGameOver();
+                        dynamic gameover_magic = JsonConvert.DeserializeObject(gameover_json);
+                        gameover_magic.result = "red";
+                        // response
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            Send(GMSocket, gameover_json);
+                        });
+                        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                        Console.WriteLine(message);
+                    }
 
                     return;
                 }
@@ -573,9 +647,18 @@ namespace TheGame
 
             /* Discover a non-goal */
             if (player.Team == Team.TeamColor.BLUE)
+            {
                 BlueTeam.DiscoveredNonGoals.Add(new Goal { row = player.Row, column = player.Column });
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "blue", pr);
+            }
             else
+            {
                 RedTeam.DiscoveredNonGoals.Add(new Goal { row = player.Row, column = player.Column });
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("PlacePiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "red", pr);
+
+            }
 
             player.Piece = null; //Player no longer has the piece.
 
@@ -585,6 +668,44 @@ namespace TheGame
 
 //            checkVictory(player);
         }
+
+        //#region Check for Victory
+        //private void checkVictory(Player player, ref string json)
+        //{
+        //    dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+        //    if (Board.BlueScore >= Board.NumberOfGoals)
+        //    {
+        //        // Blue WINS
+        //        endgame = true;
+        //        magic.result = "blue";
+        //        string message = "Congratulations, Blue team wins!";
+        //        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+        //        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+        //        //int pId = Player.playerID;
+
+        //        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+        //        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+
+        //        Console.WriteLine(message);
+        //        //MessageBox.Show(message);
+        //        this.Close();
+        //    }
+        //    if (Board.RedScore >= Board.NumberOfGoals)
+        //    {
+        //        // Red WINS
+        //        endgame = true;
+        //        magic.result = "red";
+        //        string message = "Congratulations, Red team wins!";
+        //        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+        //        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+        //        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+        //        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+        //        Console.WriteLine(message);
+        //        //  MessageBox.Show(message);
+        //        this.Close();
+        //    }
+        //}
+        //#endregion
 
         /* Player Discovers its 8 neighbors */
         public void PlayerDiscoversNeighboringCells(Player player, ref string json)
@@ -705,6 +826,9 @@ namespace TheGame
                 return;
             }
 
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("TestPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
             // JSON's "test": "false" is default
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
  
@@ -730,6 +854,10 @@ namespace TheGame
 
             //DESTROY PIECE LIKE THIS MIKE? YES, SAM. JULIA, WHAT YOU THINK?
             player.Piece = null;
+
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("DestroyPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
 
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
 
@@ -773,7 +901,7 @@ namespace TheGame
         private void loadBoard()
         {
 
-            string config = "Configfile/config";
+            string config = @"..\..\Configfile\config";
             string json = "";
             if (!File.Exists(config))
             {
@@ -1165,38 +1293,7 @@ namespace TheGame
 
         #endregion
 
-        #region Check for Victory
-        private void checkVictory(Player player)
-        {
-            if (board.DiscoveredBlueGoals.Count >= Board.NumberOfGoals)
-            {
-                // Blue WINS
-                endgame = true;
-                string message = "Congratulations, Blue team wins!";
-                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                //int pId = Player.playerID;
 
-                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-
-                MessageBox.Show(message);
-                this.Close();
-            }
-            if (board.DiscoveredRedGoals.Count >= Board.NumberOfGoals)
-            {
-                // Red WINS
-                endgame = true;
-                string message = "Congratulations, Red team wins!";
-                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                MessageBox.Show(message);
-                this.Close();
-            }
-        }
-        #endregion
 
 
         /* not used yet, will be used for port and ip address */

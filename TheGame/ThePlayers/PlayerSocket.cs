@@ -230,19 +230,25 @@ namespace ThePlayers
                         SendDecision(Player.MakeMove());
                         break;
                     }
-                case "exchange":
+                //case "exchange":
+                //    {
+                //        // Receive Authorize Knowledege Exchange
+                //        // Accept it
+                //        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
+                //        break;
+                //    }
+                //case "send":
+                //    {
+                //        // Read KE data
+                //        ReadKnowledgeExchangeSend(json);
+                //        SendDecision(Player.MakeMove());
+                //        break;
+                //    }
+                case "end":
                     {
-                        // Receive Authorize Knowledege Exchange
-                        // Accept it
-                        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
+                        ReadGameOver(json);
                         break;
-                    }
-                case "send":
-                    {
-                        // Read KE data
-                        ReadKnowledgeExchangeSend(json);
-                        SendDecision(Player.MakeMove());
-                        break;
+                        
                     }
 
                 default: break;
@@ -266,11 +272,18 @@ namespace ThePlayers
             }
             Console.WriteLine("Player got to know about "+Player.Board[y,x] + " on row="+y+" col="+x);
         }
+        
+        private static void ReadGameOver(string json)
+        {
+            dynamic magic = JsonConvert.DeserializeObject(json);
+            string result = magic.result;
+            Console.WriteLine("Team " + result + " wins!!!");
+        }
 
         private static void SendDecision(Player.Decision decision)
         {
             Console.WriteLine("Player decided: " + decision);
-            Thread.Sleep(3000);
+            Thread.Sleep(2000);
             switch (decision)
             {
                 case Player.Decision.MOVE_NORTH:  SendMove("N"); return;
@@ -610,7 +623,7 @@ namespace ThePlayers
                 Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
                 Player.Piece = null;
                 // Knowledge exchange 
-                Player.KnowledgeExchange = true;
+             //   Player.KnowledgeExchange = true;
             }
             if (consequence.ToLower().Equals("meaningless"))
             {
@@ -618,7 +631,7 @@ namespace ThePlayers
                 Player.Board[Player.Y, Player.X] = Player.BoardCell.NG;
                 Player.Piece = null;
                 // Knowledge exchange 
-                Player.KnowledgeExchange = true;
+            //   Player.KnowledgeExchange = true;
             }
         }
 

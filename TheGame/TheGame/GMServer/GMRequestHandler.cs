@@ -107,6 +107,7 @@ namespace TheGame.GMServer
         }
 
         /* Returns JSON for Begin Game Notification */
+        
         public static string BeginGame( 
             Player player, List<Player> members, Player leader)
         {
@@ -271,7 +272,7 @@ namespace TheGame.GMServer
         public static string sendGameOver()
         {
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\GameOver.json";
-            string file = @"..\..\JSONs\Response\GameOver.json";
+            string file = @"..\..\JSONs\GameOver.json";
             string json = "";
             if (!File.Exists(file))
             {
@@ -282,11 +283,17 @@ namespace TheGame.GMServer
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            JObject jObject = JObject.Parse(json);
+
+            //JArray teamGuids = (JArray)jObject["userGuid"];
+            //teamGuids.Clear();
+
+
+            //foreach (Player p in players)
+            //    teamGuids.Add(p.playerID);
 
             return JsonConvert.SerializeObject(magic);
         }
-
-        //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
 
 
     }

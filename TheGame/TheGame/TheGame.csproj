@@ -112,6 +112,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Configfile\config" />
+    <None Include="Configfile\reportlog.csv">
+      <SubType>Component</SubType>
+    </None>
     <None Include="JSONs\BeginGame.json" />
     <None Include="JSONs\ConfirmJoiningGame.json" />
     <None Include="JSONs\GameOver.json" />

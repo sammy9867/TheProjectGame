@@ -253,7 +253,7 @@ namespace ThePlayers
                 JsonConvert.SerializeObject(magic));
         }
         public static string stringKnowledgeExchangeSend(Socket handler, Player player, string receiver) {
-            string file = @"..\..\JSONs\KnowledfeExchangeSend.json";
+            string file = @"..\..\JSONs\KnowledgeExchangeSend.json";
             string json = "";
             if (!File.Exists(file))
             {

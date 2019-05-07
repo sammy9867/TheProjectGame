@@ -196,6 +196,7 @@ namespace CommunicationServer
             string action = magic.action;
             string result = magic.result;
             string userGuid = magic.userGuid;
+            List<String> listOfGuids = new List<string>(); 
 
             string direction = magic.direction;
 
@@ -213,6 +214,7 @@ namespace CommunicationServer
                         {
                             // Player to GM
                             Clients.Add(userGuid, state.workSocket); // add player's socket
+                            listOfGuids.Add(userGuid);
                             CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
                         }
                         else
@@ -290,6 +292,29 @@ namespace CommunicationServer
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
                             Console.WriteLine(" " + action + "  " + userGuid + "\n");
                             Send(GMSocket, state.sb.ToString());
+                        }
+                        break;
+                    }
+
+                case "end":
+                    {
+                        if (GMSocket == state.workSocket)
+                        {
+                            // Forward Message from GM to player
+                            Console.WriteLine("Forward " + action + " Message GM -> Players");
+                            Socket destPlayer = null;
+
+                            foreach (string ug in listOfGuids)
+                            {
+                                if (Clients.TryGetValue(ug, out destPlayer))
+                                {
+                                    Send(destPlayer, state.sb.ToString());
+                                    Console.WriteLine(" " + action + "  " + ug);
+                                }
+                                else
+                                    Console.WriteLine("404 Player not found\n" + ug);
+                                Console.WriteLine();
+                            }
                         }
                         break;
                     }
