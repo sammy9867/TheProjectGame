@@ -18,33 +18,31 @@ namespace TheGameUnitTest
     [TestClass]
     public class UnitTest
     {
-        [TestMethod]
-        public void TestMethod_ForServer_StartListeningTest()
-        {
-            //Mock<Socket> ss = new Mock<Socket>();
-            //Socket s = new Socket();
-            //IAsyncResult asRes = new
-            //Mock<CommunicationServer.Server> ser = new Mock<CommunicationServer.Server>();
+        //[TestMethod]
+        //public void TestMethod_ForServer_StartListeningTest()
+        //{
+        //    //Mock<Socket> ss = new Mock<Socket>();
+        //    //Socket s = new Socket();
+        //    //IAsyncResult asRes = new
+        //    //Mock<CommunicationServer.Server> ser = new Mock<CommunicationServer.Server>();
             
-            //ss.Setup(x => x.BeginAccept(null, null)).Returns(asRes);
-            CommunicationServer.Server myServer = new CommunicationServer.Server();
+        //    //ss.Setup(x => x.BeginAccept(null, null)).Returns(asRes);
+        //    CommunicationServer.Server myServer = new CommunicationServer.Server();
 
-            IPAddress ipAddress = IPAddress.Loopback;
-            Socket listener = null;
-            //Socket listener = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
-
-            CommunicationServer.Server.Send(listener, "this is data");
-
-            CommunicationServer.Server.StartListening();
-
+        //    IPAddress ipAddress = IPAddress.Loopback;
             
-            //CommunicationServer.CSRequestHandler.SendConfirmGame(listener);
-            
-        }
+        //    //Socket listener = new Socke
+        //    Socket listener = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
+
+        //    CommunicationServer.Server.Send(listener, "this is data");
+
+        //    CommunicationServer.Server.StartListening();
+ 
+        //}
         [TestMethod]
         public void TestMethod_GMRequestHandler_GameOver()
         {
-            string expected = "{\"action\":\"end\",\"result\":\"red|blue>\"}";
+            string expected = "{\"action\":\"end\",\"result\":\"blue\"}";
             string actual = GMRequestHandler.sendGameOver();
             Assert.AreEqual(expected, actual);
         }
