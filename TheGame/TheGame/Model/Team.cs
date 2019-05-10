@@ -20,7 +20,21 @@ namespace TheGame.Model
 
         public TeamColor teamColor { get; set; }
 
-        public int maxNumOfPlayers { get; set; }
+        public int NumOfPlayers
+        { get
+            {
+                return members == null ? -1 : members.Count();
+            }
+        }
+
+        public Team(TeamColor teamColor)
+        {
+            this.members = new List<Player>();
+            this.DiscoveredGoals = new List<Goal>();
+            this.DiscoveredNonGoals = new List<Goal>();
+            this.teamColor = teamColor;
+        }
+
 
         public TeamCell isTaken(int col, int row)
         {
@@ -33,7 +47,7 @@ namespace TheGame.Model
 
             foreach (var item in members)
             {
-                if (item.row == row && item.column == col)
+                if (item.Row == row && item.Column == col)
                 {
                     if (item.hasPiece()) return TeamCell.PLAYER_PIECE;
                     else return TeamCell.PLAYER;
