@@ -338,9 +338,9 @@ namespace TheGame
                 startgame = false;
 
                 /*where to add addPieces mid game*/
-                counter_tmp++;
-                if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
-                    addPiece();
+                //counter_tmp++;
+                //if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
+                  //  addPiece();
             }
 
             if (!endgame)
@@ -349,6 +349,9 @@ namespace TheGame
                 // received messages will be passed to the method
                 // AnalizeMessage
                 Receive(AnalyzeMessage);
+                counter_tmp++;
+                if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
+                    addPiece();
             }
 
             // Update the board, strange behaviour :(
