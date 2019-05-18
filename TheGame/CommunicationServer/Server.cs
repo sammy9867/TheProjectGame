@@ -292,6 +292,7 @@ namespace CommunicationServer
                             string receiverGuid = magic.receiverGuid;
                             if (Clients.TryGetValue(receiverGuid, out destPlayer))
                             {
+
                                 Send(destPlayer, state.sb.ToString());
                                 Console.WriteLine(" " + action + "  " + receiverGuid);
                             }

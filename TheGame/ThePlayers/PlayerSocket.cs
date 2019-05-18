@@ -189,6 +189,7 @@ namespace ThePlayers
                         // Send Discover as soon as the game begins, 
                         // so player knows something... could be move later somewhere else... 
                         Player.SendDiscover = true;
+                        Thread.Sleep(450);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -203,12 +204,14 @@ namespace ThePlayers
                         // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
                         ReadMove(json);
                         Player.SendDiscover = true;
+                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
                 case "pickup":
                     {
                         ReadPickup(json);
+                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -218,6 +221,7 @@ namespace ThePlayers
                         //Whenever ReadTestPiece reads false from test response, it resends TestPiece again
                         //Dont know for now if it will ever receive true [that is if that shit is a sham or not]
                         ReadTestPiece(json);
+                        Thread.Sleep(500);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -230,6 +234,7 @@ namespace ThePlayers
                 case "place":
                     {
                         ReadPlacePiece(json);
+                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
