@@ -380,7 +380,7 @@ namespace TheGame
                         // fill json
                         PlayerDiscoversNeighboringCells(player, ref json);
                         // response
-                        Thread.Sleep(450);
+                       // Thread.Sleep(450);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -394,7 +394,7 @@ namespace TheGame
                         // fill json
                         PlayerMove(player,(string) magic.direction,  ref json);
                         // response
-                        Thread.Sleep(100);
+                      //  Thread.Sleep(100);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -408,7 +408,7 @@ namespace TheGame
                         // fill json
                         PlayerPickupPiece(player, ref json);
                         // response
-                        Thread.Sleep(100);
+                       // Thread.Sleep(100);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -422,7 +422,7 @@ namespace TheGame
                         // fill json
                         PlayerTestPiece(player, ref json);
                         // response
-                        Thread.Sleep(500);
+                       // Thread.Sleep(500);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads

@@ -291,7 +291,7 @@ namespace ThePlayers
         private static void SendDecision(Player.Decision decision)
         {
             Console.WriteLine("Player decided: " + decision);
-            Thread.Sleep(2000);
+           // Thread.Sleep(2000);
             switch (decision)
             {
                 case Player.Decision.MOVE_NORTH:  SendMove("N"); return;
