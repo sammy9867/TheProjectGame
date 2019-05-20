@@ -268,7 +268,7 @@ namespace TheGame.GMServer
         }
 
 
-        public static string sendGameOver()
+        public static string SendGameOver(Team.TeamColor avengers)
         {
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\GameOver.json";
             string file = @"..\..\JSONs\GameOver.json";
@@ -281,15 +281,9 @@ namespace TheGame.GMServer
             {
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
+
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            JObject jObject = JObject.Parse(json);
-
-            //JArray teamGuids = (JArray)jObject["userGuid"];
-            //teamGuids.Clear();
-
-
-            //foreach (Player p in players)
-            //    teamGuids.Add(p.playerID);
+            magic.result = avengers == Team.TeamColor.RED ? "red" : "blue";
 
             return JsonConvert.SerializeObject(magic);
         }

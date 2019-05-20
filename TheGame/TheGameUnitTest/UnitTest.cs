@@ -43,7 +43,7 @@ namespace TheGameUnitTest
         public void TestMethod_GMRequestHandler_GameOver()
         {
             string expected = "{\"action\":\"end\",\"result\":\"blue\"}";
-            string actual = GMRequestHandler.sendGameOver();
+            string actual = GMRequestHandler.SendGameOver();
             Assert.AreEqual(expected, actual);
         }
 

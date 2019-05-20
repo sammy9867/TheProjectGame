@@ -189,7 +189,7 @@ namespace ThePlayers
                         // Send Discover as soon as the game begins, 
                         // so player knows something... could be move later somewhere else... 
                         Player.SendDiscover = true;
-                        Thread.Sleep(450);
+//                        Thread.Sleep(450);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -204,14 +204,14 @@ namespace ThePlayers
                         // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
                         ReadMove(json);
                         Player.SendDiscover = true;
-                        Thread.Sleep(100);
+//                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
                 case "pickup":
                     {
                         ReadPickup(json);
-                        Thread.Sleep(100);
+//                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -221,7 +221,7 @@ namespace ThePlayers
                         //Whenever ReadTestPiece reads false from test response, it resends TestPiece again
                         //Dont know for now if it will ever receive true [that is if that shit is a sham or not]
                         ReadTestPiece(json);
-                        Thread.Sleep(500);
+//                        Thread.Sleep(500);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -234,24 +234,24 @@ namespace ThePlayers
                 case "place":
                     {
                         ReadPlacePiece(json);
-                        Thread.Sleep(100);
+//                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
-                //case "exchange":
-                //    {
-                //        // Receive Authorize Knowledege Exchange
-                //        // Accept it
-                //        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
-                //        break;
-                //    }
-                //case "send":
-                //    {
-                //        // Read KE data
-                //        ReadKnowledgeExchangeSend(json);
-                //        SendDecision(Player.MakeMove());
-                //        break;
-                //    }
+                case "exchange":
+                    {
+                        // Receive Authorize Knowledege Exchange
+                        // Accept it
+                        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
+                        break;
+                    }
+                case "send":
+                    {
+                        // Read KE data
+                        ReadKnowledgeExchangeSend(json);
+                        SendDecision(Player.MakeMove());
+                        break;
+                    }
                 case "end":
                     {
                         ReadGameOver(json);
@@ -263,6 +263,15 @@ namespace ThePlayers
                 
             }
 
+            // row column
+            for (int y = 0; y < Player.BoardHeight; y++)
+            {
+                for (int x = 0; x < Player.BoardWidth; x++)
+                {
+                    Console.Write(Player.Board[y,x]+" ");
+                }
+                Console.WriteLine();
+            }
         }
 
         private static void ReadKnowledgeExchangeSend(string json)
@@ -286,6 +295,7 @@ namespace ThePlayers
             dynamic magic = JsonConvert.DeserializeObject(json);
             string result = magic.result;
             Console.WriteLine("Team " + result + " wins!!!");
+            Console.ReadKey();
         }
 
         private static void SendDecision(Player.Decision decision)
@@ -564,7 +574,7 @@ namespace ThePlayers
             
             if (result.ToLower().Equals("denied"))
             {
-                // TODO: re-try [?]
+                Player.Piece = null;
                 return;
             }
             if(magic.test == "true") //iF a SHAM
@@ -621,25 +631,25 @@ namespace ThePlayers
             string result = magic.result;
             if (result.ToLower().Equals("denied"))
             {
-                // TODO:
+                Player.Piece = null;
                 return;
             }
             string consequence = magic.consequence;
             if (consequence.ToLower().Equals("correct"))
             {
                 // placed on a goal.  discover goal
-                Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
+                Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
                 Player.Piece = null;
                 // Knowledge exchange 
-             //   Player.KnowledgeExchange = true;
+                //Player.KnowledgeExchange = true;
             }
             if (consequence.ToLower().Equals("meaningless"))
             {
                 // placed on a goal.  discover non-goal
-                Player.Board[Player.Y, Player.X] = Player.BoardCell.NG;
+                Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.NG;
                 Player.Piece = null;
                 // Knowledge exchange 
-            //   Player.KnowledgeExchange = true;
+                //Player.KnowledgeExchange = true;
             }
         }
 
@@ -686,7 +696,7 @@ namespace ThePlayers
 
             //        }
             //    }
-
+            Player.KnowledgeExchange = false;
             return;
         }
 

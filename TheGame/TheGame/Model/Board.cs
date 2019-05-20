@@ -46,7 +46,8 @@ namespace TheGame.Model
         public static int InitialNumberOfPieces { get; set; }
         public static int NumberOfGoals { get; set; }
         public static int ShamProbability { get; set; }
-
+        public static int FrequencyOfPlacingNewPiece { get; set; }
+        
         public Team BlueTeam { get; set; }
         public Team RedTeam { get; set; }
         public List<Piece> Pieces { get; set; }
