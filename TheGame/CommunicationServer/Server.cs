@@ -321,18 +321,11 @@ namespace CommunicationServer
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward " + action + " Message GM -> Players");
-                            Socket destPlayer = null;
-
-                            foreach (string ug in listOfGuids)
+                           
+                            foreach (Socket destPlayer in Clients.Values)
                             {
-                                if (Clients.TryGetValue(ug, out destPlayer))
-                                {
-                                    Send(destPlayer, state.sb.ToString());
-                                    Console.WriteLine(" " + action + "  " + ug);
-                                }
-                                else
-                                    Console.WriteLine("404 Player not found\n" + ug);
-                                Console.WriteLine();
+                                Send(destPlayer, state.sb.ToString());
+                                Console.WriteLine("the end ");
                             }
                         }
                         break;
