@@ -82,7 +82,6 @@ namespace TheGame.GMServer
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
-
             return (JsonConvert.SerializeObject(magic));
 //          
         }

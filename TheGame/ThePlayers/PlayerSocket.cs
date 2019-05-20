@@ -183,7 +183,7 @@ namespace ThePlayers
 
             switch (action.ToLower())
             {
-                case "begin":
+                case "start":
                     {
                         ReadStartGame(json);
                         // Send Discover as soon as the game begins, 

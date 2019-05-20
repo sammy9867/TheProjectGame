@@ -217,9 +217,22 @@ namespace CommunicationServer
             {
                 case "start":
                     {
-                        GMSocket = state.workSocket;
-                        CSRequestHandler.SendConfirmGame(state.workSocket);
-                        break;
+                        if(userGuid == null || userGuid == "")
+                        {
+                            GMSocket = state.workSocket;
+                            CSRequestHandler.SendConfirmGame(state.workSocket);
+                            break;
+                        }
+                        else /* case "begin": */
+                        {
+                            Socket destPlayer = null;
+                            if (Clients.TryGetValue(userGuid, out destPlayer))
+                            {
+                                CSRequestHandler.BeginPlayer(json, destPlayer);
+                                //                            Clients.Remove(userGuid);
+                            }
+                            break;
+                        }
                     }
                 case "connect":
                     {
@@ -241,16 +254,8 @@ namespace CommunicationServer
                         }
                         break;
                     }
-                case "begin":
-                    {
-                        Socket destPlayer = null;
-                        if (Clients.TryGetValue(userGuid, out destPlayer))
-                        {
-                            CSRequestHandler.BeginPlayer(json, destPlayer);
-//                            Clients.Remove(userGuid);
-                        }
-                        break;
-                    }
+               
+
                 case "move":
                 case "state":
                 case "pickup":
