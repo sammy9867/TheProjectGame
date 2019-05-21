@@ -3,8 +3,8 @@
 	"GoalHeight":"2",
 	"TaskHeight":"3",
 	"InitialNumberOfPieces":"10",
-	"NumberOfGoals":"5",
+	"NumberOfGoals":"1",
 	"ShamProbability":"20",
-	"MaxNumOfPlayers":"2",
-	"FrequencyOfPlacingNewPiece":"5000",
+	"MaxNumOfPlayers":"1",
+	"FrequencyOfPlacingNewPiece":"3000"
 }

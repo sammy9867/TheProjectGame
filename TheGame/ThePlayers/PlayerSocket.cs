@@ -238,20 +238,20 @@ namespace ThePlayers
                         SendDecision(Player.MakeMove());
                         break;
                     }
-                case "exchange":
-                    {
-                        // Receive Authorize Knowledege Exchange
-                        // Accept it
-                        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
-                        break;
-                    }
-                case "send":
-                    {
-                        // Read KE data
-                        ReadKnowledgeExchangeSend(json);
-                        SendDecision(Player.MakeMove());
-                        break;
-                    }
+                //case "exchange":
+                //    {
+                //        // Receive Authorize Knowledege Exchange
+                //        // Accept it
+                //        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
+                //        break;
+                //    }
+                //case "send":
+                //    {
+                //        // Read KE data
+                //        ReadKnowledgeExchangeSend(json);
+                //        SendDecision(Player.MakeMove());
+                //        break;
+                //    }
                 case "end":
                     {
                         ReadGameOver(json);

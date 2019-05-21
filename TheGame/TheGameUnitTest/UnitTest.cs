@@ -43,7 +43,7 @@ namespace TheGameUnitTest
         public void TestMethod_GMRequestHandler_GameOver()
         {
             string expected = "{\"action\":\"end\",\"result\":\"blue\"}";
-            string actual = GMRequestHandler.SendGameOver();
+            string actual = GMRequestHandler.SendGameOver(Team.TeamColor.BLUE);
             Assert.AreEqual(expected, actual);
         }
 

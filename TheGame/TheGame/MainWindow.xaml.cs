@@ -196,11 +196,22 @@ namespace TheGame
                     return;
                 }
                 if (board.RedTeam.leader == null)
+                {
                     board.RedTeam.leader = player;
+                    player.role = Player.Role.LEADER;
+                }
+                else
+                {
+                    player.role = Player.Role.MEMBER;
+                }
+
                 player.Row = 1; // TODO: Update the row
                 player.Column = RedTeam.members.Count;
                 board.RedTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.RED_PLAYER;
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Connect", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
             }
             else
             {
@@ -209,12 +220,24 @@ namespace TheGame
                     Send(GMSocket, GMRequestHandler.ConnectPlayerDeny(player));
                     return;
                 }
+
                 if (board.BlueTeam.leader == null)
+                {
                     board.BlueTeam.leader = player;
+                    player.role = Player.Role.LEADER;
+                }
+                else
+                {
+                    player.role = Player.Role.MEMBER;
+                }
+
                 player.Row = Board.Height - 1;  // TODO: Update the row
                 player.Column = BlueTeam.members.Count;
                 board.BlueTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.BLUE_PLAYER;
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Connect", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
             }
 
             // CONNECT PLAYER DELAY
@@ -227,7 +250,7 @@ namespace TheGame
                 connectDone.Set();
         }
         #endregion
-        #region Begion Game
+        #region Begin Game
         /* Send all refistered players notification that the game has started */
         private void BeginGame()
         {
@@ -363,13 +386,13 @@ namespace TheGame
         }
         #endregion
 
-        public int DiscoveryDelay = 4500;
-        public int MoveDelay = 1000;
-        public int PickUpDelay = 1000;
-        public int TestDelay = 5000;
-        public int DestroyDelay = 1000;
-        public int PlaceDelay = 1000;
-        public int ExchangeDelay = 12000;
+        public int DiscoveryDelay = 450;
+        public int MoveDelay = 100;
+        public int PickUpDelay = 100;
+        public int TestDelay = 500;
+        public int DestroyDelay = 100;
+        public int PlaceDelay = 100;
+        public int ExchangeDelay = 1200;
         /* Analyze received message from a player */
         private void AnalyzeMessage(string obj)
         {
@@ -683,8 +706,8 @@ namespace TheGame
                 string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
                 //int pId = Player.playerID;
 
-                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "blue", pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "red", pr);
                 Console.WriteLine(message);
 
             }
@@ -697,8 +720,8 @@ namespace TheGame
                 string message = "Congratulations, Red team wins!";
                 string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
                 string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "red", pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "blue", pr); 
                 Console.WriteLine(message);
 
             }
