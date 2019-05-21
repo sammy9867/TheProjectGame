@@ -793,6 +793,10 @@ namespace TheGame
 
             magic["fields"] = (JArray) JToken.FromObject(jfields);
             json = magic.ToString();
+
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("Discover", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
         /** Player takes a Piece **/
@@ -822,7 +826,7 @@ namespace TheGame
             // write to file
             string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
             string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-         //   insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+               insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
         /** Player tests a Piece **/
