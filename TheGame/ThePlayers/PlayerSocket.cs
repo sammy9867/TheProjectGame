@@ -189,7 +189,6 @@ namespace ThePlayers
                         // Send Discover as soon as the game begins, 
                         // so player knows something... could be move later somewhere else... 
                         Player.SendDiscover = true;
-//                        Thread.Sleep(450);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -204,14 +203,12 @@ namespace ThePlayers
                         // Nothing is ready for this stage, but once "state" is working successfully, the rest would be easier
                         ReadMove(json);
                         Player.SendDiscover = true;
-//                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
                 case "pickup":
                     {
                         ReadPickup(json);
-//                        Thread.Sleep(100);
                         SendDecision(Player.MakeMove());
                         break;
                     }
