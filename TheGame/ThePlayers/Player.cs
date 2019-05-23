@@ -269,9 +269,15 @@ namespace ThePlayers
                             return Decision.MOVE_EAST;
 
                         if (color == TeamColor.RED)
+                        {
                             GoalStep = AlternativeStep.SOUTH;
+                            GoalStep = AlternativeStep.WEST;
+                        }
                         else
+                        {
                             GoalStep = AlternativeStep.NORTH;
+                            GoalStep = AlternativeStep.WEST;
+                        }
                         break;
 
                     case AlternativeStep.NORTH:

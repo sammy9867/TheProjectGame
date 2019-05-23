@@ -912,12 +912,30 @@ namespace TheGame
         {
             // TODO: MOHAMED 
             // Prevent goals overlapping 
+            List<int> hBlueCol = new List<int>();
+
+            #region FillingList
+            for (int i = 0; i < Board.Width; i++)
+            {
+                hBlueCol.Add(i);     
+            }
+            #endregion
+
+            Console.WriteLine();
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
             for (int i = 0; i < Board.NumberOfGoals; i++)
             {
                 Goal bluegoal = new Goal();
-                bluegoal.row = rnd.Next(0, Board.GoalHeight - 1);
-                bluegoal.column = rnd.Next(0, Board.Width - 1);
+
+
+                bluegoal.row = rnd.Next(0, Board.GoalHeight);
+                //bluegoal.column = rnd.Next(0, Board.Width - 1);
+                //For now, it can manage upto Board.Width that are randomly distributed without overlapping
+                int r2 = rnd.Next(hBlueCol.Count);
+                bluegoal.column = hBlueCol[r2];
+                if (hBlueCol.Contains(bluegoal.column)) hBlueCol.Remove(bluegoal.column);
+
+
                 board.UndiscoveredBlueGoals.Add(bluegoal);
                 Console.WriteLine("BLUE :" + bluegoal.row + ", " + bluegoal.column);
                 board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
