@@ -219,12 +219,15 @@ namespace CommunicationServer
                     {
                         if(userGuid == null || userGuid == "")
                         {
+                            Console.WriteLine("SetUpGame received");
+                            Console.WriteLine("Sending ConfirmGameSetUp...");
                             GMSocket = state.workSocket;
                             CSRequestHandler.SendConfirmGame(state.workSocket);
                             break;
                         }
                         else /* case "begin": */
                         {
+                            Console.WriteLine("Forward BeginGame" + action + " Message GM -> Player");
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {
@@ -239,6 +242,7 @@ namespace CommunicationServer
                         if (result == null)
                         {
                             // Player to GM
+                            Console.WriteLine("Forward " + action + " Message Player -> GM");
                             Clients.Add(userGuid, state.workSocket); // add player's socket
                             listOfGuids.Add(userGuid);
                             CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
@@ -246,6 +250,7 @@ namespace CommunicationServer
                         else
                         {
                             // GM to Player
+                            Console.WriteLine("Forward " + action + " Message GM -> Player");
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {

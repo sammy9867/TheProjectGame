@@ -20,9 +20,6 @@ namespace TheGame.GMServer
 
 
         /** 
-         * README
-         * Ok, before you start screaming, since running too many threads causes too many problems,
-         * I have combined GMSocket and Main thread.
          * So, we may call Send() Receive() and have GUI, access to Board object,
          * and methods to write report file, and do the actual GM job, soooooo
          * METHODS JUST RETURN DUMMY JSON TO SEND
@@ -44,28 +41,6 @@ namespace TheGame.GMServer
             return (json);
         }
 
-        // NO NEED
-        //internal static void ConnectPlayer(GMSocket GMSocket, out Player player)
-        //{
-        //    GMSocket.Receive();
-        //    player = null;
-
-        //    dynamic magic = JsonConvert.DeserializeObject(GMSocket.SyncResponse);
-        //    string action = magic.action;
-        //    string team = magic.preferredTeam;
-
-        //    if (!action.ToLower().Equals("connect"))
-        //        return;
-        //    if (!team.ToLower().Equals("red") && !team.ToLower().Equals("blue"))
-        //        return;
-
-        //    player = new Player();
-        //    player.playerID = magic.userGuid;
-        //    player.Team = team.ToLower().Equals("red") ? 
-        //        Team.TeamColor.RED : Team.TeamColor.BLUE ;
-
-        //}
-
         /* Returns JSON for Successfull Joining Notification */
         public static string ConnectPlayerOK(Player player)
         {
@@ -85,6 +60,7 @@ namespace TheGame.GMServer
             return (JsonConvert.SerializeObject(magic));
 //          
         }
+
         /* Returns JSON for Failure Joining Notification */
         public static string ConnectPlayerDeny(Player player)
         {
@@ -106,9 +82,7 @@ namespace TheGame.GMServer
         }
 
         /* Returns JSON for Begin Game Notification */
-        
-        public static string BeginGame( 
-            Player player, List<Player> members, Player leader)
+        public static string BeginGame(Player player, List<Player> members, Player leader)
         {
             string file = @"..\..\JSONs\BeginGame.json";
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\BeginGame.json";
@@ -151,7 +125,7 @@ namespace TheGame.GMServer
             return jObject.ToString();
         }
 
-        //TODO: 2nd Communication phase
+
         public static string ResponseForMove(Player player)
         {
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\MoveResponseAcceptance.json";

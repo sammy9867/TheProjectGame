@@ -1,7 +1,7 @@
 {
   "action": "state",
   "userGuid": "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
-  "result": "OKdenied",
+  "result": "OK",
   "scope": {
     "x": "01234...board",
     "y": "01234...board"

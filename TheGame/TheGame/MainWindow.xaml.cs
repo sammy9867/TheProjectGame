@@ -733,7 +733,7 @@ namespace TheGame
         {
             JObject magic = JObject.Parse(json);
             magic["userGuid"] = player.playerID;
-            magic["result"] = "ok";
+            magic["result"] = "OK";
             JObject scope = (JObject) magic["scope"];
             scope["x"] =""+player.X;
             scope["y"] = "" + player.Y;
@@ -1125,7 +1125,7 @@ namespace TheGame
             // please keep it as separate loops for now
             for (int row = 0; row < Board.Height; row++)
             {
-                string line = "";
+                string line = "" + row + ". ";
                 for (int col = 0; col < Board.Width; col++)
                 {
 //                    switch (board.boardtable[col, row])
