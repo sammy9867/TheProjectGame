@@ -628,12 +628,17 @@ namespace TheGame
                 }
             }
             /* Discover a goal */
+            Console.WriteLine("BEFORE GETTING INTO UG");
             foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
             {
+                Console.WriteLine("GOAL [" + goalDiscoverdByPlayer.row + ", " + goalDiscoverdByPlayer.column + "]");
+                Console.WriteLine("Player [" + player.Row + ", " + player.Column + "]");
+
                 if (goalDiscoverdByPlayer.row == player.Row && goalDiscoverdByPlayer.column == player.Column)
-                {
+                {                 
                     UndiscoveredGoals.Remove(goalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
                     DiscoveredGoals.Add(goalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
+
                     player.Piece = null; //Player no longer has the piece.
 
                     if (player.Team == Team.TeamColor.RED)
@@ -741,7 +746,7 @@ namespace TheGame
             List<JField> jfields = new List<JField>();
 
             for (int c = 0; c < 3; c++)
-                for (int r = 0; r < 3; r++)
+                for (int r = 2; r >= 0; r--) //CHANGED HERE
                 {
                     int column = player.Column - 1 + c;
                     int row = player.Row - 1 + r;
@@ -910,17 +915,26 @@ namespace TheGame
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
             for (int i = 0; i < Board.NumberOfGoals; i++)
             {
+                Goal bluegoal = new Goal();
+                bluegoal.row = rnd.Next(0, Board.GoalHeight - 1);
+                bluegoal.column = rnd.Next(0, Board.Width - 1);
+                board.UndiscoveredBlueGoals.Add(bluegoal);
+                Console.WriteLine("BLUE :" + bluegoal.row + ", " + bluegoal.column);
+                board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
+
                 Goal redgoal = new Goal();
-                redgoal.row = rnd.Next(0, Board.GoalHeight-1);
-                redgoal.column = rnd.Next(0, Board.Width-1);
+                redgoal.row = Board.Height - 1 - bluegoal.row;
+                redgoal.column = bluegoal.column;
                 board.UndiscoveredRedGoals.Add(redgoal);
+                Console.WriteLine("RED :" + redgoal.row + ", " + redgoal.column);
                 board.boardtable[redgoal.column, redgoal.row] = Board.Status.UNDISCOVERED_GOAL;
             
-                Goal bluegoal = new Goal();
-                bluegoal.row = Board.Height - 1 - redgoal.row; ;
-                bluegoal.column = redgoal.column;
-                board.UndiscoveredBlueGoals.Add(bluegoal);
-                board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
+                //Goal bluegoal = new Goal();
+                //bluegoal.row = Board.Height - 1 - redgoal.row; ;
+                //bluegoal.column = redgoal.column;
+                //board.UndiscoveredBlueGoals.Add(bluegoal);
+                //Console.WriteLine("BLUE :" + bluegoal.row + ", " + bluegoal.column);
+                //board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
             }
         }
 
@@ -970,8 +984,8 @@ namespace TheGame
             for (int r = 0; r < Board.GoalHeight; r++)
                 for (int c = 0; c < Board.Width; c++)
                 {
-                    board.boardtable[c, r] = Board.Status.RED_GOALS_CELL;
-                    board.boardtable[c, Board.Height - 1 - r] = Board.Status.BLUE_GOALS_CELL;
+                    board.boardtable[c, r] = Board.Status.BLUE_GOALS_CELL;
+                    board.boardtable[c, Board.Height - 1 - r] = Board.Status.RED_GOALS_CELL;
                 }
 
             RedTeam = new Team(Team.TeamColor.RED);

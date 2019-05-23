@@ -154,7 +154,7 @@ namespace TheGame.Model
             if (row < GoalHeight)
             {
                 Team.TeamCell teamCell = BlueTeam.isDiscovered(col, row);
-                if (teamCell == Team.TeamCell.FREE) return Board.Status.RED_GOALS_CELL;
+                if (teamCell == Team.TeamCell.FREE) return Board.Status.BLUE_GOALS_CELL;
                 if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Board.Status.DISCOVERED_GOAL;
                 if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Board.Status.DISCOVERED_NON_GOAL;
             }
@@ -162,7 +162,7 @@ namespace TheGame.Model
             if (Height - row - 1 < GoalHeight)
             {
                 Team.TeamCell teamCell = RedTeam.isDiscovered(col, row);
-                if (teamCell == Team.TeamCell.FREE) return Board.Status.BLUE_GOALS_CELL;
+                if (teamCell == Team.TeamCell.FREE) return Board.Status.RED_GOALS_CELL;
                 if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Board.Status.DISCOVERED_GOAL;
                 if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Board.Status.DISCOVERED_NON_GOAL;
             }
