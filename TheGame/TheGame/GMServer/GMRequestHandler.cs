@@ -141,7 +141,6 @@ namespace TheGame.GMServer
             }
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
-            magic.manhattanDistance = 7; // TODO::::::::::::::::
             return JsonConvert.SerializeObject(magic);
         }
 

@@ -548,7 +548,8 @@ namespace TheGame
         /* Player Move */
         public void PlayerMove(Player player, string direction, ref string json)
         {
-            JObject jobject = JObject.Parse(json);
+            // JObject jobject = JObject.Parse(json);
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             bool denied = false;
             Console.WriteLine(player.playerID + "["+player.Team+"] goes "+direction);
             string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
@@ -593,16 +594,29 @@ namespace TheGame
                     insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
             }
+            int md = Board.Height + Board.Width;
+            foreach(Piece p in board.Pieces)
+            {
+                int dx = Math.Abs( p.column - player.Column );
+                int dy = Math.Abs(p.row - player.Row);
+                if (md > dx + dy)
+                    md = dx + dy;
+            }
             if (denied)
             {
                 // getCellStatus
-                jobject["result"] = "denied";
-                jobject["timestamp"] = null;
-                jobject["manhattanDistance"] = null;
-                json = jobject.ToString();
+                magic.result = "denied";
+                magic.timestamp = null;
+                magic.manhattanDistance = null;
+                json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
                 return;
             }
-            jobject["timestamp"] = GetTimestamp();
+            Console.WriteLine("MANHATTTAN DISTANCEEEEEE: " + md);
+
+            magic.manhattanDistance = md;
+            magic.timestamp = GetTimestamp();
+
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
         }
 
 

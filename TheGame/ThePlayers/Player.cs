@@ -140,6 +140,7 @@ namespace ThePlayers
             if (!hasPiece && current == BoardCell.PC)
             {
                 // Whenever we pickup unchecked piece we assume it is not a sham
+                Board[Y, X] = current = BoardCell.EC;
                 return Decision.PICKUP_PIECE;
             }
 
@@ -158,14 +159,20 @@ namespace ThePlayers
                 Neighbors[0, 1] == NeighborStatus.BL && Neighbors[2, 1] == NeighborStatus.BL)
                 return Decision.DISCOVER;
 
+
             // row, col
             #region Go With a Piece
             if (hasPiece)
             {
+                if (current == BoardCell.GC)
+                    return Decision.PLACE_PIECE;
+
                 if (Team == TeamColor.RED)
                 {
                     if (TryMoveNorth() == SUCCESS)
                         return Decision.MOVE_NORTH;
+
+                    //Once reached goal area
                     if (current == BoardCell.GC) return Decision.PLACE_PIECE;
                     return goForGoalAlternative(TeamColor.RED);
 
@@ -212,19 +219,27 @@ namespace ThePlayers
 
             if (Neighbors[0, 0] == NeighborStatus.PC)
             {
-                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST; else return Decision.MOVE_SOUTH;
+                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST;
+                if (TryMoveSouth() == SUCCESS) return Decision.MOVE_SOUTH;
+                return Decision.DISCOVER;
             }
             if (Neighbors[2, 0] == NeighborStatus.PC)
             {
-                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST; else return Decision.MOVE_SOUTH;
+                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST;
+                if (TryMoveNorth() == SUCCESS) return Decision.MOVE_NORTH;
+                return Decision.DISCOVER;
             }
             if (Neighbors[2, 2] == NeighborStatus.PC)
             {
-                if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST; else return Decision.MOVE_NORTH;
+                if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST;
+                if (TryMoveNorth() == SUCCESS) return Decision.MOVE_NORTH;
+                return Decision.DISCOVER;
             }
             if (Neighbors[0, 2] == NeighborStatus.PC)
             {
-                if (TryMoveNorth() == SUCCESS) return Decision.MOVE_NORTH; else return Decision.MOVE_EAST;
+                if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST;
+                if (TryMoveSouth() == SUCCESS) return Decision.MOVE_SOUTH;
+                return Decision.DISCOVER;
             } 
             #endregion
 
@@ -244,24 +259,24 @@ namespace ThePlayers
             #endregion
         }
 
+        AlternativeStep AlternativeGoalStep = AlternativeStep.WEST;
         private Decision goForGoalAlternative(TeamColor color)
         {
-            AlternativeStep GoalStep = AlternativeStep.EAST;
             int counter = 4;
             while (true)
             {
                 counter--;
 
-                //CHANGING A BIT OF LOGIC HERE
+                //CHANGING A BIT OF LOGIC HERE, DONE
                 //FIX THE LOGIC HERE MIKE
                 //FOR EXAMPLE, WHEN RED PLAYER REACHES EXTREME EAST THEN HE GOES [SOUTH AND PLACES THE PIECE]OR [SOUTH AND THEN WEST [IF THE CELL IS TAKEN]]
                 //Same Logic with BLUE PLAYER [HERE, MOVES NORTH WHEN REACHED EXTREME EAST]
-                switch (GoalStep)
+                switch (AlternativeGoalStep)
                 {
                     case AlternativeStep.WEST:
                         if (TryMoveWest() == SUCCESS)
                             return Decision.MOVE_WEST;
-                        GoalStep = AlternativeStep.EAST;  
+                        AlternativeGoalStep = AlternativeStep.EAST;  
                         break;
 
                     case AlternativeStep.EAST:
@@ -270,27 +285,29 @@ namespace ThePlayers
 
                         if (color == TeamColor.RED)
                         {
-                            GoalStep = AlternativeStep.SOUTH;
-                            GoalStep = AlternativeStep.WEST;
+                            if (TryMoveSouth() == SUCCESS)
+                                return Decision.MOVE_SOUTH;
+                            AlternativeGoalStep = AlternativeStep.WEST;
                         }
                         else
                         {
-                            GoalStep = AlternativeStep.NORTH;
-                            GoalStep = AlternativeStep.WEST;
+                            if (TryMoveNorth() == SUCCESS)
+                                return Decision.MOVE_NORTH;
+                            AlternativeGoalStep = AlternativeStep.WEST;
                         }
                         break;
 
                     case AlternativeStep.NORTH:
                         if (TryMoveNorth() == SUCCESS)
                             return Decision.MOVE_NORTH;
-                        GoalStep = AlternativeStep.WEST;
+                        AlternativeGoalStep = AlternativeStep.WEST;
                         break;
 
                     case AlternativeStep.SOUTH:
                         if (TryMoveSouth() == SUCCESS)
                             return Decision.MOVE_SOUTH;
 
-                        GoalStep = AlternativeStep.EAST;
+                        AlternativeGoalStep = AlternativeStep.WEST;
                         break;
                 }
                 if (counter == 0)

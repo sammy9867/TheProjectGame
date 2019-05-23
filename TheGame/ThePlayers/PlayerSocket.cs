@@ -397,7 +397,7 @@ namespace ThePlayers
                 Player.SendDiscover = true;
                 return;
             }
-            int knowledgeexchange = 0;
+
             // Update coordinates 
             JObject jscope = (JObject)jobject["scope"];
             Player.X = (int)jscope["x"];   // shall we check for correctness first ?
@@ -438,8 +438,8 @@ namespace ThePlayers
                             // Free cell
                             status = curr == Player.BoardCell.NG ? Player.NeighborStatus.NG : Player.NeighborStatus.FR;
                             status = curr == Player.BoardCell.GL ? Player.NeighborStatus.DG : Player.NeighborStatus.FR;
-                            if ((Player.Board[y, x] & Player.BoardCell.PL) == Player.BoardCell.PL)
-                                Player.Board[y, x] = Player.Board[y, x] & (~Player.BoardCell.PL);
+                            //if ((Player.Board[y, x] & Player.BoardCell.PL) == Player.BoardCell.PL)
+                            //    Player.Board[y, x] = Player.Board[y, x] & (~Player.BoardCell.PL);
                         }
                         else
                         {
@@ -454,31 +454,28 @@ namespace ThePlayers
                             }
                             // Player is staying 
                             status = Player.NeighborStatus.BL;
-                            Player.Board[y, x] = Player.Board[y, x] | Player.BoardCell.PL;
+                            //Player.Board[y, x] = Player.Board[y, x] | Player.BoardCell.PL;
                         }
                         break;
                     case "piece":
-                        // check if we know there is a sham
+                       // check if we know there is a sham
                         if (Player.Board[y, x] == Player.BoardCell.SH)
                             // if yes, set BLOCKED
                             status = (Player.hasPiece) ? Player.NeighborStatus.BL : Player.NeighborStatus.FR;
                         else
                         {
                             // set PIECE otherwise
-                            status = Player.NeighborStatus.PC;
+                            status = (Player.hasPiece) ? Player.NeighborStatus.BL : Player.NeighborStatus.PC;
                             Player.Board[y, x] = Player.BoardCell.PC;
                         }
+
                         break;
                 }
                 if (status == Player.NeighborStatus.FR && (Player.Board[y, x] & Player.BoardCell.GC)==Player.BoardCell.GC)
                     status = Player.NeighborStatus.GA;
                 Player.Neighbors[1 - dy, 1 - dx] = status;  // row col.
-                if (status == Player.NeighborStatus.PC)
-                    knowledgeexchange++;
-            }
 
-            if(knowledgeexchange > 1)
-                
+            }
 
             Console.WriteLine("After Discover:");
             for (int i = Player.BoardHeight - 1; i >= 0; i--) // row
@@ -571,6 +568,7 @@ namespace ThePlayers
             if (result.ToLower().Equals("denied"))
             {
                 Player.Piece = null;
+                Player.Board[Player.Y, Player.X] = Player.current = Player.BoardCell.EC; 
                 /* Doing nothing force a player to re-try pickup */ 
                 return;
             }
