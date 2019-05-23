@@ -125,7 +125,7 @@ namespace ThePlayers
                     content.Length, content);
 
                 // Here the message is read and we may analize it
-                AnalizeMessage(content);
+                AnalyzeMessage(content);
                 
             }
             catch (Exception e)
@@ -176,7 +176,7 @@ namespace ThePlayers
             }
         }
 
-        private static void AnalizeMessage(string json)
+        private static void AnalyzeMessage(string json)
         {
             dynamic magic = JsonConvert.DeserializeObject(json);
             string action = magic.action;

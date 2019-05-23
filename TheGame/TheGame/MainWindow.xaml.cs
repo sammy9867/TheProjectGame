@@ -386,13 +386,14 @@ namespace TheGame
         }
         #endregion
 
-        public int DiscoveryDelay = 450;
+       /* public int DiscoveryDelay = 450;
         public int MoveDelay = 100;
         public int PickUpDelay = 100;
         public int TestDelay = 500;
         public int DestroyDelay = 100;
         public int PlaceDelay = 100;
-        public int ExchangeDelay = 1200;
+        public int ExchangeDelay = 1200; */
+
         /* Analyze received message from a player */
         private void AnalyzeMessage(string obj)
         {
@@ -414,7 +415,7 @@ namespace TheGame
                         // fill json
                         PlayerDiscoversNeighboringCells(player, ref json);
                         // response
-                       Thread.Sleep(DiscoveryDelay);
+                       Thread.Sleep(Board.DiscoveryDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -428,7 +429,7 @@ namespace TheGame
                         // fill json
                         PlayerMove(player,(string) magic.direction,  ref json);
                         // response
-                        Thread.Sleep(MoveDelay);
+                        Thread.Sleep(Board.MoveDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -442,7 +443,7 @@ namespace TheGame
                         // fill json
                         PlayerPickupPiece(player, ref json);
                         // response
-                        Thread.Sleep(PickUpDelay);
+                        Thread.Sleep(Board.PickUpDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -456,7 +457,7 @@ namespace TheGame
                         // fill json
                         PlayerTestPiece(player, ref json);
                         // response
-                        Thread.Sleep(TestDelay);
+                        Thread.Sleep(Board.TestDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -470,7 +471,7 @@ namespace TheGame
                         // fill json
                         PlayerDestroyPiece(player, ref json);
                         // response
-                        Thread.Sleep(DestroyDelay);
+                        Thread.Sleep(Board.DestroyDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -484,7 +485,7 @@ namespace TheGame
                         // fill json
                         PlayerPlacesPiece(player, ref json);
                         // response
-                        Thread.Sleep(PlaceDelay);
+                        Thread.Sleep(Board.PlaceDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -498,7 +499,7 @@ namespace TheGame
                         // find player
                         Player receiver = FindPlayerById((string)magic.receiverGuid);
                         if (receiver == null) return;
-                        Thread.Sleep(ExchangeDelay);
+                        Thread.Sleep(Board.ExchangeDelay);
                         Send(GMSocket, Newtonsoft.Json.JsonConvert.SerializeObject(magic));
                         break;
                     }
@@ -951,6 +952,13 @@ namespace TheGame
             Board.NumberOfGoals = magic.NumberOfGoals;
             Board.ShamProbability = magic.ShamProbability; // 50%
             Board.FrequencyOfPlacingNewPiece = magic.FrequencyOfPlacingNewPiece;
+            Board.DiscoveryDelay = magic.DiscoveryDelay;
+            Board.MoveDelay = magic.MoveDelay;
+            Board.PickUpDelay = magic.PickUpDelay;
+            Board.TestDelay = magic.TestDelay;
+            Board.DestroyDelay = magic.DestroyDelay;
+            Board.PlaceDelay = magic.PlaceDelay;
+            Board.ExchangeDelay = magic.ExchangeDelay;
 
             Console.WriteLine("Initialization: ");
             Console.WriteLine(" Board.MaxNumOfPlayers: " + Board.MaxNumOfPlayers);

@@ -6,5 +6,12 @@
 	"NumberOfGoals":"2",
 	"ShamProbability":"20",
 	"MaxNumOfPlayers":"1",
-	"FrequencyOfPlacingNewPiece":"3000"
+	"FrequencyOfPlacingNewPiece":"3000",
+	"DiscoveryDelay":"450",
+	"MoveDelay":"100",
+	"PickUpDelay":"100",
+	"TestDelay":"500",
+	"DestroyDelay":"100",
+	"PlaceDelay":"100",
+	"ExchangeDelay":"1200"
 }
