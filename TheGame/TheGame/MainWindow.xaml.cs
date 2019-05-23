@@ -205,7 +205,7 @@ namespace TheGame
                     player.role = Player.Role.MEMBER;
                 }
 
-                player.Row = 1; // TODO: Update the row
+                player.Row = Board.Height - 1; // TODO: Update the row
                 player.Column = RedTeam.members.Count;
                 board.RedTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.RED_PLAYER;
@@ -231,7 +231,7 @@ namespace TheGame
                     player.role = Player.Role.MEMBER;
                 }
 
-                player.Row = Board.Height - 1;  // TODO: Update the row
+                player.Row = 1;  // TODO: Update the row
                 player.Column = BlueTeam.members.Count;
                 board.BlueTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.BLUE_PLAYER;
@@ -555,7 +555,7 @@ namespace TheGame
             switch (direction)
             {
                 case "N":
-                    if ((board.getCellStatus(player.X, player.Y - 1) & Board.Status.BLOCKED) != 0)
+                    if ((board.getCellStatus(player.X, player.Y + 1) & Board.Status.BLOCKED) != 0)
                     {
                         denied = true;
                         break;
@@ -583,7 +583,7 @@ namespace TheGame
                     insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
                 case "S":
-                    if ((board.getCellStatus(player.X , player.Y+1) & Board.Status.BLOCKED) != 0)
+                    if ((board.getCellStatus(player.X , player.Y - 1) & Board.Status.BLOCKED) != 0)
                     { // getCellStatus
                         denied = true;
                         break;
@@ -694,7 +694,7 @@ namespace TheGame
         #region Check for Victory
         private void CheckVictory(Player player, ref string json)
         {
-
+            Console.WriteLine("BLUE: " + Board.BlueScore + "RED:  " + Board.RedScore + "TOTAL: " + Board.NumberOfGoals);
             if (Board.BlueScore >= Board.NumberOfGoals)
             {
                 // Blue WINS
@@ -1054,7 +1054,7 @@ namespace TheGame
         private void UpdateBoard()
         {
 
-            for (int row = 0; row < Board.Height; row++)
+            for (int row = Board.Height - 1; row >= 0; row--)
                 for (int col = 0; col < Board.Width; col++)
                 {
                     Image img = new Image
@@ -1117,13 +1117,13 @@ namespace TheGame
                     img.Stretch = Stretch.Fill;
 
                     Grid.SetColumn(img, col);
-                    Grid.SetRow(img, row);
+                    Grid.SetRow(img, Board.Height - 1-  row);
 
                     playgroundDockPanel.Children.Add(img);
                 }
             Console.WriteLine("\nThe Board:");
             // please keep it as separate loops for now
-            for (int row = 0; row < Board.Height; row++)
+            for (int row = Board.Height; row >= 0; row--)
             {
                 string line = "" + row + ". ";
                 for (int col = 0; col < Board.Width; col++)

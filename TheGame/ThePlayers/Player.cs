@@ -85,15 +85,15 @@ namespace ThePlayers
         public int TryMoveNorth()
         {
             // [row , col]
-            if (Neighbors[0, 1] == NeighborStatus.BL)
+            if (Neighbors[2, 1] == NeighborStatus.BL)  //BEFORE [0, 1]
                 return FAILURE; 
 //            Row--;
             return SUCCESS;
         }
         public int TryMoveSouth()
         {
-            // [row , col]
-            if (Neighbors[2, 1] == NeighborStatus.BL)
+            // [row , col] 
+            if (Neighbors[0, 1] == NeighborStatus.BL)   //BEFORE [2, 1]
                 return FAILURE;
 //            Row++;
             return SUCCESS;
@@ -205,14 +205,14 @@ namespace ThePlayers
 
             // TODO: Manhattan Distance  !!!!
             #region To Neighbouring piece  ROW COLUMN
-            if (Neighbors[0, 1] == NeighborStatus.PC) return Decision.MOVE_NORTH;
+            if (Neighbors[0, 1] == NeighborStatus.PC) return Decision.MOVE_SOUTH;
             if (Neighbors[1, 0] == NeighborStatus.PC) return Decision.MOVE_WEST;
-            if (Neighbors[2, 1] == NeighborStatus.PC) return Decision.MOVE_SOUTH;
+            if (Neighbors[2, 1] == NeighborStatus.PC) return Decision.MOVE_NORTH;
             if (Neighbors[1, 2] == NeighborStatus.PC) return Decision.MOVE_EAST;
 
             if (Neighbors[0, 0] == NeighborStatus.PC)
             {
-                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST; else return Decision.MOVE_NORTH;
+                if (TryMoveWest() == SUCCESS) return Decision.MOVE_WEST; else return Decision.MOVE_SOUTH;
             }
             if (Neighbors[2, 0] == NeighborStatus.PC)
             {
@@ -220,7 +220,7 @@ namespace ThePlayers
             }
             if (Neighbors[2, 2] == NeighborStatus.PC)
             {
-                if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST; else return Decision.MOVE_SOUTH;
+                if (TryMoveEast() == SUCCESS) return Decision.MOVE_EAST; else return Decision.MOVE_NORTH;
             }
             if (Neighbors[0, 2] == NeighborStatus.PC)
             {
@@ -246,17 +246,22 @@ namespace ThePlayers
 
         private Decision goForGoalAlternative(TeamColor color)
         {
-            AlternativeStep GoalStep = AlternativeStep.WEST;
+            AlternativeStep GoalStep = AlternativeStep.EAST;
             int counter = 4;
             while (true)
             {
                 counter--;
+
+                //CHANGING A BIT OF LOGIC HERE
+                //FIX THE LOGIC HERE MIKE
+                //FOR EXAMPLE, WHEN RED PLAYER REACHES EXTREME EAST THEN HE GOES [SOUTH AND PLACES THE PIECE]OR [SOUTH AND THEN WEST [IF THE CELL IS TAKEN]]
+                //Same Logic with BLUE PLAYER [HERE, MOVES NORTH WHEN REACHED EXTREME EAST]
                 switch (GoalStep)
                 {
                     case AlternativeStep.WEST:
                         if (TryMoveWest() == SUCCESS)
                             return Decision.MOVE_WEST;
-                        GoalStep = AlternativeStep.EAST;
+                        GoalStep = AlternativeStep.EAST;  
                         break;
 
                     case AlternativeStep.EAST:
@@ -264,22 +269,22 @@ namespace ThePlayers
                             return Decision.MOVE_EAST;
 
                         if (color == TeamColor.RED)
-                            GoalStep = AlternativeStep.NORTH;
-                        else
                             GoalStep = AlternativeStep.SOUTH;
+                        else
+                            GoalStep = AlternativeStep.NORTH;
                         break;
 
                     case AlternativeStep.NORTH:
                         if (TryMoveNorth() == SUCCESS)
                             return Decision.MOVE_NORTH;
-                        GoalStep = AlternativeStep.EAST;
+                        GoalStep = AlternativeStep.WEST;
                         break;
 
                     case AlternativeStep.SOUTH:
                         if (TryMoveSouth() == SUCCESS)
                             return Decision.MOVE_SOUTH;
 
-                        GoalStep = AlternativeStep.WEST;
+                        GoalStep = AlternativeStep.EAST;
                         break;
                 }
                 if (counter == 0)
@@ -299,8 +304,8 @@ namespace ThePlayers
                 case "W": MoveWest(); break;
             }
         }
-        private void MoveNorth() => Row--;
-        private void MoveSouth() => Row++;
+        private void MoveNorth() => Row++;
+        private void MoveSouth() => Row--;
         private void MoveWest()  => Column--;
         private void MoveEast()  => Column++;
 

@@ -261,13 +261,15 @@ namespace ThePlayers
             }
 
             // row column
-            for (int y = 0; y < Player.BoardHeight; y++)
+            for (int i = Player.BoardHeight - 1; i >= 0; i--) // row
             {
-                for (int x = 0; x < Player.BoardWidth; x++)
-                {
-                    Console.Write(Player.Board[y,x]+" ");
+                string line = "" + i + ". ";
+                for (int j = 0; j < Player.BoardWidth; j++)
+                { // col
+                    Console.Write("" + Player.Board[i, j] + " ");
+                    line += " ";
                 }
-                Console.WriteLine();
+                Console.WriteLine(line);
             }
         }
 
@@ -339,21 +341,35 @@ namespace ThePlayers
             Player.BoardTaskHeight = magic.board.tasksHeight;
             Player.BoardGoalHeight = magic.board.goalsHeight;
             Player.Board = new Player.BoardCell[Player.BoardHeight, Player.BoardWidth];
+
+        
+            Console.WriteLine(Player.X + " " + Player.Y);
+            Console.WriteLine(Player.BoardWidth + " " + Player.BoardHeight);
+            Console.WriteLine(Player.BoardHeight - Player.BoardGoalHeight);
+
             for (int i = 0; i < Player.BoardGoalHeight; i++)
                 for (int j = 0; j < Player.BoardWidth; j++)
                 {
                     Player.Board[i, j] = Player.BoardCell.GC;
                     Player.Board[Player.BoardHeight - 1 - i, j] = Player.BoardCell.GC;
                 }
+
+            
+
+
             Player.Board[Player.Y, Player.X] = Player.BoardCell.ME;  // row col
             Player.current = Player.Y < Player.BoardGoalHeight || Player.Y > Player.BoardHeight - Player.BoardGoalHeight ? Player.BoardCell.GC : Player.BoardCell.EC;
 
             Console.WriteLine("Player " + Player.ID + "  [row,col] " + Player.current);
-            for (int i = 0; i < Player.BoardHeight; i++) // row
+            for (int i = Player.BoardHeight - 1; i >= 0; i--) // row
             {
-                for (int j = 0; j < Player.BoardWidth; j++) // col
+                string line = "" + i + ". ";
+                for (int j = 0; j < Player.BoardWidth; j++)
+                { // col
                     Console.Write("" + Player.Board[i, j] + " ");
-                Console.WriteLine("");
+                    line += " ";
+                }
+                Console.WriteLine(line);
             }
 
             foreach (string p in Player.Mates)
@@ -465,14 +481,19 @@ namespace ThePlayers
                 
 
             Console.WriteLine("After Discover:");
-            for (int i = 0; i < Player.BoardHeight; i++) // row
+            for (int i = Player.BoardHeight - 1; i >= 0; i--) // row
             {
-                for (int j = 0; j < Player.BoardWidth; j++) // col
+                string line = "" + i + ". ";
+                for (int j = 0; j < Player.BoardWidth; j++)
+                { // col
                     Console.Write("" + Player.Board[i, j] + " ");
-                Console.WriteLine("");
+                    line += " ";
+                }
+                Console.WriteLine(line);
             }
+
             Console.WriteLine("After Discover Neighboors:" + Player.current);
-            for (int i = 0; i < 3; i++)
+            for (int i = 2; i >= 0; i--)
             {
                 for (int j = 0; j < 3; j++)
                     Console.Write("" + Player.Neighbors[i, j] + " "); // row col
@@ -520,12 +541,15 @@ namespace ThePlayers
             Player.Board[new_y, new_x] = Player.BoardCell.ME;
 
 
-            Console.WriteLine("After Move:");
-            for (int i = 0; i < Player.BoardHeight; i++) // row
+           for (int i = Player.BoardHeight - 1; i >=0; i--) // row
             {
-                for (int j = 0; j < Player.BoardWidth; j++) // col
+                string line = "" + i + ". ";
+                for (int j = 0; j < Player.BoardWidth; j++)
+                { // col
                     Console.Write("" + Player.Board[i, j] + " ");
-                Console.WriteLine("");
+                    line += " ";
+                }
+                Console.WriteLine(line);
             }
 
 

@@ -142,18 +142,18 @@ namespace TheGame.Model
 
             #endregion
 
-            /* Is goal RED area */
+            /* Is goal BLUE area */
             if (row < GoalHeight)
             {
-                Team.TeamCell teamCell = RedTeam.isDiscovered(col, row);
+                Team.TeamCell teamCell = BlueTeam.isDiscovered(col, row);
                 if (teamCell == Team.TeamCell.FREE) return Board.Status.RED_GOALS_CELL;
                 if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Board.Status.DISCOVERED_GOAL;
                 if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Board.Status.DISCOVERED_NON_GOAL;
             }
-            /* Is goal BLUE area */
+            /* Is goal RED area */
             if (Height - row - 1 < GoalHeight)
             {
-                Team.TeamCell teamCell = BlueTeam.isDiscovered(col, row);
+                Team.TeamCell teamCell = RedTeam.isDiscovered(col, row);
                 if (teamCell == Team.TeamCell.FREE) return Board.Status.BLUE_GOALS_CELL;
                 if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Board.Status.DISCOVERED_GOAL;
                 if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Board.Status.DISCOVERED_NON_GOAL;
@@ -175,6 +175,8 @@ namespace TheGame.Model
             return false;
         }
 
+
+        //CHANGED NOW
         public Player.NeighborStatus GetPlayersNeighbor(int column, int row, Team.TeamColor team)
         {
             /* End of the board */
@@ -184,9 +186,9 @@ namespace TheGame.Model
             /* Goal Area */
             if (row < GoalHeight)
             {
-                if (team == Team.TeamColor.RED)
+                if (team == Team.TeamColor.BLUE)
                 {
-                    Team.TeamCell teamCell = RedTeam.isDiscovered(column, row);
+                    Team.TeamCell teamCell = BlueTeam.isDiscovered(column, row);
                     if(teamCell == Team.TeamCell.FREE) return Player.NeighborStatus.GOAL_AREA;
                     if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Player.NeighborStatus.DISCOVERED_GOAL;
                     if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Player.NeighborStatus.DISCOVERED_NONGOAL;
@@ -195,9 +197,9 @@ namespace TheGame.Model
             }
             if (Height - row - 1 < GoalHeight)
             {
-                if (team == Team.TeamColor.BLUE)
+                if (team == Team.TeamColor.RED)
                 {
-                    Team.TeamCell teamCell = BlueTeam.isDiscovered(column, row);
+                    Team.TeamCell teamCell = RedTeam.isDiscovered(column, row);
                     if (teamCell == Team.TeamCell.FREE) return Player.NeighborStatus.GOAL_AREA;
                     if (teamCell == Team.TeamCell.DISCOVERED_GOAL) return Player.NeighborStatus.DISCOVERED_GOAL;
                     if (teamCell == Team.TeamCell.DISCOVERED_NONGOAL) return Player.NeighborStatus.DISCOVERED_NONGOAL;

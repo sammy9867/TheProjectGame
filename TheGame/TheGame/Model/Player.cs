@@ -40,7 +40,7 @@ namespace TheGame.Model
          */
         public int goUp()
         {
-            Row--;
+            Row++;
             return 0;
         }
 
@@ -50,7 +50,7 @@ namespace TheGame.Model
          */
         public int goDown()
         {
-            Row++;
+            Row--;
             return 0;
         }
             
