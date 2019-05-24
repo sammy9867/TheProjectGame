@@ -87,7 +87,9 @@ namespace ThePlayers
             // [row , col]
             if (Neighbors[2, 1] == NeighborStatus.BL)  //BEFORE [0, 1]
                 return FAILURE; 
-//            Row--;
+            if(hasPiece && (Neighbors[2, 1] == NeighborStatus.DG || Neighbors[2, 1] == NeighborStatus.NG))
+                return FAILURE;
+            //            Row--;
             return SUCCESS;
         }
         public int TryMoveSouth()
@@ -95,7 +97,11 @@ namespace ThePlayers
             // [row , col] 
             if (Neighbors[0, 1] == NeighborStatus.BL)   //BEFORE [2, 1]
                 return FAILURE;
-//            Row++;
+
+            if (hasPiece && (Neighbors[0, 1] == NeighborStatus.DG || Neighbors[0, 1] == NeighborStatus.NG))
+                return FAILURE;
+
+            //            Row++;
             return SUCCESS;
         }
         public int TryMoveWest()
@@ -164,8 +170,8 @@ namespace ThePlayers
             #region Go With a Piece
             if (hasPiece)
             {
-                if (current == BoardCell.GC)
-                    return Decision.PLACE_PIECE;
+                //if (current == BoardCell.GC)
+                //    return Decision.PLACE_PIECE;
 
                 if (Team == TeamColor.RED)
                 {
@@ -268,9 +274,8 @@ namespace ThePlayers
                 counter--;
 
                 //CHANGING A BIT OF LOGIC HERE, DONE
-                //FIX THE LOGIC HERE MIKE
-                //FOR EXAMPLE, WHEN RED PLAYER REACHES EXTREME EAST THEN HE GOES [SOUTH AND PLACES THE PIECE]OR [SOUTH AND THEN WEST [IF THE CELL IS TAKEN]]
                 //Same Logic with BLUE PLAYER [HERE, MOVES NORTH WHEN REACHED EXTREME EAST]
+                // Player that placed a piece shall notify team mates about teste goal cell 
                 switch (AlternativeGoalStep)
                 {
                     case AlternativeStep.WEST:
