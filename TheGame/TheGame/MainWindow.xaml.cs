@@ -52,7 +52,6 @@ namespace TheGame
 
         // TODO: timestamp
         // long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-
         public MainWindow()
         {
 
@@ -914,7 +913,9 @@ namespace TheGame
 
         public long GetTimestamp()
         {
-            // TODO: Get proper Timestamp
+            // long now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            // return (now -  milliseconds);
+
             return 777;
         }
 
