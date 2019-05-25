@@ -448,18 +448,18 @@ namespace TheGameUnitTest
              //   hasPiece = false,
                 
             };
-            Team.TeamColor c = Team.TeamColor.BLUE;
-            ThePlayers.Player.NeighborStatus[,] ns01 = new ThePlayers.Player.NeighborStatus[0, 1];
-            ThePlayers.Player.NeighborStatus[,] ns10 = new ThePlayers.Player.NeighborStatus[1, 0];
-            ThePlayers.Player.NeighborStatus[,] ns21 = new ThePlayers.Player.NeighborStatus[2, 1];
-            ThePlayers.Player.NeighborStatus[,] ns12 = new ThePlayers.Player.NeighborStatus[1, 2];
-            ns10[1,0] = ThePlayers.Player.NeighborStatus.BL;
-            pl.Neighbors = ns10;
 
+            //Team.TeamColor c = Team.TeamColor.BLUE;
+            pl.Neighbors = new ThePlayers.Player.NeighborStatus[3, 3];
+
+            ThePlayers.Player.Decision actual_ = pl.goForGoalAlternative(ThePlayers.Player.TeamColor.BLUE);
+            ThePlayers.Player.Decision expected_ = ThePlayers.Player.Decision.MOVE_WEST;
+            
             ThePlayers.Player.Decision actual = pl.MakeMove();
-            ThePlayers.Player.Decision expected = ThePlayers.Player.Decision.KNOWLEDGE_EXCHANGE;
+            ThePlayers.Player.Decision expected = ThePlayers.Player.Decision.MOVE_SOUTH;
 
-            Assert.AreEqual(expected, actual);
+            Assert.AreNotEqual(expected, actual);
+            Assert.AreEqual(expected_, actual_);
         }
         [TestMethod]
         public void TestMethod_ForPlayer()/* COMPLETE */
