@@ -266,7 +266,8 @@ namespace ThePlayers
         }
 
         AlternativeStep AlternativeGoalStep = AlternativeStep.WEST;
-        private Decision goForGoalAlternative(TeamColor color)
+        //was private
+        public Decision goForGoalAlternative(TeamColor color)
         {
             int counter = 4;
             while (true)
@@ -332,10 +333,10 @@ namespace ThePlayers
                 case "W": MoveWest(); break;
             }
         }
-        private void MoveNorth() => Row++;
-        private void MoveSouth() => Row--;
-        private void MoveWest()  => Column--;
-        private void MoveEast()  => Column++;
+        public void MoveNorth() => Row++;
+        public void MoveSouth() => Row--;
+        public void MoveWest()  => Column--;
+        public void MoveEast()  => Column++;
 
 
         private string ComputeSha256Hash()
