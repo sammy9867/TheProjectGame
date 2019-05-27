@@ -461,7 +461,7 @@ namespace TheGameUnitTest
 
             /////////////////////////////////////////////////////////
             ThePlayers.Player pla = new ThePlayers.Player();
-            pla.Neighbors = new ThePlayers.Player.NeighborStatus[8, 8];
+            pla.Neighbors = new ThePlayers.Player.NeighborStatus[3, 3];
             int ex = 0;
             int ac = pla.TryMoveNorth();
             Assert.AreEqual(ex, ac);
