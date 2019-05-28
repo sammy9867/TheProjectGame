@@ -99,7 +99,7 @@ namespace TheGame
             // run separate thread for communication routine
             //            RunAsync(CommunicationRoutine, dueTime, CancellationToken.None);
 
-            var interval = TimeSpan.FromMilliseconds(5); // FromSeconds(0); //TimeSpan.FromMilliseconds(0.1)
+            var interval = TimeSpan.FromMilliseconds(10); // FromSeconds(0); //TimeSpan.FromMilliseconds(0.1)
             RunPeriodicAsync(CommunicationRoutine, dueTime, interval, CancellationToken.None);
             RunPeriodicAsync(AddPiece, TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(Board.FrequencyOfPlacingNewPiece), CancellationToken.None);
         }
