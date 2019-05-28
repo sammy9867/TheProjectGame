@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTest", "Integrat
 		cmd_pl_red.bat = cmd_pl_red.bat
 		cmd_tg.bat = cmd_tg.bat
 		script.bat = script.bat
+		script_pl_bl.bat = script_pl_bl.bat
+		script_pl_red.bat = script_pl_red.bat
 	EndProjectSection
 EndProject
 Global
