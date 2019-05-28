@@ -99,7 +99,7 @@ namespace TheGame
             // run separate thread for communication routine
             //            RunAsync(CommunicationRoutine, dueTime, CancellationToken.None);
 
-            var interval = TimeSpan.FromMilliseconds(10); // FromSeconds(0);
+            var interval = TimeSpan.FromMilliseconds(5); // FromSeconds(0); //TimeSpan.FromMilliseconds(0.1)
             RunPeriodicAsync(CommunicationRoutine, dueTime, interval, CancellationToken.None);
             RunPeriodicAsync(AddPiece, TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(Board.FrequencyOfPlacingNewPiece), CancellationToken.None);
         }
@@ -753,7 +753,7 @@ namespace TheGame
             JObject magic = JObject.Parse(json);
             magic["userGuid"] = player.playerID;
             magic["result"] = "OK";
-            JObject scope = (JObject) magic["scope"];
+            JObject scope = (JObject) magic["location"];
             scope["x"] =""+player.X;
             scope["y"] = "" + player.Y;
             List<JField> jfields = new List<JField>();

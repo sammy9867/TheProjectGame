@@ -399,7 +399,7 @@ namespace ThePlayers
             }
 
             // Update coordinates 
-            JObject jscope = (JObject)jobject["scope"];
+            JObject jscope = (JObject)jobject["location"];
             Player.X = (int)jscope["x"];   // shall we check for correctness first ?
             Player.Y = (int)jscope["y"];   // shall we check for correctness first ?
 
