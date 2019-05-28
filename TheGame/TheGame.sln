@@ -18,6 +18,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject_ForExceptio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TheGame.IntegrationTests", "TheGame.IntegrationTests\TheGame.IntegrationTests.csproj", "{2B548D70-9D77-4E2C-8EF4-AE46D73139D7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTest", "IntegrationTest", "{47144F8B-B335-4380-9E40-904CB5E4DE0C}"
+	ProjectSection(SolutionItems) = preProject
+		cmd_cs.bat = cmd_cs.bat
+		cmd_pl_blue.bat = cmd_pl_blue.bat
+		cmd_pl_red.bat = cmd_pl_red.bat
+		cmd_tg.bat = cmd_tg.bat
+		script.bat = script.bat
+		script_pl_bl.bat = script_pl_bl.bat
+		script_pl_red.bat = script_pl_red.bat
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
