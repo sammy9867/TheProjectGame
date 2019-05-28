@@ -120,10 +120,8 @@ namespace ThePlayers
                     }
                 }
                 var content = state.sb.ToString();
+                Console.WriteLine("PLAYER read content:\n"+content+"\n");
                 content = content.Replace(ETB, ' ');
-                Console.WriteLine("Read {0} bytes from socket. \nData : {1}",
-                    content.Length, content);
-
                 // Here the message is read and we may analize it
                 AnalyzeMessage(content);
                 
@@ -138,8 +136,10 @@ namespace ThePlayers
         {
             // Remove useless white spaces 
             data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Add ETB at the end
+            data += ETB;            
             // Create bytes
-            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
             // Sending
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
@@ -151,8 +151,10 @@ namespace ThePlayers
         {
             // Remove useless white spaces 
             data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Add ETB at the end
+            data += ETB;
             // Create bytes
-            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
             // Sending
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
@@ -164,7 +166,7 @@ namespace ThePlayers
             try
             {
                 Socket client = (Socket)ar.AsyncState;
-
+                
                 int bytesSent = client.EndSend(ar);
                 Console.WriteLine("Sent {0} bytes to server.", bytesSent);
 

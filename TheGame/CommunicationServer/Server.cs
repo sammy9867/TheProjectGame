@@ -35,10 +35,6 @@ namespace CommunicationServer
             // Establish the local endpoint for the socket
             IPAddress ipAddress = IPAddress.Loopback;
 
-            //Console.WriteLine("Communication Server IP: " + ipAddress.ToString());
-            //Console.WriteLine("Communication Server PORT: " + PORT);
-            //            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PORT);
-
             Console.WriteLine("Communication Server IP: " + aIP_ADDRESS);
             Console.WriteLine("Communication Server PORT: " + aPORT);
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(aIP_ADDRESS), Int32.Parse(aPORT));
@@ -131,10 +127,11 @@ namespace CommunicationServer
                     content = state.sb.ToString();
                     if (content.IndexOf(ETB) > -1)
                     {
+                        Console.WriteLine("\nRead data : " + content);
+
                         /* Actual Work on Received message */
-                        content = content.Remove(content.IndexOf(ETB));
-                        //Console.WriteLine("Read {0} bytes from socket. \nData:\n{1}",
-                        //    content.Length, content);
+                        // content = content.Remove(content.IndexOf(ETB));
+                        content = content.Replace(ETB, ' ');
 
                         AnalizeTheMessage(content, state);
 
@@ -159,8 +156,12 @@ namespace CommunicationServer
 
         public static void Send(Socket handler, String data)
         {
-            byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
-//            Console.WriteLine("Send data : " + data);
+            if (!data.EndsWith(""+ETB))
+                data += ETB;
+
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            Console.WriteLine("\nSend data : " + data);
+            
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
         }
@@ -171,7 +172,6 @@ namespace CommunicationServer
                 Socket handler = (Socket)ar.AsyncState;
 
                 int bytesSent = handler.EndSend(ar);
-//                Console.WriteLine("Sent {0} bytes to client.", bytesSent);
                 //handler.Shutdown(SocketShutdown.Both);
                 //handler.Close();
 
@@ -181,6 +181,7 @@ namespace CommunicationServer
                 Console.WriteLine(e.ToString());
             }
         }
+
 
         public static string aIP_ADDRESS = null;
         public static string aPORT = null;

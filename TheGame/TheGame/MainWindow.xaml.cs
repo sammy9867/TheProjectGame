@@ -385,14 +385,6 @@ namespace TheGame
         }
         #endregion
 
-       /* public int DiscoveryDelay = 450;
-        public int MoveDelay = 100;
-        public int PickUpDelay = 100;
-        public int TestDelay = 500;
-        public int DestroyDelay = 100;
-        public int PlaceDelay = 100;
-        public int ExchangeDelay = 1200; */
-
         /* Analyze received message from a player */
         private void AnalyzeMessage(string obj)
         {
@@ -1292,9 +1284,8 @@ namespace TheGame
                     var content = state.sb.ToString();
                     if (content.IndexOf(ETB) > -1)
                     {
+                        Console.WriteLine("[GAME_MASTER] read:\n"+content+"\n");
                         content = content.Remove(content.IndexOf(ETB));
-                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}\n",
-                            content.Length, content);
                         //   RequestHandler.handleRequest(content, client);
                         //   state.sb.Clear();
                         receiveDone.Set();
@@ -1326,8 +1317,12 @@ namespace TheGame
         {
             // Remove useless white spaces 
             data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Add ETB at the end of the string
+            data += ETB;
+            Console.WriteLine("GAME_MASTER sent: \n"+data+"\n");
             // Create bytes 
-            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            
             // Sending
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
@@ -1340,8 +1335,6 @@ namespace TheGame
                 Socket client = (Socket)ar.AsyncState;
 
                 int bytesSent = client.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to server.\n", bytesSent);
-
                 sendDone.Set();
             }
             catch (Exception e)

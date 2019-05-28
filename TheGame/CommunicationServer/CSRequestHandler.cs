@@ -40,7 +40,7 @@ namespace CommunicationServer
         }
         internal static void ConnectPlayerConfirmation(String data, Socket destPlayer)
         {
-            Console.WriteLine("ConnectPlayer");
+            Console.WriteLine("ConnectPlayer - Confirmation");
             Server.Send(destPlayer, data);
         }
 
