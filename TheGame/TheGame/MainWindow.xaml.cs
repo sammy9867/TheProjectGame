@@ -339,7 +339,6 @@ namespace TheGame
             action?.Invoke();
 
         }
-        private int counter_tmp = 0;
         private void CommunicationRoutine()
         {
             if (startgame)
@@ -360,10 +359,6 @@ namespace TheGame
                 BeginGame();
                 startgame = false;
 
-                /*where to add addPieces mid game*/
-                //counter_tmp++;
-                //if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
-                  //  addPiece();
             }
 
             if (!endgame)
@@ -372,9 +367,6 @@ namespace TheGame
                 // received messages will be passed to the method
                 // AnalizeMessage
                 Receive(AnalyzeMessage);
-                counter_tmp++;
-//                if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
-//                    AddPiece();
             }
 
             // Update the board, strange behaviour :(
@@ -388,8 +380,16 @@ namespace TheGame
         /* Analyze received message from a player */
         private void AnalyzeMessage(string obj)
         {
+            if (obj == null || obj == "") return;
+
             dynamic magic = JsonConvert.DeserializeObject(obj);
             string action = magic.action;
+            if (action.ToLower().Equals("connect"))
+            {
+                ConnectPlayer(obj);
+                return;
+            }
+
             string playerId = magic.userGuid;
             Player player;
             // find player
@@ -1168,33 +1168,35 @@ namespace TheGame
 
                     playgroundDockPanel.Children.Add(img);
                 }
-            Console.WriteLine("\nThe Board:");
-            // please keep it as separate loops for now
-            for (int row = Board.Height; row >= 0; row--)
-            {
-                string line = "" + row + ". ";
-                for (int col = 0; col < Board.Width; col++)
-                {
-//                    switch (board.boardtable[col, row])
-                     switch(board.getCellStatus(col, row))
-                    {
-                        case Board.Status.TASK_CELL: line += "TC"; break;
-                        case Board.Status.PIECE: line += "PC"; break;
-                        case Board.Status.SHAM: line += "SH"; break;
-                        case Board.Status.RED_GOALS_CELL: line += "GC"; break;
-                        case Board.Status.BLUE_GOALS_CELL: line += "GC"; break;
-                        case Board.Status.RED_PLAYER: line += "RE"; break;
-                        case Board.Status.BLUE_PLAYER: line += "BL"; break;
-                        case Board.Status.UNDISCOVERED_GOAL: line += "UG"; break;
-                        case Board.Status.DISCOVERED_GOAL: line += "DG"; break;
-                        case Board.Status.DISCOVERED_NON_GOAL: line += "NG"; break;
-                        case Board.Status.RED_PLAYER_WITH_PIECE: line += "RP"; break;
-                        case Board.Status.BLUE_PLAYER_WITH_PIECE: line += "BP"; break;
-                    }
-                    line += " ";
-                }
-                Console.WriteLine(line);
-            }
+
+//            Console.WriteLine("\nThe Board:");
+//            // please keep it as separate loops for now
+//            for (int row = Board.Height; row >= 0; row--)
+//            {
+//                string line = "" + row + ". ";
+//                for (int col = 0; col < Board.Width; col++)
+//                {
+////                    switch (board.boardtable[col, row])
+//                     switch(board.getCellStatus(col, row))
+//                    {
+//                        case Board.Status.TASK_CELL: line += "TC"; break;
+//                        case Board.Status.PIECE: line += "PC"; break;
+//                        case Board.Status.SHAM: line += "SH"; break;
+//                        case Board.Status.RED_GOALS_CELL: line += "GC"; break;
+//                        case Board.Status.BLUE_GOALS_CELL: line += "GC"; break;
+//                        case Board.Status.RED_PLAYER: line += "RE"; break;
+//                        case Board.Status.BLUE_PLAYER: line += "BL"; break;
+//                        case Board.Status.UNDISCOVERED_GOAL: line += "UG"; break;
+//                        case Board.Status.DISCOVERED_GOAL: line += "DG"; break;
+//                        case Board.Status.DISCOVERED_NON_GOAL: line += "NG"; break;
+//                        case Board.Status.RED_PLAYER_WITH_PIECE: line += "RP"; break;
+//                        case Board.Status.BLUE_PLAYER_WITH_PIECE: line += "BP"; break;
+//                    }
+//                    line += " ";
+//                }
+//                Console.WriteLine(line);
+//            }
+
         }
 
         /* Socket Code, basically what we had in GMSocket class but 
@@ -1257,12 +1259,13 @@ namespace TheGame
 
                 GMSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
-                receiveDone.WaitOne();
-                receiveDone.Reset();
-                var content = state.sb.ToString();
-                content = content.Remove(content.IndexOf(ETB));
-                state.sb.Clear();
-                return content;
+                //receiveDone.WaitOne();
+                //receiveDone.Reset();
+
+                //var content = state.sb.ToString();
+                //content = content.Remove(content.IndexOf(ETB));
+                //state.sb.Clear();
+                return null /*content*/;
             }
             catch (Exception e)
             {
@@ -1288,14 +1291,13 @@ namespace TheGame
                         content = content.Remove(content.IndexOf(ETB));
                         //   RequestHandler.handleRequest(content, client);
                         //   state.sb.Clear();
-                        receiveDone.Set();
+                        // receiveDone.Set();
+                         
 
+                        if(state.cb != null)
+                            AnalyzeMessage(content);
+                        state.cb = null;
 
-                        if (state.cb != null)
-                        {
-                            state.cb(content);
-                            state.cb = null;
-                        }
                         //Receive();
                     }
                     else
@@ -1355,6 +1357,9 @@ namespace TheGame
             foreach (Player p in BlueTeam.members)
                 if (p.playerID.Equals(playerId))
                     return p;
+
+            Console.WriteLine("\n\n404 Player not found\n" +
+                                playerId + "\n\n");
             return null;
         }
         private Player FindPlayerByCoor(int col, int row)

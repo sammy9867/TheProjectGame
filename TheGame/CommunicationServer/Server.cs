@@ -127,14 +127,17 @@ namespace CommunicationServer
                     content = state.sb.ToString();
                     if (content.IndexOf(ETB) > -1)
                     {
-                        Console.WriteLine("\nRead data : " + content);
+                        Console.WriteLine("\nRead data : ");
 
                         /* Actual Work on Received message */
                         // content = content.Remove(content.IndexOf(ETB));
-                        content = content.Replace(ETB, ' ');
-
-                        AnalizeTheMessage(content, state);
-
+                        // content = content.Replace(ETB, ' ');
+                        foreach (String _content in content.Split(ETB))
+                        {
+                            if (_content == null || _content == "") continue;
+                            Console.WriteLine(_content + "\n");
+                            AnalizeTheMessage(_content, state.workSocket, state);
+                        }
 
                         // Clear the state object and receive a new message   
                         state.sb.Clear();
@@ -204,9 +207,9 @@ namespace CommunicationServer
         }
 
 
-        private static void AnalizeTheMessage(string json, StateObject state)
+        private static void AnalizeTheMessage(string content, Socket workSocket,  StateObject state)
         {
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(content);
             string action = magic.action;
             string result = magic.result;
             string userGuid = magic.userGuid;
@@ -222,8 +225,8 @@ namespace CommunicationServer
                         {
                             Console.WriteLine("SetUpGame received");
                             Console.WriteLine("Sending ConfirmGameSetUp...");
-                            GMSocket = state.workSocket;
-                            CSRequestHandler.SendConfirmGame(state.workSocket);
+                            GMSocket = workSocket;
+                            CSRequestHandler.SendConfirmGame(workSocket);
                             break;
                         }
                         else /* case "begin": */
@@ -232,7 +235,7 @@ namespace CommunicationServer
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {
-                                CSRequestHandler.BeginPlayer(json, destPlayer);
+                                CSRequestHandler.BeginPlayer(content, destPlayer);
                                 //                            Clients.Remove(userGuid);
                             }
                             break;
@@ -244,9 +247,9 @@ namespace CommunicationServer
                         {
                             // Player to GM
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
-                            Clients.Add(userGuid, state.workSocket); // add player's socket
+                            Clients.Add(userGuid, workSocket); // add player's socket
                             listOfGuids.Add(userGuid);
-                            CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
+                            CSRequestHandler.ConnectPlayer(content /* = state.sb.ToString()*/, GMSocket);
                         }
                         else
                         {
@@ -255,7 +258,7 @@ namespace CommunicationServer
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {
-                                CSRequestHandler.ConnectPlayerConfirmation(state.sb.ToString(), destPlayer);
+                                CSRequestHandler.ConnectPlayerConfirmation(content /* = state.sb.ToString()*/, destPlayer);
                             }
                         }
                         break;
@@ -269,14 +272,14 @@ namespace CommunicationServer
                 case "destroy":
                 case "place":
                     {
-                        if (GMSocket == state.workSocket)
+                        if (GMSocket == workSocket)
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward "+action+" Message GM -> Player");
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {
-                                Send(destPlayer, state.sb.ToString());
+                                Send(destPlayer, content /* = state.sb.ToString()*/);
                                 Console.WriteLine(" "+action + "  "+ userGuid);
                             }
                             else
@@ -288,14 +291,14 @@ namespace CommunicationServer
                             // Forward Message from player to GM
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
                             Console.WriteLine(" " + action + "  " + userGuid+"\n");
-                            Send(GMSocket, state.sb.ToString());
+                            Send(GMSocket, content /* = state.sb.ToString()*/);
                         }
                         break;
                     }
                 case "send":
                 case "exchange":
                     {
-                        if (GMSocket == state.workSocket)
+                        if (GMSocket == workSocket)
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward " + action + " Message GM -> Receiver-Player");
@@ -304,7 +307,7 @@ namespace CommunicationServer
                             if (Clients.TryGetValue(receiverGuid, out destPlayer))
                             {
 
-                                Send(destPlayer, state.sb.ToString());
+                                Send(destPlayer, content /* = state.sb.ToString()*/);
                                 Console.WriteLine(" " + action + "  " + receiverGuid);
                             }
                             else
@@ -316,21 +319,21 @@ namespace CommunicationServer
                             // Forward Message from player to GM
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
                             Console.WriteLine(" " + action + "  " + userGuid + "\n");
-                            Send(GMSocket, state.sb.ToString());
+                            Send(GMSocket, content /* = state.sb.ToString()*/);
                         }
                         break;
                     }
 
                 case "end":
                     {
-                        if (GMSocket == state.workSocket)
+                        if (GMSocket == workSocket)
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward " + action + " Message GM -> Players");
                            
                             foreach (Socket destPlayer in Clients.Values)
                             {
-                                Send(destPlayer, state.sb.ToString());
+                                Send(destPlayer, content /* = state.sb.ToString()*/);
                                 Console.WriteLine("the end ");
                             }
                         }
