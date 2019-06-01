@@ -438,7 +438,6 @@ namespace ThePlayers
                         if (userGuid == null)
                         {
                             // Free cell
-                            status = curr == Player.BoardCell.NG ? Player.NeighborStatus.NG : Player.NeighborStatus.FR;
                             status = curr == Player.BoardCell.GL ? Player.NeighborStatus.DG : Player.NeighborStatus.FR;
                             //if ((Player.Board[y, x] & Player.BoardCell.PL) == Player.BoardCell.PL)
                             //    Player.Board[y, x] = Player.Board[y, x] & (~Player.BoardCell.PL);
@@ -447,7 +446,6 @@ namespace ThePlayers
                         {
                             if (Player.ID.ToLower().Equals(userGuid.ToLower()))
                             { // the player itself
-                                status = curr == Player.BoardCell.NG ? Player.NeighborStatus.NG : Player.NeighborStatus.FR;
                                 status = curr == Player.BoardCell.GL ? Player.NeighborStatus.DG : Player.NeighborStatus.FR;
                                 status = curr == Player.BoardCell.PC ? Player.NeighborStatus.PC : Player.NeighborStatus.FR;
                                 if (curr == Player.BoardCell.SH)
@@ -650,28 +648,33 @@ namespace ThePlayers
             Console.WriteLine("Reading Place Piece\n");
             dynamic magic = JsonConvert.DeserializeObject(json);
             string result = magic.result;
+
+            Player.Piece = null;
+
             if (result.ToLower().Equals("denied"))
-            {
-                Player.Piece = null;
                 return;
-            }
-            string consequence = magic.consequence;
-            if (consequence.ToLower().Equals("correct"))
-            {
-                // placed on a goal.  discover goal
-                Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
-                Player.Piece = null;
-                // Knowledge exchange 
-                //Player.KnowledgeExchange = true;
-            }
-            if (consequence.ToLower().Equals("meaningless"))
-            {
-                // placed on a goal.  discover non-goal
-                Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.NG;
-                Player.Piece = null;
-                // Knowledge exchange 
-                //Player.KnowledgeExchange = true;
-            }
+            
+
+            // Does not matter anymore
+            //string consequence = magic.consequence;
+            //if (consequence.ToLower().Equals("correct"))
+            //{
+            //    // placed on a goal.  discover goal
+            //    Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
+            //    // Knowledge exchange 
+            //    //Player.KnowledgeExchange = true;
+            //}
+            //if (consequence.ToLower().Equals("meaningless"))
+            //{
+            //    // placed on a goal.  discover non-goal
+            //    Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
+            //    // Knowledge exchange 
+            //    //Player.KnowledgeExchange = true;
+            //}
+
+            Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
+            // /* Knowledge exchange */
+            // Player.KnowledgeExchange = true;
         }
 
         /* *
