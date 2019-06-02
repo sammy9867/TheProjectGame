@@ -15,6 +15,8 @@ namespace ThePlayers
 
     public class PlayerSocket
     {
+        private const bool SHOW_JSON = false;
+
         private const int port = 11000;
         private const char ETB = (char)23;
 
@@ -113,17 +115,23 @@ namespace ThePlayers
                     if (state.sb.ToString().IndexOf(ETB) < 0)
                     {
                         var str = state.sb.ToString();
-                        Console.WriteLine("Read {0} bytes from socket. \nData : {1}", str.Length, str);
+//                        Console.WriteLine("Read {0} bytes from socket. \nData : {1}", str.Length, str);
                         socket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                             new AsyncCallback(ReceiveCallback), state);
                         return;
                     }
                 }
                 var content = state.sb.ToString();
-                Console.WriteLine("PLAYER read content:\n"+content+"\n");
-                content = content.Replace(ETB, ' ');
+
                 // Here the message is read and we may analize it
-                AnalyzeMessage(content);
+                foreach (String _content in content.Split(ETB))
+                {
+                    if (_content == null || _content == "") continue;
+                    if(SHOW_JSON)
+                        Console.WriteLine(_content + "\n");
+                    AnalyzeMessage(_content);
+                }
+                // AnalyzeMessage(content);
                 
             }
             catch (Exception e)
@@ -168,7 +176,7 @@ namespace ThePlayers
                 Socket client = (Socket)ar.AsyncState;
                 
                 int bytesSent = client.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to server.", bytesSent);
+//                Console.WriteLine("Sent {0} bytes to server.", bytesSent);
 
                 sendDone.Set();
             }
@@ -220,7 +228,6 @@ namespace ThePlayers
                         //Whenever ReadTestPiece reads false from test response, it resends TestPiece again
                         //Dont know for now if it will ever receive true [that is if that shit is a sham or not]
                         ReadTestPiece(json);
-//                        Thread.Sleep(500);
                         SendDecision(Player.MakeMove());
                         break;
                     }
@@ -233,24 +240,26 @@ namespace ThePlayers
                 case "place":
                     {
                         ReadPlacePiece(json);
-//                        Thread.Sleep(100);
+                        Player.Decision decision = Player.MakeMove();
+                        SendDecision(decision);
+                        if (decision == Player.Decision.KNOWLEDGE_EXCHANGE)
+                            Receive();
+                        break;
+                    }
+                case "exchange":
+                    {
+                        // Receive Authorize Knowledege Exchange
+                        // Accept it
+                        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
+                        break;
+                    }
+                case "send":
+                    {
+                        // Read KE data
+                        ReadKnowledgeExchangeSend(json);
                         SendDecision(Player.MakeMove());
                         break;
                     }
-                //case "exchange":
-                //    {
-                //        // Receive Authorize Knowledege Exchange
-                //        // Accept it
-                //        PlayerRequestHandler.sendAcceptKnowledgeExchange(socket, Player.ID);
-                //        break;
-                //    }
-                //case "send":
-                //    {
-                //        // Read KE data
-                //        ReadKnowledgeExchangeSend(json);
-                //        SendDecision(Player.MakeMove());
-                //        break;
-                //    }
                 case "end":
                     {
                         ReadGameOver(json);
@@ -391,7 +400,8 @@ namespace ThePlayers
         private static void ReadDiscover(string json)
         {
             Console.WriteLine("DiscoverResponse:");
-            Console.WriteLine(json);
+            if(SHOW_JSON)   
+                Console.WriteLine(json);
             JObject jobject = JObject.Parse(json);
             string result = (string) jobject["result"];
             if (result.ToLower().Equals("denied"))
@@ -426,6 +436,17 @@ namespace ThePlayers
                 //By [row, col]
                 int dx = Player.X - x;
                 int dy = Player.Y - y;
+                if (1 - dy < 0 || 1 - dy > 2)
+                {
+                    /// TODO
+                    Console.WriteLine("debug");
+                }
+                if (1 - dx < 0 || 1 - dx > 2)
+                {
+                    /// TODO
+                    Console.WriteLine("debug");
+                }
+                Console.WriteLine("Neighbors["+(1 - dy)+", "+(1 - dx)+"]");
                 status = Player.Neighbors[1 - dy, 1 - dx] = Player.NeighborStatus.BL;  // row col.
 
                 switch (contains)
@@ -673,8 +694,8 @@ namespace ThePlayers
             //}
 
             Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
-            // /* Knowledge exchange */
-            // Player.KnowledgeExchange = true;
+            /* Knowledge exchange */
+            Player.KnowledgeExchange = true;
         }
 
         /* *
@@ -710,16 +731,7 @@ namespace ThePlayers
                     JsonConvert.SerializeObject(magic));
 
             }
-            // Neighbors[row, col]
-            //for (int r = 0; r < 3; r++)
-            //    for (int c = 0; c < 3; c++)
-            //    {
-            //        if (c == 1 && r == 1) continue;
-            //        if (Player.Neighbors[r, c] == Player.NeighborStatus.PC)
-            //        {
 
-            //        }
-            //    }
             Player.KnowledgeExchange = false;
             return;
         }

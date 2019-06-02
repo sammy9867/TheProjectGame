@@ -154,7 +154,7 @@ namespace TheGame
             }
 
             Console.WriteLine("Expect players");
-            while(board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers || 
+            while(/*board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers ||  RED_PL_OFF */
                   board.BlueTeam.NumOfPlayers < Board.MaxNumOfPlayers)
             {
                 // Received Message is analized by ConnectPlayer method
@@ -244,7 +244,7 @@ namespace TheGame
 
             Send(GMSocket, GMRequestHandler.ConnectPlayerOK(player));
 
-            if(board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers &&
+            if(/*board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers &&  RED_PL_OFF */
                   board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers )
                 connectDone.Set();
         }
@@ -1287,17 +1287,25 @@ namespace TheGame
                     var content = state.sb.ToString();
                     if (content.IndexOf(ETB) > -1)
                     {
-                        Console.WriteLine("[GAME_MASTER] read:\n"+content+"\n");
-                        content = content.Remove(content.IndexOf(ETB));
+                        Console.WriteLine("[GAME_MASTER] read:\n");
+                        // content = content.Remove(content.IndexOf(ETB));
+                        
                         //   RequestHandler.handleRequest(content, client);
                         //   state.sb.Clear();
                         // receiveDone.Set();
-                         
 
-                        if(state.cb != null)
-                            AnalyzeMessage(content);
-                        state.cb = null;
 
+                        if (state.cb != null)
+                        {
+                            foreach (String _content in content.Split(ETB))
+                            {
+                                if (_content == null || _content == "") continue;
+ //                               Console.WriteLine(_content + "\n");
+                                AnalyzeMessage(_content);
+                            }
+//                            AnalyzeMessage(content);
+                            state.cb = null;
+                        }
                         //Receive();
                     }
                     else

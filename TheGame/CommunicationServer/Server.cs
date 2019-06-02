@@ -136,7 +136,7 @@ namespace CommunicationServer
                         {
                             if (_content == null || _content == "") continue;
                             Console.WriteLine(_content + "\n");
-                            AnalizeTheMessage(_content, state.workSocket, state);
+                            AnalyzeMessage(_content, state.workSocket, state);
                         }
 
                         // Clear the state object and receive a new message   
@@ -207,7 +207,7 @@ namespace CommunicationServer
         }
 
 
-        private static void AnalizeTheMessage(string content, Socket workSocket,  StateObject state)
+        private static void AnalyzeMessage(string content, Socket workSocket,  StateObject state)
         {
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(content);
             string action = magic.action;

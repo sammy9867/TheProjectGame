@@ -326,6 +326,9 @@ namespace ThePlayers
         //* Execute Movement on Successful responce */
         public void DoMove(string direction)
         {
+            // TODO: here is temporary solution on double responce
+            if (direction == null) return;
+
             switch (direction.ToUpper())
             {
                 case "N": MoveNorth(); break;
