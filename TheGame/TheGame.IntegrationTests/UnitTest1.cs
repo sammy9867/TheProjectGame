@@ -37,6 +37,15 @@ namespace TheGame.IntegrationTests
             string filepath = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\Configfile\reportlog.csv";
             DataTable dt = ConvertCSVtoDataTable(filepath);
 
+            Object cellValue0 = dt.Rows[0][0];
+            Object cellValue1 = dt.Rows[1][0];
+            string val0 = cellValue0.ToString();
+            string val1 = cellValue1.ToString();
+            string ex = "Connect";
+
+            Assert.Contains(ex, val0);
+            Assert.Contains(ex, val1);
+            //double otherNumber = dt.Rows[1].Field<string>("Type");
 
         }
 
