@@ -412,9 +412,13 @@ namespace ThePlayers
 
             // Update coordinates 
             JObject jscope = (JObject)jobject["location"];
-            Player.X = (int)jscope["x"];   // shall we check for correctness first ?
-            Player.Y = (int)jscope["y"];   // shall we check for correctness first ?
-
+            int px = (int)jscope["x"];
+            int py = (int)jscope["y"];
+            if (Player.X != px || Player.Y != py)
+            {
+                Console.WriteLine("WRONG LOCATION");
+                return;
+            }
             JArray jfields = (JArray)(jobject["fields"]);
             // Initialy Neighbors blocked
             for (int i = 0; i < 3; i++)

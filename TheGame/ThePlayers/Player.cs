@@ -327,8 +327,11 @@ namespace ThePlayers
         public void DoMove(string direction)
         {
             // TODO: here is temporary solution on double responce
-            if (direction == null) return;
-
+            if (direction == null)
+            {
+                Console.WriteLine("\tERROR\ndirection = null");
+                return;
+            }
             switch (direction.ToUpper())
             {
                 case "N": MoveNorth(); break;
@@ -345,6 +348,7 @@ namespace ThePlayers
 
         private string ComputeSha256Hash()
         {
+            return private_id;
             string rawData = private_id;
             // Create a SHA256   
             using (SHA256 sha256Hash = SHA256.Create())
