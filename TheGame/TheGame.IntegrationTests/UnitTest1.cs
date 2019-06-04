@@ -34,9 +34,11 @@ namespace TheGame.IntegrationTests
         [Fact]
         public void Test1()
         {
-            string filepath = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\Configfile\reportlog.csv";
+            //string filepath = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\Configfile\reportlog.csv";
+            string filepath = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame.IntegrationTests\reportlog_blue.csv";
             DataTable dt = ConvertCSVtoDataTable(filepath);
 
+            /* SCENARIO when only blue players connect, checking for connectivity and players' color*/
             Object cellValue0 = dt.Rows[0][0];
             Object cellValue1 = dt.Rows[1][0];
             string val0 = cellValue0.ToString();
@@ -53,8 +55,6 @@ namespace TheGame.IntegrationTests
                 Assert.Contains(ex_bl, val_blue);
             }
             
-
-
             Assert.Contains(ex, val0);
             Assert.Contains(ex, val1);
             
