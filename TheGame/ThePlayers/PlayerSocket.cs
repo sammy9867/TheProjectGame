@@ -411,9 +411,9 @@ namespace ThePlayers
             }
 
             // Update coordinates 
-            JObject jscope = (JObject)jobject["location"];
-            int px = (int)jscope["x"];
-            int py = (int)jscope["y"];
+            JObject jlocation = (JObject)jobject["location"];
+            int px = (int)jlocation["x"];
+            int py = (int)jlocation["y"];
             if (Player.X != px || Player.Y != py)
             {
                 Console.WriteLine("WRONG LOCATION");
@@ -431,9 +431,8 @@ namespace ThePlayers
                 int  x = (int) jfield["x"];
                 int  y = (int) jfield["y"];
                 JObject value = (JObject)jfield["value"];
-                int manhattanDistance = (int)value["manhattanDistance"];
                 string contains = (string) value["contains"];
-                string timestamp = (string) value["timestamp"];
+//                string timestamp = (string) value["timestamp"];
                 string userGuid = (string) value["userGuid"];
                 Player.NeighborStatus status;
                 Player.BoardCell curr = Player.Board[y,x];  // row col
@@ -699,7 +698,7 @@ namespace ThePlayers
 
             Player.current = Player.Board[Player.Y, Player.X] = Player.BoardCell.GL;
             /* Knowledge exchange */
-            Player.KnowledgeExchange = true;
+            // Player.KnowledgeExchange = true;
         }
 
         /* *
@@ -718,8 +717,8 @@ namespace ThePlayers
                 JObject magic = JObject.Parse(json);
                 JField jField = new JField
                 {
-                    x = "" + Player.X,
-                    y = "" + Player.Y
+                    x = Player.X,
+                    y = Player.Y
                 };
                 jField.value = new JFieldValue();
                 jField.value.manhattanDistance = null;
@@ -750,14 +749,14 @@ namespace ThePlayers
 
     public class JField
     {
-        public string x;
-        public string y;
+        public int x;
+        public int y;
         public JFieldValue value;
     }
 
     public class JFieldValue
     {
-        public string manhattanDistance;
+        public int? manhattanDistance;
         public string contains;
         public string timestamp;
         public string userGuid;

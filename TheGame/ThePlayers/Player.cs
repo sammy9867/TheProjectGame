@@ -246,6 +246,8 @@ namespace ThePlayers
 
         private Decision GoWithPiece()
         {
+//            if (current == BoardCell.GC) return Decision.PLACE_PIECE;
+
             if (Team == TeamColor.RED)
             {
                 if (TryMoveNorth() == SUCCESS)

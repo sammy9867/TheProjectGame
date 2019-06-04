@@ -89,6 +89,7 @@ namespace TheGame
             board = new Board();
 
             initFile();
+            initFilejSON();
             loadBoard();
 
             UpdateBoard();
@@ -154,7 +155,7 @@ namespace TheGame
             }
 
             Console.WriteLine("Expect players");
-            while(/*board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers ||  RED_PL_OFF */
+            while(board.RedTeam.NumOfPlayers < Board.MaxNumOfPlayers ||
                   board.BlueTeam.NumOfPlayers < Board.MaxNumOfPlayers)
             {
                 // Received Message is analized by ConnectPlayer method
@@ -244,7 +245,7 @@ namespace TheGame
 
             Send(GMSocket, GMRequestHandler.ConnectPlayerOK(player));
 
-            if(/*board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers &&  RED_PL_OFF */
+            if(board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers && 
                   board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers )
                 connectDone.Set();
         }
@@ -289,12 +290,48 @@ namespace TheGame
             }
 
         }
+
+        private void initFilejSON()
+        {
+            // create a file object
+            // create file itself if it does not exist
+            string newFileName = @"..\..\Configfile\JSONLog.txt";
+
+
+            if (!File.Exists(newFileName))
+            {
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+            else if (File.Exists(newFileName))
+            {
+                File.Delete(newFileName);
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+
+        }
         private bool insertIntoConfig(string type, string dateTime, string playerID, string colour, string role)
         {
             try
             {
                 string line = $"\"{type}\",\"{dateTime}\",\"{playerID}\",\"{colour}\",\"{role}\"{Environment.NewLine}";
-                File.AppendAllText(@"..\..\Configfile\reportlog.csv", line);
+                File.AppendAllText(@"..\..\Configfile\JSONLogo.txt", line);
+                return true;
+            }
+            catch (Exception ee)
+            {
+                string temp = ee.Message;
+                return false;
+            }
+        }
+
+        private bool insertIntoConfigJSON(string m)
+        {
+            try
+            {
+                string line = $"\"{m}\"{Environment.NewLine}";
+                File.AppendAllText(@"..\..\Configfile\JSONLogo.txt", line);
                 return true;
             }
             catch (Exception ee)
@@ -405,6 +442,7 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForDiscover(player);
                         // fill json
                         PlayerDiscoversNeighboringCells(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
                        Thread.Sleep(Board.DiscoveryDelay);
                         Send(GMSocket, json);
@@ -419,9 +457,11 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForMove(player);
                         // fill json
                         PlayerMove(player,(string) magic.direction,  ref json);
+                        insertIntoConfigJSON(json);
                         // response
                         Thread.Sleep(Board.MoveDelay);
                         Send(GMSocket, json);
+                        Console.WriteLine(json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
                         // so we can write to the same file from different threads
@@ -433,6 +473,7 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForPickUp(player);
                         // fill json
                         PlayerPickupPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
                         Thread.Sleep(Board.PickUpDelay);
                         Send(GMSocket, json);
@@ -447,6 +488,7 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForTestPiece(player); 
                         // fill json
                         PlayerTestPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
                         Thread.Sleep(Board.TestDelay);
                         Send(GMSocket, json);
@@ -461,6 +503,7 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForDestroyPiece(player); // << ----- TODO
                         // fill json
                         PlayerDestroyPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
                         Thread.Sleep(Board.DestroyDelay);
                         Send(GMSocket, json);
@@ -475,6 +518,7 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForPlacePiece(player); 
                         // fill json
                         PlayerPlacesPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
                         Thread.Sleep(Board.PlaceDelay);
                         Send(GMSocket, json);
@@ -597,15 +641,13 @@ namespace TheGame
             {
                 // getCellStatus
                 magic.result = "denied";
-                magic.timestamp = null;
+
                 magic.manhattanDistance = null;
                 json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
                 return;
             }
-            Console.WriteLine("MANHATTTAN DISTANCEEEEEE: " + md);
 
             magic.manhattanDistance = md;
-            magic.timestamp = GetTimestamp();
 
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
         }
@@ -626,7 +668,7 @@ namespace TheGame
                 {
                     magic.result = "denied";  // since it is OK by default
                     magic.consequence = null;
-                    magic.timestamp = null;
+
                     json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
                     /* Player is not placing a piece, it keeps holding it */
                     return;
@@ -669,7 +711,7 @@ namespace TheGame
                     Console.WriteLine("Blue :" + Board.BlueScore);
                     Console.WriteLine("Red :" + Board.RedScore);
                     magic.consequence = "correct";
-                    magic.timestamp = GetTimestamp();
+
                     json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
 
                     CheckVictory(player,ref json);
@@ -696,7 +738,7 @@ namespace TheGame
             player.Piece = null; //Player no longer has the piece.
 
             magic.consequence = "meaningless";
-            magic.timestamp = GetTimestamp();
+
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
 
            
@@ -746,8 +788,8 @@ namespace TheGame
             magic["userGuid"] = player.playerID;
             magic["result"] = "OK";
             JObject scope = (JObject) magic["location"];
-            scope["x"] =""+player.X;
-            scope["y"] = "" + player.Y;
+            scope["x"] =player.X;
+            scope["y"] = player.Y;
             List<JField> jfields = new List<JField>();
 
             for (int c = 0; c < 3; c++)
@@ -761,13 +803,13 @@ namespace TheGame
                     if (row >= Board.Height) continue;
                     JField jField = new JField
                     {
-                        x = "" + column,
-                        y = "" + row
+                        x = column,
+                        y = row
                     };
                     jField.value = new JFieldValue();
                     jField.value.manhattanDistance =
-                        (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
-                    jField.value.timestamp = GetTimestamp().ToString();
+                        (Math.Abs(player.X - column) + Math.Abs(player.Y - row));
+                    //jField.value.timestamp = GetTimestamp().ToString();
                     jField.value.userGuid = null;
 
                     switch (board.getCellStatus(column, row))
@@ -827,7 +869,7 @@ namespace TheGame
                     break;
                 }
             }
-            magic.timestamp = GetTimestamp();
+
             if (!found)
             {
                 magic.result = "denied";

@@ -1,7 +1,7 @@
 {
   "action": "state",
   "userGuid": "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
-  "scope": {
+  "location": {
     "x": "<0|1|2|3|4|...|board",
     "y": "<0|1|2|3|4|...|board"
   }

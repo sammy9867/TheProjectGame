@@ -3,19 +3,19 @@
   "userGuid": "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
   "team": "bluered",
   "role": "memberleader",
-  "teamSize": "1234...maximal",
+  "teamSize": 0,
   "teamGuids": [
     "0a041a66-01b7-40cf-a06a-a47550f0e6c0",
     "0a041a66-01b7-40cf-a06a-a47550f0e6c1",
     "0a041a66-01b7-40cf-a06a-a47550f0e6c2"
   ],
   "location": {
-    "x": "01234...board",
-    "y": "01234...board"
+    "x": 0,
+    "y": 0
   },
   "board": {
-    "width": "123...board",
-    "tasksHeight": "123...tasks",
-    "goalsHeight": "123...goals"
+    "width": 0,
+    "tasksHeight": 0,
+    "goalsHeight": 0
   }
 }

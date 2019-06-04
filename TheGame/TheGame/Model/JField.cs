@@ -8,16 +8,16 @@ namespace TheGame.Model
 {
     public class JField
     {
-        public string x;
-        public string y;
+        public int x;
+        public int y;
         public JFieldValue value;
     }
 
     public class JFieldValue
     {
-        public string manhattanDistance;
+        public Int32  manhattanDistance;
         public string contains;
-        public string timestamp;
+//        public string timestamp;
         public string userGuid;
     }
 

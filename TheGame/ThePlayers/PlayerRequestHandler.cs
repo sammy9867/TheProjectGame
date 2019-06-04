@@ -83,8 +83,8 @@ namespace ThePlayers
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = PlayerSocket.Player.ID;
 
-            magic.scope.x = PlayerSocket.Player.X;
-            magic.scope.y = PlayerSocket.Player.Y;
+            magic.location.x = PlayerSocket.Player.X;
+            magic.location.y = PlayerSocket.Player.Y;
 
             Console.WriteLine("Sending Discover.json....\n");
             PlayerSocket.Send(handler,

@@ -18,6 +18,42 @@ namespace TheGame.GMServer
         public static ManualResetEvent allDone
             = new ManualResetEvent(false);
 
+        private static void initFilejSON()
+        {
+            // create a file object
+            // create file itself if it does not exist
+            string newFileName = @"..\..\Configfile\JSONLog.txt";
+
+
+            if (!File.Exists(newFileName))
+            {
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+            else if (File.Exists(newFileName))
+            {
+                File.Delete(newFileName);
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+
+        }
+
+        private static bool insertIntoConfigJSON(string m)
+        {
+            try
+            {
+                string line = $"\"{m}\"{Environment.NewLine}";
+                File.AppendAllText(@"..\..\Configfile\JSONLog.txt", line);
+                return true;
+            }
+            catch (Exception ee)
+            {
+                string temp = ee.Message;
+                return false;
+            }
+        }
+
 
         /** 
          * So, we may call Send() Receive() and have GUI, access to Board object,
@@ -101,7 +137,7 @@ namespace TheGame.GMServer
             jObject["userGuid"] = player.playerID;
             jObject["team"] = player.Team == Team.TeamColor.RED ? "red" : "blue";
             jObject["role"] =  player.role == Player.Role.LEADER ? "leader" : "member";
-            jObject["teamSize"] = "" + members.Count;
+            jObject["teamSize"] = members.Count;
 
             JArray teamGuids = (JArray)jObject["teamGuids"];
             teamGuids.Clear();
@@ -112,16 +148,18 @@ namespace TheGame.GMServer
                 if (p.playerID != leader.playerID)
                     teamGuids.Add(p.playerID);
             }
-
+            //// SAMASA
             JObject location = (JObject)jObject["location"];
-            location["x"] = "" + player.Column;
-            location["y"] = "" + player.Row;
+            location["x"] = player.Column;
+            location["y"] = player.Row;
 
             JObject board = (JObject)jObject["board"];
-            board["width"] = "" + Board.Width;
-            board["tasksHeight"] = "" + Board.TaskHeight;
-            board["goalsHeight"] = "" + Board.GoalHeight;
+            board["width"] = Board.Width;
+            board["tasksHeight"] =Board.TaskHeight;
+            board["goalsHeight"] = Board.GoalHeight;
 
+            initFilejSON();
+            insertIntoConfigJSON(jObject.ToString());
             return jObject.ToString();
         }
 
