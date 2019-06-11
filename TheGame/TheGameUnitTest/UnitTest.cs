@@ -43,7 +43,7 @@ namespace TheGameUnitTest
         public void TestMethod_GMRequestHandler_GameOver()
         {
             string expected = "{\"action\":\"end\",\"result\":\"blue\"}";
-            string actual = GMRequestHandler.sendGameOver();
+            string actual = GMRequestHandler.SendGameOver(Team.TeamColor.BLUE);
             Assert.AreEqual(expected, actual);
         }
 
@@ -445,9 +445,53 @@ namespace TheGameUnitTest
             ThePlayers.Player pl = new ThePlayers.Player()
             {
                 role = ThePlayers.Player.Role.LEADER,
-             //   hasPiece = false,
-                
             };
+
+            //Team.TeamColor c = Team.TeamColor.BLUE;
+            pl.Neighbors = new ThePlayers.Player.NeighborStatus[3, 3];
+
+            ThePlayers.Player.Decision actual_ = pl.goForGoalAlternative(ThePlayers.Player.TeamColor.BLUE);
+            ThePlayers.Player.Decision expected_ = ThePlayers.Player.Decision.MOVE_WEST;
+            
+            ThePlayers.Player.Decision actual = pl.MakeMove();
+            ThePlayers.Player.Decision expected = ThePlayers.Player.Decision.MOVE_SOUTH;
+
+            Assert.AreNotEqual(expected, actual);
+            Assert.AreEqual(expected_, actual_);
+
+            /////////////////////////////////////////////////////////
+            ThePlayers.Player pla = new ThePlayers.Player();
+            pla.Neighbors = new ThePlayers.Player.NeighborStatus[3, 3];
+            int ex = 0;
+            int ac = pla.TryMoveNorth();
+            Assert.AreEqual(ex, ac);
+
+            /////////////////////////////////////////////////////////
+            ThePlayers.Player play = new ThePlayers.Player()
+            {
+                Row = 1,
+                Column = 2
+            };
+
+            play.MoveNorth();
+            int ex_newRow_mn = 2;
+            int ac_newRow_mn = play.Row;
+            Assert.AreEqual(ex_newRow_mn, ac_newRow_mn);
+
+            play.MoveSouth();
+            int ex_newRow_ms = 1;
+            int ac_newRow_ms = play.Row;
+            Assert.AreEqual(ex_newRow_ms, ac_newRow_ms);
+
+            play.MoveWest();
+            int ex_newCol_mw = 1;
+            int ac_newCol_mw = play.Column;
+            Assert.AreEqual(ex_newCol_mw, ac_newCol_mw);
+
+            play.MoveEast();
+            int ex_newCol_me = 2;
+            int ac_newCol_me = play.Column;
+            Assert.AreEqual(ex_newCol_me, ac_newCol_me);
         }
         [TestMethod]
         public void TestMethod_ForPlayer()/* COMPLETE */

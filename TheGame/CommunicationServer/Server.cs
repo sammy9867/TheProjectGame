@@ -35,10 +35,6 @@ namespace CommunicationServer
             // Establish the local endpoint for the socket
             IPAddress ipAddress = IPAddress.Loopback;
 
-            //Console.WriteLine("Communication Server IP: " + ipAddress.ToString());
-            //Console.WriteLine("Communication Server PORT: " + PORT);
-            //            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, PORT);
-
             Console.WriteLine("Communication Server IP: " + aIP_ADDRESS);
             Console.WriteLine("Communication Server PORT: " + aPORT);
             IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Parse(aIP_ADDRESS), Int32.Parse(aPORT));
@@ -131,13 +127,17 @@ namespace CommunicationServer
                     content = state.sb.ToString();
                     if (content.IndexOf(ETB) > -1)
                     {
+                        Console.WriteLine("\nRead data : ");
+
                         /* Actual Work on Received message */
-                        content = content.Remove(content.IndexOf(ETB));
-                        //Console.WriteLine("Read {0} bytes from socket. \nData:\n{1}",
-                        //    content.Length, content);
-
-                        AnalizeTheMessage(content, state);
-
+                        // content = content.Remove(content.IndexOf(ETB));
+                        // content = content.Replace(ETB, ' ');
+                        foreach (String _content in content.Split(ETB))
+                        {
+                            if (_content == null || _content == "") continue;
+                            Console.WriteLine(_content + "\n");
+                            AnalyzeMessage(_content, state.workSocket, state);
+                        }
 
                         // Clear the state object and receive a new message   
                         state.sb.Clear();
@@ -159,8 +159,12 @@ namespace CommunicationServer
 
         public static void Send(Socket handler, String data)
         {
-            byte[] byteData = Encoding.ASCII.GetBytes(data + (char)23);
-//            Console.WriteLine("Send data : " + data);
+            if (!data.EndsWith(""+ETB))
+                data += ETB;
+
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            Console.WriteLine("\nSend data : " + data);
+            
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
         }
@@ -171,7 +175,6 @@ namespace CommunicationServer
                 Socket handler = (Socket)ar.AsyncState;
 
                 int bytesSent = handler.EndSend(ar);
-//                Console.WriteLine("Sent {0} bytes to client.", bytesSent);
                 //handler.Shutdown(SocketShutdown.Both);
                 //handler.Close();
 
@@ -181,6 +184,7 @@ namespace CommunicationServer
                 Console.WriteLine(e.ToString());
             }
         }
+
 
         public static string aIP_ADDRESS = null;
         public static string aPORT = null;
@@ -203,9 +207,9 @@ namespace CommunicationServer
         }
 
 
-        private static void AnalizeTheMessage(string json, StateObject state)
+        private static void AnalyzeMessage(string content, Socket workSocket,  StateObject state)
         {
-            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(content);
             string action = magic.action;
             string result = magic.result;
             string userGuid = magic.userGuid;
@@ -217,40 +221,50 @@ namespace CommunicationServer
             {
                 case "start":
                     {
-                        GMSocket = state.workSocket;
-                        CSRequestHandler.SendConfirmGame(state.workSocket);
-                        break;
+                        if(userGuid == null || userGuid == "")
+                        {
+                            Console.WriteLine("SetUpGame received");
+                            Console.WriteLine("Sending ConfirmGameSetUp...");
+                            GMSocket = workSocket;
+                            CSRequestHandler.SendConfirmGame(workSocket);
+                            break;
+                        }
+                        else /* case "begin": */
+                        {
+                            Console.WriteLine("Forward BeginGame" + action + " Message GM -> Player");
+                            Socket destPlayer = null;
+                            if (Clients.TryGetValue(userGuid, out destPlayer))
+                            {
+                                CSRequestHandler.BeginPlayer(content, destPlayer);
+                                //                            Clients.Remove(userGuid);
+                            }
+                            break;
+                        }
                     }
                 case "connect":
                     {
                         if (result == null)
                         {
                             // Player to GM
-                            Clients.Add(userGuid, state.workSocket); // add player's socket
+                            Console.WriteLine("Forward " + action + " Message Player -> GM");
+                            Clients.Add(userGuid, workSocket); // add player's socket
                             listOfGuids.Add(userGuid);
-                            CSRequestHandler.ConnectPlayer(state.sb.ToString(), GMSocket);
+                            CSRequestHandler.ConnectPlayer(content /* = state.sb.ToString()*/, GMSocket);
                         }
                         else
                         {
                             // GM to Player
+                            Console.WriteLine("Forward " + action + " Message GM -> Player");
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {
-                                CSRequestHandler.ConnectPlayerConfirmation(state.sb.ToString(), destPlayer);
+                                CSRequestHandler.ConnectPlayerConfirmation(content /* = state.sb.ToString()*/, destPlayer);
                             }
                         }
                         break;
                     }
-                case "begin":
-                    {
-                        Socket destPlayer = null;
-                        if (Clients.TryGetValue(userGuid, out destPlayer))
-                        {
-                            CSRequestHandler.BeginPlayer(json, destPlayer);
-//                            Clients.Remove(userGuid);
-                        }
-                        break;
-                    }
+               
+
                 case "move":
                 case "state":
                 case "pickup":
@@ -258,14 +272,14 @@ namespace CommunicationServer
                 case "destroy":
                 case "place":
                     {
-                        if (GMSocket == state.workSocket)
+                        if (GMSocket == workSocket)
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward "+action+" Message GM -> Player");
                             Socket destPlayer = null;
                             if (Clients.TryGetValue(userGuid, out destPlayer))
                             {
-                                Send(destPlayer, state.sb.ToString());
+                                Send(destPlayer, content /* = state.sb.ToString()*/);
                                 Console.WriteLine(" "+action + "  "+ userGuid);
                             }
                             else
@@ -277,14 +291,14 @@ namespace CommunicationServer
                             // Forward Message from player to GM
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
                             Console.WriteLine(" " + action + "  " + userGuid+"\n");
-                            Send(GMSocket, state.sb.ToString());
+                            Send(GMSocket, content /* = state.sb.ToString()*/);
                         }
                         break;
                     }
                 case "send":
                 case "exchange":
                     {
-                        if (GMSocket == state.workSocket)
+                        if (GMSocket == workSocket)
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward " + action + " Message GM -> Receiver-Player");
@@ -292,7 +306,8 @@ namespace CommunicationServer
                             string receiverGuid = magic.receiverGuid;
                             if (Clients.TryGetValue(receiverGuid, out destPlayer))
                             {
-                                Send(destPlayer, state.sb.ToString());
+
+                                Send(destPlayer, content /* = state.sb.ToString()*/);
                                 Console.WriteLine(" " + action + "  " + receiverGuid);
                             }
                             else
@@ -304,29 +319,22 @@ namespace CommunicationServer
                             // Forward Message from player to GM
                             Console.WriteLine("Forward " + action + " Message Player -> GM");
                             Console.WriteLine(" " + action + "  " + userGuid + "\n");
-                            Send(GMSocket, state.sb.ToString());
+                            Send(GMSocket, content /* = state.sb.ToString()*/);
                         }
                         break;
                     }
 
                 case "end":
                     {
-                        if (GMSocket == state.workSocket)
+                        if (GMSocket == workSocket)
                         {
                             // Forward Message from GM to player
                             Console.WriteLine("Forward " + action + " Message GM -> Players");
-                            Socket destPlayer = null;
-
-                            foreach (string ug in listOfGuids)
+                           
+                            foreach (Socket destPlayer in Clients.Values)
                             {
-                                if (Clients.TryGetValue(ug, out destPlayer))
-                                {
-                                    Send(destPlayer, state.sb.ToString());
-                                    Console.WriteLine(" " + action + "  " + ug);
-                                }
-                                else
-                                    Console.WriteLine("404 Player not found\n" + ug);
-                                Console.WriteLine();
+                                Send(destPlayer, content /* = state.sb.ToString()*/);
+                                Console.WriteLine("the end ");
                             }
                         }
                         break;

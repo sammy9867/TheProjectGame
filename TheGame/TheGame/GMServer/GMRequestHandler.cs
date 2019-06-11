@@ -18,11 +18,44 @@ namespace TheGame.GMServer
         public static ManualResetEvent allDone
             = new ManualResetEvent(false);
 
+        private static void initFilejSON()
+        {
+            // create a file object
+            // create file itself if it does not exist
+            string newFileName = @"..\..\Configfile\JSONLog.txt";
+
+
+            if (!File.Exists(newFileName))
+            {
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+            else if (File.Exists(newFileName))
+            {
+                File.Delete(newFileName);
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+
+        }
+
+        private static bool insertIntoConfigJSON(string m)
+        {
+            try
+            {
+                string line = $"\"{m}\"{Environment.NewLine}";
+                File.AppendAllText(@"..\..\Configfile\JSONLog.txt", line);
+                return true;
+            }
+            catch (Exception ee)
+            {
+                string temp = ee.Message;
+                return false;
+            }
+        }
+
 
         /** 
-         * README
-         * Ok, before you start screaming, since running too many threads causes too many problems,
-         * I have combined GMSocket and Main thread.
          * So, we may call Send() Receive() and have GUI, access to Board object,
          * and methods to write report file, and do the actual GM job, soooooo
          * METHODS JUST RETURN DUMMY JSON TO SEND
@@ -44,28 +77,6 @@ namespace TheGame.GMServer
             return (json);
         }
 
-        // NO NEED
-        //internal static void ConnectPlayer(GMSocket GMSocket, out Player player)
-        //{
-        //    GMSocket.Receive();
-        //    player = null;
-
-        //    dynamic magic = JsonConvert.DeserializeObject(GMSocket.SyncResponse);
-        //    string action = magic.action;
-        //    string team = magic.preferredTeam;
-
-        //    if (!action.ToLower().Equals("connect"))
-        //        return;
-        //    if (!team.ToLower().Equals("red") && !team.ToLower().Equals("blue"))
-        //        return;
-
-        //    player = new Player();
-        //    player.playerID = magic.userGuid;
-        //    player.Team = team.ToLower().Equals("red") ? 
-        //        Team.TeamColor.RED : Team.TeamColor.BLUE ;
-
-        //}
-
         /* Returns JSON for Successfull Joining Notification */
         public static string ConnectPlayerOK(Player player)
         {
@@ -82,10 +93,10 @@ namespace TheGame.GMServer
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
-
             return (JsonConvert.SerializeObject(magic));
 //          
         }
+
         /* Returns JSON for Failure Joining Notification */
         public static string ConnectPlayerDeny(Player player)
         {
@@ -107,9 +118,7 @@ namespace TheGame.GMServer
         }
 
         /* Returns JSON for Begin Game Notification */
-        
-        public static string BeginGame( 
-            Player player, List<Player> members, Player leader)
+        public static string BeginGame(Player player, List<Player> members, Player leader)
         {
             string file = @"..\..\JSONs\BeginGame.json";
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\BeginGame.json";
@@ -128,7 +137,7 @@ namespace TheGame.GMServer
             jObject["userGuid"] = player.playerID;
             jObject["team"] = player.Team == Team.TeamColor.RED ? "red" : "blue";
             jObject["role"] =  player.role == Player.Role.LEADER ? "leader" : "member";
-            jObject["teamSize"] = "" + members.Count;
+            jObject["teamSize"] = members.Count;
 
             JArray teamGuids = (JArray)jObject["teamGuids"];
             teamGuids.Clear();
@@ -139,20 +148,22 @@ namespace TheGame.GMServer
                 if (p.playerID != leader.playerID)
                     teamGuids.Add(p.playerID);
             }
-
+            //// SAMASA
             JObject location = (JObject)jObject["location"];
-            location["x"] = "" + player.Column;
-            location["y"] = "" + player.Row;
+            location["x"] = player.Column;
+            location["y"] = player.Row;
 
             JObject board = (JObject)jObject["board"];
-            board["width"] = "" + Board.Width;
-            board["tasksHeight"] = "" + Board.TaskHeight;
-            board["goalsHeight"] = "" + Board.GoalHeight;
+            board["width"] = Board.Width;
+            board["tasksHeight"] =Board.TaskHeight;
+            board["goalsHeight"] = Board.GoalHeight;
 
+            initFilejSON();
+            insertIntoConfigJSON(jObject.ToString());
             return jObject.ToString();
         }
 
-        //TODO: 2nd Communication phase
+
         public static string ResponseForMove(Player player)
         {
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\MoveResponseAcceptance.json";
@@ -168,7 +179,6 @@ namespace TheGame.GMServer
             }
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
-            magic.manhattanDistance = 7; // TODO::::::::::::::::
             return JsonConvert.SerializeObject(magic);
         }
 
@@ -269,7 +279,7 @@ namespace TheGame.GMServer
         }
 
 
-        public static string sendGameOver()
+        public static string SendGameOver(Team.TeamColor avengers)
         {
             //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\GameOver.json";
             string file = @"..\..\JSONs\GameOver.json";
@@ -282,15 +292,9 @@ namespace TheGame.GMServer
             {
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
+
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-            JObject jObject = JObject.Parse(json);
-
-            //JArray teamGuids = (JArray)jObject["userGuid"];
-            //teamGuids.Clear();
-
-
-            //foreach (Player p in players)
-            //    teamGuids.Add(p.playerID);
+            magic.result = avengers == Team.TeamColor.RED ? "red" : "blue";
 
             return JsonConvert.SerializeObject(magic);
         }

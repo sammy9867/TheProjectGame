@@ -52,7 +52,6 @@ namespace TheGame
 
         // TODO: timestamp
         // long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-
         public MainWindow()
         {
 
@@ -90,6 +89,7 @@ namespace TheGame
             board = new Board();
 
             initFile();
+            initFilejSON();
             loadBoard();
 
             UpdateBoard();
@@ -100,11 +100,12 @@ namespace TheGame
             // run separate thread for communication routine
             //            RunAsync(CommunicationRoutine, dueTime, CancellationToken.None);
 
-            var interval = TimeSpan.FromMilliseconds(10); // FromSeconds(0);
+            var interval = TimeSpan.FromMilliseconds(10); // FromSeconds(0); //TimeSpan.FromMilliseconds(0.1)
             RunPeriodicAsync(CommunicationRoutine, dueTime, interval, CancellationToken.None);
+            RunPeriodicAsync(AddPiece, TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(Board.FrequencyOfPlacingNewPiece), CancellationToken.None);
         }
 
-       
+
         #region Start Socket
         /* Start Socket */
         private void StartSocket()
@@ -154,7 +155,7 @@ namespace TheGame
             }
 
             Console.WriteLine("Expect players");
-            while(board.RedTeam.NumOfPlayers  < Board.MaxNumOfPlayers || 
+            while(board.RedTeam.NumOfPlayers < Board.MaxNumOfPlayers ||
                   board.BlueTeam.NumOfPlayers < Board.MaxNumOfPlayers)
             {
                 // Received Message is analized by ConnectPlayer method
@@ -195,11 +196,22 @@ namespace TheGame
                     return;
                 }
                 if (board.RedTeam.leader == null)
+                {
                     board.RedTeam.leader = player;
-                player.Row = 1; // TODO: Update the row
+                    player.role = Player.Role.LEADER;
+                }
+                else
+                {
+                    player.role = Player.Role.MEMBER;
+                }
+
+                player.Row = Board.Height - 1; // TODO: Update the row
                 player.Column = RedTeam.members.Count;
                 board.RedTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.RED_PLAYER;
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Connect", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
             }
             else
             {
@@ -208,12 +220,24 @@ namespace TheGame
                     Send(GMSocket, GMRequestHandler.ConnectPlayerDeny(player));
                     return;
                 }
+
                 if (board.BlueTeam.leader == null)
+                {
                     board.BlueTeam.leader = player;
-                player.Row = Board.Height - 1;  // TODO: Update the row
+                    player.role = Player.Role.LEADER;
+                }
+                else
+                {
+                    player.role = Player.Role.MEMBER;
+                }
+
+                player.Row = 1;  // TODO: Update the row
                 player.Column = BlueTeam.members.Count;
                 board.BlueTeam.members.Add(player);
                 board.boardtable[player.Column, player.Row] = Board.Status.BLUE_PLAYER;
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Connect", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
             }
 
             // CONNECT PLAYER DELAY
@@ -221,12 +245,12 @@ namespace TheGame
 
             Send(GMSocket, GMRequestHandler.ConnectPlayerOK(player));
 
-            if(board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers &&
+            if(board.RedTeam.NumOfPlayers == Board.MaxNumOfPlayers && 
                   board.BlueTeam.NumOfPlayers == Board.MaxNumOfPlayers )
                 connectDone.Set();
         }
         #endregion
-        #region Begion Game
+        #region Begin Game
         /* Send all refistered players notification that the game has started */
         private void BeginGame()
         {
@@ -266,12 +290,48 @@ namespace TheGame
             }
 
         }
+
+        private void initFilejSON()
+        {
+            // create a file object
+            // create file itself if it does not exist
+            string newFileName = @"..\..\Configfile\JSONLog.txt";
+
+
+            if (!File.Exists(newFileName))
+            {
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+            else if (File.Exists(newFileName))
+            {
+                File.Delete(newFileName);
+                string clientHeader = $"\"Message\"{Environment.NewLine}";
+                File.WriteAllText(newFileName, clientHeader);
+            }
+
+        }
         private bool insertIntoConfig(string type, string dateTime, string playerID, string colour, string role)
         {
             try
             {
                 string line = $"\"{type}\",\"{dateTime}\",\"{playerID}\",\"{colour}\",\"{role}\"{Environment.NewLine}";
-                File.AppendAllText(@"..\..\Configfile\reportlog.csv", line);
+                File.AppendAllText(@"..\..\Configfile\JSONLogo.txt", line);
+                return true;
+            }
+            catch (Exception ee)
+            {
+                string temp = ee.Message;
+                return false;
+            }
+        }
+
+        private bool insertIntoConfigJSON(string m)
+        {
+            try
+            {
+                string line = $"\"{m}\"{Environment.NewLine}";
+                File.AppendAllText(@"..\..\Configfile\JSONLogo.txt", line);
                 return true;
             }
             catch (Exception ee)
@@ -316,7 +376,6 @@ namespace TheGame
             action?.Invoke();
 
         }
-        private int counter_tmp = 0;
         private void CommunicationRoutine()
         {
             if (startgame)
@@ -337,10 +396,6 @@ namespace TheGame
                 BeginGame();
                 startgame = false;
 
-                /*where to add addPieces mid game*/
-                counter_tmp++;
-                if (counter_tmp % 2 == 0 && board.Pieces.Count < Board.InitialNumberOfPieces)
-                    addPiece();
             }
 
             if (!endgame)
@@ -359,12 +414,19 @@ namespace TheGame
         }
         #endregion
 
-
         /* Analyze received message from a player */
         private void AnalyzeMessage(string obj)
         {
+            if (obj == null || obj == "") return;
+
             dynamic magic = JsonConvert.DeserializeObject(obj);
             string action = magic.action;
+            if (action.ToLower().Equals("connect"))
+            {
+                ConnectPlayer(obj);
+                return;
+            }
+
             string playerId = magic.userGuid;
             Player player;
             // find player
@@ -375,12 +437,14 @@ namespace TheGame
             {
                 case "state":
                     {
+
                         // get json to response
                         string json = GMRequestHandler.ResponseForDiscover(player);
                         // fill json
                         PlayerDiscoversNeighboringCells(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
-
+                       Thread.Sleep(Board.DiscoveryDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -393,8 +457,11 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForMove(player);
                         // fill json
                         PlayerMove(player,(string) magic.direction,  ref json);
+                        insertIntoConfigJSON(json);
                         // response
+                        Thread.Sleep(Board.MoveDelay);
                         Send(GMSocket, json);
+                        Console.WriteLine(json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
                         // so we can write to the same file from different threads
@@ -406,7 +473,9 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForPickUp(player);
                         // fill json
                         PlayerPickupPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
+                        Thread.Sleep(Board.PickUpDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -419,7 +488,9 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForTestPiece(player); 
                         // fill json
                         PlayerTestPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
+                        Thread.Sleep(Board.TestDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -432,7 +503,9 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForDestroyPiece(player); // << ----- TODO
                         // fill json
                         PlayerDestroyPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
+                        Thread.Sleep(Board.DestroyDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -445,7 +518,9 @@ namespace TheGame
                         string json = GMRequestHandler.ResponseForPlacePiece(player); 
                         // fill json
                         PlayerPlacesPiece(player, ref json);
+                        insertIntoConfigJSON(json);
                         // response
+                        Thread.Sleep(Board.PlaceDelay);
                         Send(GMSocket, json);
                         // TODO: WRITE REPORT IN REPORT FILE
                         // Sammy, please check how to use one obj in multiple threads
@@ -459,6 +534,7 @@ namespace TheGame
                         // find player
                         Player receiver = FindPlayerById((string)magic.receiverGuid);
                         if (receiver == null) return;
+                        Thread.Sleep(Board.ExchangeDelay);
                         Send(GMSocket, Newtonsoft.Json.JsonConvert.SerializeObject(magic));
                         break;
                     }
@@ -471,8 +547,11 @@ namespace TheGame
 
 
         #region Add A New Piece During The Game
-        private void addPiece()
+        private void AddPiece()
         {
+            if (board.Pieces.Count >= Board.InitialNumberOfPieces)
+                return;
+
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
             while (true)
             {
@@ -504,7 +583,8 @@ namespace TheGame
         /* Player Move */
         public void PlayerMove(Player player, string direction, ref string json)
         {
-            JObject jobject = JObject.Parse(json);
+            // JObject jobject = JObject.Parse(json);
+            dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             bool denied = false;
             Console.WriteLine(player.playerID + "["+player.Team+"] goes "+direction);
             string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
@@ -512,7 +592,7 @@ namespace TheGame
             switch (direction)
             {
                 case "N":
-                    if ((board.getCellStatus(player.X, player.Y - 1) & Board.Status.BLOCKED) != 0)
+                    if ((board.getCellStatus(player.X, player.Y + 1) & Board.Status.BLOCKED) != 0)
                     {
                         denied = true;
                         break;
@@ -540,7 +620,7 @@ namespace TheGame
                     insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
                 case "S":
-                    if ((board.getCellStatus(player.X , player.Y+1) & Board.Status.BLOCKED) != 0)
+                    if ((board.getCellStatus(player.X , player.Y - 1) & Board.Status.BLOCKED) != 0)
                     { // getCellStatus
                         denied = true;
                         break;
@@ -549,16 +629,27 @@ namespace TheGame
                     insertIntoConfig("Move", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
                     break;
             }
+            int md = Board.Height + Board.Width;
+            foreach(Piece p in board.Pieces)
+            {
+                int dx = Math.Abs( p.column - player.Column );
+                int dy = Math.Abs(p.row - player.Row);
+                if (md > dx + dy)
+                    md = dx + dy;
+            }
             if (denied)
             {
                 // getCellStatus
-                jobject["result"] = "denied";
-                jobject["timestamp"] = null;
-                jobject["manhattanDistance"] = null;
-                json = jobject.ToString();
+                magic.result = "denied";
+
+                magic.manhattanDistance = null;
+                json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
                 return;
             }
-            jobject["timestamp"] = GetTimestamp();
+
+            magic.manhattanDistance = md;
+
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
         }
 
 
@@ -577,19 +668,24 @@ namespace TheGame
                 {
                     magic.result = "denied";  // since it is OK by default
                     magic.consequence = null;
-                    magic.timestamp = null;
+
                     json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
                     /* Player is not placing a piece, it keeps holding it */
                     return;
                 }
             }
             /* Discover a goal */
+            Console.WriteLine("BEFORE GETTING INTO UG");
             foreach (Goal goalDiscoverdByPlayer in UndiscoveredGoals)
             {
+                Console.WriteLine("GOAL [" + goalDiscoverdByPlayer.row + ", " + goalDiscoverdByPlayer.column + "]");
+                Console.WriteLine("Player [" + player.Row + ", " + player.Column + "]");
+
                 if (goalDiscoverdByPlayer.row == player.Row && goalDiscoverdByPlayer.column == player.Column)
-                {
+                {                 
                     UndiscoveredGoals.Remove(goalDiscoverdByPlayer); //Since goal has been discoverd, remove it.
                     DiscoveredGoals.Add(goalDiscoverdByPlayer); //Add "YG" to that (goal has been discoverd).
+
                     player.Piece = null; //Player no longer has the piece.
 
                     if (player.Team == Team.TeamColor.RED)
@@ -615,59 +711,10 @@ namespace TheGame
                     Console.WriteLine("Blue :" + Board.BlueScore);
                     Console.WriteLine("Red :" + Board.RedScore);
                     magic.consequence = "correct";
-                    magic.timestamp = GetTimestamp();
+
                     json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
 
-
-                    if (Board.BlueScore >= Board.NumberOfGoals)
-                    {
-                        // Blue WINS
-                        endgame = true;
-                      //  magic.result = "blue";
-                        string message = "Congratulations, Blue team wins!";
-                        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-
-                        string gameover_json = GMRequestHandler.sendGameOver();
-                        dynamic gameover_magic =JsonConvert.DeserializeObject(gameover_json);
-                        Console.WriteLine(gameover_json);
-                        gameover_magic.result = "blue";
-                        // response
-
-                    
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            Send(GMSocket, gameover_json);
-                        });
-
-                        //int pId = Player.playerID;
-
-                        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-
-                        Console.WriteLine(message);
-                    }
-                    if (Board.RedScore >= Board.NumberOfGoals)
-                    {
-                        // Red WINS
-                        endgame = true;
-                   //     magic.result = "red";
-                        string message = "Congratulations, Red team wins!";
-                        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-                        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-
-                        string gameover_json = GMRequestHandler.sendGameOver();
-                        dynamic gameover_magic = JsonConvert.DeserializeObject(gameover_json);
-                        gameover_magic.result = "red";
-                        // response
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            Send(GMSocket, gameover_json);
-                        });
-                        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-                        Console.WriteLine(message);
-                    }
+                    CheckVictory(player,ref json);
 
                     return;
                 }
@@ -691,63 +738,62 @@ namespace TheGame
             player.Piece = null; //Player no longer has the piece.
 
             magic.consequence = "meaningless";
-            magic.timestamp = GetTimestamp();
+
             json = Newtonsoft.Json.JsonConvert.SerializeObject(magic);
 
-//            checkVictory(player);
+           
         }
 
-        //#region Check for Victory
-        //private void checkVictory(Player player, ref string json)
-        //{
-        //    dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
-        //    if (Board.BlueScore >= Board.NumberOfGoals)
-        //    {
-        //        // Blue WINS
-        //        endgame = true;
-        //        magic.result = "blue";
-        //        string message = "Congratulations, Blue team wins!";
-        //        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-        //        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-        //        //int pId = Player.playerID;
+        #region Check for Victory
+        private void CheckVictory(Player player, ref string json)
+        {
+            Console.WriteLine("BLUE: " + Board.BlueScore + "RED:  " + Board.RedScore + "TOTAL: " + Board.NumberOfGoals);
+            if (Board.BlueScore >= Board.NumberOfGoals)
+            {
+                // Blue WINS
+                endgame = true;
+                json = GMRequestHandler.SendGameOver(Team.TeamColor.BLUE);
 
-        //        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-        //        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+                string message = "Congratulations, Blue team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                //int pId = Player.playerID;
 
-        //        Console.WriteLine(message);
-        //        //MessageBox.Show(message);
-        //        this.Close();
-        //    }
-        //    if (Board.RedScore >= Board.NumberOfGoals)
-        //    {
-        //        // Red WINS
-        //        endgame = true;
-        //        magic.result = "red";
-        //        string message = "Congratulations, Red team wins!";
-        //        string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
-        //        string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-        //        insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-        //        insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
-        //        Console.WriteLine(message);
-        //        //  MessageBox.Show(message);
-        //        this.Close();
-        //    }
-        //}
-        //#endregion
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "blue", pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "red", pr);
+                Console.WriteLine(message);
+
+            }
+            if (Board.RedScore >= Board.NumberOfGoals)
+            {
+                // Red WINS
+                endgame = true;
+                json = GMRequestHandler.SendGameOver(Team.TeamColor.RED);
+
+                string message = "Congratulations, Red team wins!";
+                string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+                string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+                insertIntoConfig("Victory", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "red", pr);
+                insertIntoConfig("Defeat", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, "blue", pr); 
+                Console.WriteLine(message);
+
+            }
+        }
+        #endregion
 
         /* Player Discovers its 8 neighbors */
         public void PlayerDiscoversNeighboringCells(Player player, ref string json)
         {
             JObject magic = JObject.Parse(json);
             magic["userGuid"] = player.playerID;
-            magic["result"] = "ok";
-            JObject scope = (JObject) magic["scope"];
-            scope["x"] =""+player.X;
-            scope["y"] = "" + player.Y;
+            magic["result"] = "OK";
+            JObject scope = (JObject) magic["location"];
+            scope["x"] =player.X;
+            scope["y"] = player.Y;
             List<JField> jfields = new List<JField>();
 
             for (int c = 0; c < 3; c++)
-                for (int r = 0; r < 3; r++)
+                for (int r = 2; r >= 0; r--) //CHANGED HERE
                 {
                     int column = player.Column - 1 + c;
                     int row = player.Row - 1 + r;
@@ -757,13 +803,13 @@ namespace TheGame
                     if (row >= Board.Height) continue;
                     JField jField = new JField
                     {
-                        x = "" + column,
-                        y = "" + row
+                        x = column,
+                        y = row
                     };
                     jField.value = new JFieldValue();
                     jField.value.manhattanDistance =
-                        (Math.Abs(player.X - column) + Math.Abs(player.Y - row)).ToString();
-                    jField.value.timestamp = GetTimestamp().ToString();
+                        (Math.Abs(player.X - column) + Math.Abs(player.Y - row));
+                    //jField.value.timestamp = GetTimestamp().ToString();
                     jField.value.userGuid = null;
 
                     switch (board.getCellStatus(column, row))
@@ -800,6 +846,10 @@ namespace TheGame
 
             magic["fields"] = (JArray) JToken.FromObject(jfields);
             json = magic.ToString();
+
+            string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
+            string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
+            insertIntoConfig("Discover", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
         /** Player takes a Piece **/
@@ -819,7 +869,7 @@ namespace TheGame
                     break;
                 }
             }
-            magic.timestamp = GetTimestamp();
+
             if (!found)
             {
                 magic.result = "denied";
@@ -829,7 +879,7 @@ namespace TheGame
             // write to file
             string pc = (player.Team == Team.TeamColor.RED) ? "red" : "blue";
             string pr = (player.role == Player.Role.LEADER) ? "leader" : "member";
-         //   insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
+               insertIntoConfig("PickupPiece", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"), player.playerID, pc, pr);
         }
 
         /** Player tests a Piece **/
@@ -897,7 +947,9 @@ namespace TheGame
 
         public long GetTimestamp()
         {
-            // TODO: Get proper Timestamp
+            // long now = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            // return (now -  milliseconds);
+
             return 777;
         }
 
@@ -907,22 +959,49 @@ namespace TheGame
         /**Undiscovered Goals are initialised randomly**/
         private void initGoals()
         {
+            // TODO: MOHAMED 
+            // Prevent goals overlapping 
+            List<int> hBlueCol = new List<int>();
 
+            #region FillingList
+            for (int i = 0; i < Board.Width; i++)
+            {
+                hBlueCol.Add(i);     
+            }
+            #endregion
+
+            Console.WriteLine();
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
-
             for (int i = 0; i < Board.NumberOfGoals; i++)
             {
+                Goal bluegoal = new Goal();
+
+
+                bluegoal.row = rnd.Next(0, Board.GoalHeight);
+                //bluegoal.column = rnd.Next(0, Board.Width - 1);
+                //For now, it can manage upto Board.Width that are randomly distributed without overlapping
+                int r2 = rnd.Next(hBlueCol.Count);
+                bluegoal.column = hBlueCol[r2];
+                if (hBlueCol.Contains(bluegoal.column)) hBlueCol.Remove(bluegoal.column);
+
+
+                board.UndiscoveredBlueGoals.Add(bluegoal);
+                Console.WriteLine("BLUE :" + bluegoal.row + ", " + bluegoal.column);
+                board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
+
                 Goal redgoal = new Goal();
-                redgoal.row = rnd.Next(0, Board.GoalHeight-1);
-                redgoal.column = rnd.Next(0, Board.Width-1);
+                redgoal.row = Board.Height - 1 - bluegoal.row;
+                redgoal.column = bluegoal.column;
                 board.UndiscoveredRedGoals.Add(redgoal);
+                Console.WriteLine("RED :" + redgoal.row + ", " + redgoal.column);
                 board.boardtable[redgoal.column, redgoal.row] = Board.Status.UNDISCOVERED_GOAL;
             
-                Goal bluegoal = new Goal();
-                bluegoal.row = Board.Height - 1 - redgoal.row; ;
-                bluegoal.column = redgoal.column;
-                board.UndiscoveredBlueGoals.Add(bluegoal);
-                board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
+                //Goal bluegoal = new Goal();
+                //bluegoal.row = Board.Height - 1 - redgoal.row; ;
+                //bluegoal.column = redgoal.column;
+                //board.UndiscoveredBlueGoals.Add(bluegoal);
+                //Console.WriteLine("BLUE :" + bluegoal.row + ", " + bluegoal.column);
+                //board.boardtable[bluegoal.column, bluegoal.row] = Board.Status.UNDISCOVERED_GOAL;
             }
         }
 
@@ -953,18 +1032,27 @@ namespace TheGame
             Board.InitialNumberOfPieces = magic.InitialNumberOfPieces;
             Board.NumberOfGoals = magic.NumberOfGoals;
             Board.ShamProbability = magic.ShamProbability; // 50%
+            Board.FrequencyOfPlacingNewPiece = magic.FrequencyOfPlacingNewPiece;
+            Board.DiscoveryDelay = magic.DiscoveryDelay;
+            Board.MoveDelay = magic.MoveDelay;
+            Board.PickUpDelay = magic.PickUpDelay;
+            Board.TestDelay = magic.TestDelay;
+            Board.DestroyDelay = magic.DestroyDelay;
+            Board.PlaceDelay = magic.PlaceDelay;
+            Board.ExchangeDelay = magic.ExchangeDelay;
 
             Console.WriteLine("Initialization: ");
             Console.WriteLine(" Board.MaxNumOfPlayers: " + Board.MaxNumOfPlayers);
             Console.WriteLine(" Board.NumberOfGoals: " + Board.NumberOfGoals);
             Console.WriteLine(" Board.ShamProbability: " + Board.ShamProbability);
+            Console.WriteLine(" Board.FrequencyOfPlacingNewPiece: " + Board.FrequencyOfPlacingNewPiece);
 
             board.boardtable = new Board.Status[Board.Width, Board.Height];
             for (int r = 0; r < Board.GoalHeight; r++)
                 for (int c = 0; c < Board.Width; c++)
                 {
-                    board.boardtable[c, r] = Board.Status.RED_GOALS_CELL;
-                    board.boardtable[c, Board.Height - 1 - r] = Board.Status.BLUE_GOALS_CELL;
+                    board.boardtable[c, r] = Board.Status.BLUE_GOALS_CELL;
+                    board.boardtable[c, Board.Height - 1 - r] = Board.Status.RED_GOALS_CELL;
                 }
 
             RedTeam = new Team(Team.TeamColor.RED);
@@ -1055,7 +1143,7 @@ namespace TheGame
         private void UpdateBoard()
         {
 
-            for (int row = 0; row < Board.Height; row++)
+            for (int row = Board.Height - 1; row >= 0; row--)
                 for (int col = 0; col < Board.Width; col++)
                 {
                     Image img = new Image
@@ -1118,37 +1206,39 @@ namespace TheGame
                     img.Stretch = Stretch.Fill;
 
                     Grid.SetColumn(img, col);
-                    Grid.SetRow(img, row);
+                    Grid.SetRow(img, Board.Height - 1-  row);
 
                     playgroundDockPanel.Children.Add(img);
                 }
-            Console.WriteLine("\nThe Board:");
-            // please keep it as separate loops for now
-            for (int row = 0; row < Board.Height; row++)
-            {
-                string line = "";
-                for (int col = 0; col < Board.Width; col++)
-                {
-//                    switch (board.boardtable[col, row])
-                     switch(board.getCellStatus(col, row))
-                    {
-                        case Board.Status.TASK_CELL: line += "TC"; break;
-                        case Board.Status.PIECE: line += "PC"; break;
-                        case Board.Status.SHAM: line += "SH"; break;
-                        case Board.Status.RED_GOALS_CELL: line += "GC"; break;
-                        case Board.Status.BLUE_GOALS_CELL: line += "GC"; break;
-                        case Board.Status.RED_PLAYER: line += "RE"; break;
-                        case Board.Status.BLUE_PLAYER: line += "BL"; break;
-                        case Board.Status.UNDISCOVERED_GOAL: line += "UG"; break;
-                        case Board.Status.DISCOVERED_GOAL: line += "DG"; break;
-                        case Board.Status.DISCOVERED_NON_GOAL: line += "NG"; break;
-                        case Board.Status.RED_PLAYER_WITH_PIECE: line += "RP"; break;
-                        case Board.Status.BLUE_PLAYER_WITH_PIECE: line += "BP"; break;
-                    }
-                    line += " ";
-                }
-                Console.WriteLine(line);
-            }
+
+//            Console.WriteLine("\nThe Board:");
+//            // please keep it as separate loops for now
+//            for (int row = Board.Height; row >= 0; row--)
+//            {
+//                string line = "" + row + ". ";
+//                for (int col = 0; col < Board.Width; col++)
+//                {
+////                    switch (board.boardtable[col, row])
+//                     switch(board.getCellStatus(col, row))
+//                    {
+//                        case Board.Status.TASK_CELL: line += "TC"; break;
+//                        case Board.Status.PIECE: line += "PC"; break;
+//                        case Board.Status.SHAM: line += "SH"; break;
+//                        case Board.Status.RED_GOALS_CELL: line += "GC"; break;
+//                        case Board.Status.BLUE_GOALS_CELL: line += "GC"; break;
+//                        case Board.Status.RED_PLAYER: line += "RE"; break;
+//                        case Board.Status.BLUE_PLAYER: line += "BL"; break;
+//                        case Board.Status.UNDISCOVERED_GOAL: line += "UG"; break;
+//                        case Board.Status.DISCOVERED_GOAL: line += "DG"; break;
+//                        case Board.Status.DISCOVERED_NON_GOAL: line += "NG"; break;
+//                        case Board.Status.RED_PLAYER_WITH_PIECE: line += "RP"; break;
+//                        case Board.Status.BLUE_PLAYER_WITH_PIECE: line += "BP"; break;
+//                    }
+//                    line += " ";
+//                }
+//                Console.WriteLine(line);
+//            }
+
         }
 
         /* Socket Code, basically what we had in GMSocket class but 
@@ -1211,12 +1301,13 @@ namespace TheGame
 
                 GMSocket.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
                     new AsyncCallback(ReceiveCallback), state);
-                receiveDone.WaitOne();
-                receiveDone.Reset();
-                var content = state.sb.ToString();
-                content = content.Remove(content.IndexOf(ETB));
-                state.sb.Clear();
-                return content;
+                //receiveDone.WaitOne();
+                //receiveDone.Reset();
+
+                //var content = state.sb.ToString();
+                //content = content.Remove(content.IndexOf(ETB));
+                //state.sb.Clear();
+                return null /*content*/;
             }
             catch (Exception e)
             {
@@ -1238,17 +1329,23 @@ namespace TheGame
                     var content = state.sb.ToString();
                     if (content.IndexOf(ETB) > -1)
                     {
-                        content = content.Remove(content.IndexOf(ETB));
-                        Console.WriteLine("Read {0} bytes from socket. \n Data : {1}\n",
-                            content.Length, content);
+                        Console.WriteLine("[GAME_MASTER] read:\n");
+                        // content = content.Remove(content.IndexOf(ETB));
+                        
                         //   RequestHandler.handleRequest(content, client);
                         //   state.sb.Clear();
-                        receiveDone.Set();
+                        // receiveDone.Set();
 
 
                         if (state.cb != null)
                         {
-                            state.cb(content);
+                            foreach (String _content in content.Split(ETB))
+                            {
+                                if (_content == null || _content == "") continue;
+ //                               Console.WriteLine(_content + "\n");
+                                AnalyzeMessage(_content);
+                            }
+//                            AnalyzeMessage(content);
                             state.cb = null;
                         }
                         //Receive();
@@ -1272,8 +1369,12 @@ namespace TheGame
         {
             // Remove useless white spaces 
             data = Regex.Replace(data, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
+            // Add ETB at the end of the string
+            data += ETB;
+            Console.WriteLine("GAME_MASTER sent: \n"+data+"\n");
             // Create bytes 
-            byte[] byteData = Encoding.ASCII.GetBytes(data + ETB);
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            
             // Sending
             handler.BeginSend(byteData, 0, byteData.Length, 0,
                 new AsyncCallback(SendCallback), handler);
@@ -1286,8 +1387,6 @@ namespace TheGame
                 Socket client = (Socket)ar.AsyncState;
 
                 int bytesSent = client.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to server.\n", bytesSent);
-
                 sendDone.Set();
             }
             catch (Exception e)
@@ -1308,6 +1407,9 @@ namespace TheGame
             foreach (Player p in BlueTeam.members)
                 if (p.playerID.Equals(playerId))
                     return p;
+
+            Console.WriteLine("\n\n404 Player not found\n" +
+                                playerId + "\n\n");
             return null;
         }
         private Player FindPlayerByCoor(int col, int row)

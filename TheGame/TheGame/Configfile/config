@@ -1,9 +1,17 @@
 {
 	"Width":"6",
 	"GoalHeight":"2",
-	"TaskHeight":"2",
-	"InitialNumberOfPieces":"10",
-	"NumberOfGoals":"2",
-	"ShamProbability":"20",
-	"MaxNumOfPlayers":"1"
+	"TaskHeight":"5",
+	"InitialNumberOfPieces":"13",
+	"NumberOfGoals":"3",
+	"ShamProbability":"30",
+	"MaxNumOfPlayers":"2",
+	"FrequencyOfPlacingNewPiece":"1000",
+	"DiscoveryDelay":"100",
+	"MoveDelay":"1000",
+	"PickUpDelay":"100",
+	"TestDelay":"100",
+	"DestroyDelay":"100",
+	"PlaceDelay":"100",
+	"ExchangeDelay":"1200"
 }

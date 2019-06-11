@@ -12,9 +12,6 @@ namespace CommunicationServer
 {
     public static class CSRequestHandler
     {
-
-//        public static bool beginGame { get; set; }  WHY ??
-
         //Sending ConfirmSetUpGame JSON to to client on connection
         public static void SendConfirmGame(Socket handler)
         {
@@ -30,14 +27,12 @@ namespace CommunicationServer
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             string action = magic.action;
-            magic.result = "ok";        // TODO:
+            magic.result = "OK";
 
             Server.Send(handler, JsonConvert.SerializeObject(magic));
 
         }
 
-        /* I think ConnectPlayer can be simplified as we  have in Server.AnalizeTheMessage's switch 
-         * BUT! I am tired to test :-) */
         public static void ConnectPlayer(String data, Socket gMSocket)
         {
             Console.WriteLine("ConnectPlayer");
@@ -45,7 +40,7 @@ namespace CommunicationServer
         }
         internal static void ConnectPlayerConfirmation(String data, Socket destPlayer)
         {
-            Console.WriteLine("ConnectPlayer");
+            Console.WriteLine("ConnectPlayer - Confirmation");
             Server.Send(destPlayer, data);
         }
 
@@ -54,75 +49,7 @@ namespace CommunicationServer
         {
             Console.WriteLine("BeginPlayer");
             Server.Send(destPlayer, data);
-//            beginGame = true; 
         }
-
-        /* Why so many methods for Phase2, we do not need them [anymore] :-P */
-        #region Communication Phase2
-
-        //Move action is sent by playerto GM, so the destination socket will be GM socket.
-        internal static void Move(string data, Socket gmSocket)
-        {
-            Console.WriteLine("Move");
-            Server.Send(gmSocket, data);
-        }
-
-        //Response for Move action is sent by GM to player, so the destination socket will be destPLayer.
-        internal static void ResponseForValidMove(string data, Socket destPlayer)
-        {
-            Console.WriteLine("Response for Valid Move");
-            Server.Send(destPlayer, data);
-        }
-
-        internal static void ResponseForInvalidValidMove(string data, Socket destPlayer)
-        {
-            Console.WriteLine("Response for Invalid Move");
-            Server.Send(destPlayer, data);
-        }
-
-
-        internal static void Discover(string data, Socket gmSocket)
-        {
-            Console.WriteLine("Discover");
-            Server.Send(gmSocket, data);
-        }
-
-        internal static void ResponseForDiscover(string data, Socket destPlayer)
-        {
-            Console.WriteLine("Response for Discover");
-            Server.Send(destPlayer, data);
-        }
-
-        internal static void PickUpPiece(string data, Socket gmSocket)
-        {
-            Console.WriteLine("PickUpPiece");
-            Server.Send(gmSocket, data);
-        }
-
-        internal static void TestPiece(string data, Socket gmSocket)
-        {
-            Console.WriteLine("TestPiece");
-            Server.Send(gmSocket, data);
-        }
-
-        internal static void DestroyPiece(string data, Socket gmSocket)
-        {
-            Console.WriteLine("DestroyPiece");
-            Server.Send(gmSocket, data);
-        }
-
-        internal static void PlacePiece(string data, Socket gmSocket)
-        {
-            Console.WriteLine("PlacePiece");
-            Server.Send(gmSocket, data);
-        }
-
-        #endregion
-
-
-
-
-
 
     }
 }
