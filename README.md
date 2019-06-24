@@ -4,7 +4,7 @@ The goal of The Project Game is to simulate a competitive project development en
 
 * Every task carries a risk of failure.
 * Goals of the project are not clear at start and they need to be discovered.
-*  Cooperation between team members speeds up delivery of the project.
+* Cooperation between team members speeds up delivery of the project.
 
 ## Methodology & Technology used
 * **Software Development Methodology** - Waterfall
@@ -12,11 +12,7 @@ The goal of The Project Game is to simulate a competitive project development en
 * **Assignments of tasks** - Trello
 * **Project discussion** - Slack
 
-The Waterfall approach will be used as our software development methodology. We will be using Trello to assign various tasks to team members. Project discussion will take place via Slack to stay updated and discuss problems while project meetings will be held when required. The technology that will be used is Java.
-
-
 ## Authors
-
 * **Samuel Menezes**
 * **Mikhail Urmich**
 * **Yulia Ivashchenko**
