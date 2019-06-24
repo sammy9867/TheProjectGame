@@ -277,7 +277,6 @@ namespace ThePlayers
             {
                 counter--;
 
-                //CHANGING A BIT OF LOGIC HERE, DONE
                 //Same Logic with BLUE PLAYER [HERE, MOVES NORTH WHEN REACHED EXTREME EAST]
                 // Player that placed a piece shall notify team mates about teste goal cell 
                 switch (AlternativeGoalStep)

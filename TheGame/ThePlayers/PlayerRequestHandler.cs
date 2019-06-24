@@ -55,7 +55,7 @@ namespace ThePlayers
 
             dynamic magic = JsonConvert.DeserializeObject(json);
             magic.userGuid = PlayerSocket.Player.ID;
-            //CHANGE follow:
+
             magic.direction = direction;
 
             Console.WriteLine("Sending Move.json....\n");
@@ -64,7 +64,7 @@ namespace ThePlayers
 
         }
 
-        //TODO: 2nd Communication phase
+        //2nd Communication phase
         public static void sendDiscover(Socket handler)
         {
             string file = @"..\..\JSONs\Discover.json";
@@ -184,7 +184,7 @@ namespace ThePlayers
         }
 
 
-        //After 2nd communication phase done, commence 3rd communication phase: KnowledgeExchange
+        
         public static void sendAuthorizeKnowledgeExchange(Socket handler, string player, string receiver)
         {
             string file = @"..\..\JSONs\AuthorizeKnowledgeExchange.json";
@@ -271,9 +271,6 @@ namespace ThePlayers
             magic.receiverGuid = receiver;
 
             return Newtonsoft.Json.JsonConvert.SerializeObject(magic);
-
-            //PlayerSocket.Send(handler, // expecting the data with knowledge 
-            //    JsonConvert.SerializeObject(magic));
         }
 
     }

@@ -81,7 +81,6 @@ namespace TheGame.GMServer
         public static string ConnectPlayerOK(Player player)
         {
             string file = @"..\..\JSONs\ConfirmJoiningGame.json";
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\ConfirmJoiningGame.json";
             string json = "";
             if (!File.Exists(file))
             {
@@ -93,15 +92,13 @@ namespace TheGame.GMServer
             }
             dynamic magic = Newtonsoft.Json.JsonConvert.DeserializeObject(json);
             magic.userGuid = player.playerID;
-            return (JsonConvert.SerializeObject(magic));
-//          
+            return (JsonConvert.SerializeObject(magic));         
         }
 
         /* Returns JSON for Failure Joining Notification */
         public static string ConnectPlayerDeny(Player player)
         {
             string file = @"..\..\JSONs\RejectJoiningGame.json";
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\RejectJoiningGame.json";
             string json = "";
             if (!File.Exists(file))
             {
@@ -121,7 +118,6 @@ namespace TheGame.GMServer
         public static string BeginGame(Player player, List<Player> members, Player leader)
         {
             string file = @"..\..\JSONs\BeginGame.json";
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\BeginGame.json";
             string json = "";
             if (!File.Exists(file))
             {
@@ -131,7 +127,6 @@ namespace TheGame.GMServer
             {
                 json = File.ReadAllText(file, Encoding.ASCII);
             }
-//            dynamic magic = JsonConvert.DeserializeObject(json);
             JObject jObject = JObject.Parse(json);
 
             jObject["userGuid"] = player.playerID;
@@ -148,7 +143,6 @@ namespace TheGame.GMServer
                 if (p.playerID != leader.playerID)
                     teamGuids.Add(p.playerID);
             }
-            //// SAMASA
             JObject location = (JObject)jObject["location"];
             location["x"] = player.Column;
             location["y"] = player.Row;
@@ -166,7 +160,6 @@ namespace TheGame.GMServer
 
         public static string ResponseForMove(Player player)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\MoveResponseAcceptance.json";
             string file = @"..\..\JSONs\Response\MoveResponseAcceptance.json";
             string json = "";
             if (!File.Exists(file))
@@ -185,7 +178,6 @@ namespace TheGame.GMServer
         /* Returns JSON for Discovery Response */
         public static string ResponseForDiscover(Player player)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\DiscoverResponse.json";
             string file = @"..\..\JSONs\Response\DiscoverResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -204,7 +196,6 @@ namespace TheGame.GMServer
         }
         public static string ResponseForPickUp(Player player)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\PickUpResponse.json";
             string file = @"..\..\JSONs\Response\PickUpResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -223,7 +214,6 @@ namespace TheGame.GMServer
         }
         public static string ResponseForTestPiece(Player player)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\TestPieceResponse.json";
             string file = @"..\..\JSONs\Response\TestPieceResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -242,7 +232,6 @@ namespace TheGame.GMServer
 
         public static string ResponseForDestroyPiece(Player player)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\DestroyPieceResponse.json";
             string file = @"..\..\JSONs\Response\DestroyPieceResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -261,7 +250,6 @@ namespace TheGame.GMServer
 
         public static string ResponseForPlacePiece(Player player)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\Response\PlacePieceResponse.json";
             string file = @"..\..\JSONs\Response\PlacePieceResponse.json";
             string json = "";
             if (!File.Exists(file))
@@ -281,7 +269,6 @@ namespace TheGame.GMServer
 
         public static string SendGameOver(Team.TeamColor avengers)
         {
-            //string file = @"C:\Users\julia\source\repos\theprojectgame\TheGame\TheGame\JSONs\GameOver.json";
             string file = @"..\..\JSONs\GameOver.json";
             string json = "";
             if (!File.Exists(file))

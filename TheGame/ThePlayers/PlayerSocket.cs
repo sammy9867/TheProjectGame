@@ -37,7 +37,6 @@ namespace ThePlayers
         {
             try
             {
-                //IPAddress ipAddress = IPAddress.Loopback;
                 Console.WriteLine("Player IP: " + ipAddress.ToString());
                 Console.WriteLine("Player PORT: " + port);
 
@@ -176,7 +175,6 @@ namespace ThePlayers
                 Socket client = (Socket)ar.AsyncState;
                 
                 int bytesSent = client.EndSend(ar);
-//                Console.WriteLine("Sent {0} bytes to server.", bytesSent);
 
                 sendDone.Set();
             }
@@ -226,7 +224,6 @@ namespace ThePlayers
                     {
 
                         //Whenever ReadTestPiece reads false from test response, it resends TestPiece again
-                        //Dont know for now if it will ever receive true [that is if that shit is a sham or not]
                         ReadTestPiece(json);
                         SendDecision(Player.MakeMove());
                         break;
@@ -311,7 +308,7 @@ namespace ThePlayers
         private static void SendDecision(Player.Decision decision)
         {
             Console.WriteLine("Player decided: " + decision);
-           //Thread.Sleep(1000);
+
             switch (decision)
             {
                 case Player.Decision.MOVE_NORTH:  SendMove("N"); return;
@@ -400,8 +397,6 @@ namespace ThePlayers
         private static void ReadDiscover(string json)
         {
             Console.WriteLine("DiscoverResponse:");
-            if(SHOW_JSON)   
-                Console.WriteLine(json);
             JObject jobject = JObject.Parse(json);
             string result = (string) jobject["result"];
             if (result.ToLower().Equals("denied"))
@@ -432,7 +427,7 @@ namespace ThePlayers
                 int  y = (int) jfield["y"];
                 JObject value = (JObject)jfield["value"];
                 string contains = (string) value["contains"];
-//                string timestamp = (string) value["timestamp"];
+                // string timestamp = (string) value["timestamp"];
                 string userGuid = (string) value["userGuid"];
                 Player.NeighborStatus status;
                 Player.BoardCell curr = Player.Board[y,x];  // row col
@@ -441,12 +436,12 @@ namespace ThePlayers
                 int dy = Player.Y - y;
                 if (1 - dy < 0 || 1 - dy > 2)
                 {
-                    /// TODO
+              
                     Console.WriteLine("debug");
                 }
                 if (1 - dx < 0 || 1 - dx > 2)
                 {
-                    /// TODO
+                  
                     Console.WriteLine("debug");
                 }
                 Console.WriteLine("Neighbors["+(1 - dy)+", "+(1 - dx)+"]");
@@ -650,7 +645,6 @@ namespace ThePlayers
             string result = magic.result;
             if (result.ToLower().Equals("denied"))
             {
-                // TODO: 
                 return;
             }
             /* piece is destroyed */
@@ -679,7 +673,7 @@ namespace ThePlayers
                 return;
             
 
-            // Does not matter anymore
+            // KE
             //string consequence = magic.consequence;
             //if (consequence.ToLower().Equals("correct"))
             //{

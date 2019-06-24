@@ -5,7 +5,7 @@
 	"InitialNumberOfPieces":"13",
 	"NumberOfGoals":"3",
 	"ShamProbability":"30",
-	"MaxNumOfPlayers":"2",
+	"MaxNumOfPlayers":"1",
 	"FrequencyOfPlacingNewPiece":"1000",
 	"DiscoveryDelay":"100",
 	"MoveDelay":"1000",
